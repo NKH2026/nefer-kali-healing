@@ -304,7 +304,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Nefer Kali Healing <info@neferkalihealing.org>',
+        from: 'Nefer Kali Healing <onboarding@resend.dev>',
         to: order.customer_email,
         subject: subject,
         html: emailHTML,

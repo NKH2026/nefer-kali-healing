@@ -133,7 +133,7 @@ async function sendConfirmationEmail(order: any, orderItems: any[]) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Nefer Kali Healing <info@neferkalihealing.org>',
+        from: 'Nefer Kali Healing <onboarding@resend.dev>',
         to: order.customer_email,
         subject: `Order Confirmed: ${order.order_number} | Nefer Kali Healing`,
         html: emailHTML,
