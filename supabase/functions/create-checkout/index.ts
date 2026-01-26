@@ -192,8 +192,9 @@ serve(async (req) => {
         if (!hasSubscription) {
             const FREE_SHIPPING_THRESHOLD = 75.00;
             const isTestCoupon = couponCode && couponCode.toUpperCase() === 'FREESHIPTEST';
+            const isFreeShippingCoupon = validatedCoupon?.discount_type === 'free_shipping';
 
-            if (isTestCoupon || cartTotal >= FREE_SHIPPING_THRESHOLD) {
+            if (isTestCoupon || isFreeShippingCoupon || cartTotal >= FREE_SHIPPING_THRESHOLD) {
                 // FREE SHIPPING
                 sessionParams.shipping_options = [
                     {
