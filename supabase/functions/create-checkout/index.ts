@@ -60,17 +60,64 @@ serve(async (req) => {
         }
 
         // Get origin for constructing absolute URLs
-        // Fallback to production URL if origin header is missing
         const origin = req.headers.get('origin') || 'https://neferkalihealing.org';
 
-        // Helper function to ensure image URLs are absolute (Stripe requires this)
+        // Calculate cart subtotal
+        const cartTotal = items.reduce((sum: number, item: CheckoutItem) =>
+            sum + (item.price * item.quantity), 0
+        );
+
+        // Extract product IDs for coupon validation
+        const productIds = items.map((item: CheckoutItem) => item.productId);
+
+        // Validate coupon if provided (except FREESHIPTEST which is just for testing)
+        let validatedCoupon: {
+            coupon_id: string | null;
+            discount_type: string | null;
+            discount_value: number | null;
+            discount_amount: number | null;
+        } | null = null;
+
+        if (couponCode && couponCode.toUpperCase() !== 'FREESHIPTEST') {
+            const { data: couponResult, error: couponError } = await supabase
+                .rpc('validate_coupon', {
+                    p_code: couponCode,
+                    p_order_total: cartTotal,
+                    p_product_ids: productIds,
+                    p_customer_email: customerEmail || null,
+                });
+
+            if (couponError) {
+                console.error('Coupon validation error:', couponError);
+                return new Response(
+                    JSON.stringify({ error: 'Error validating coupon' }),
+                    { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                );
+            }
+
+            if (couponResult && couponResult.length > 0) {
+                const result = couponResult[0];
+                if (!result.is_valid) {
+                    return new Response(
+                        JSON.stringify({ error: result.error_message || 'Invalid coupon' }),
+                        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                    );
+                }
+                validatedCoupon = {
+                    coupon_id: result.coupon_id,
+                    discount_type: result.discount_type,
+                    discount_value: result.discount_value,
+                    discount_amount: result.discount_amount,
+                };
+            }
+        }
+
+        // Helper function to ensure image URLs are absolute
         const getAbsoluteImageUrl = (imageUrl: string): string => {
             if (!imageUrl) return '';
-            // Already absolute URL
             if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
                 return imageUrl;
             }
-            // Relative URL - prepend origin
             return `${origin}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
         };
 
@@ -79,10 +126,8 @@ serve(async (req) => {
 
         // Build line items for Stripe
         const lineItems = items.map((item: CheckoutItem) => {
-            // Get absolute image URL for Stripe
             const absoluteImageUrl = item.image ? getAbsoluteImageUrl(item.image) : '';
-
-            const baseLineItem = {
+            return {
                 price_data: {
                     currency: 'usd',
                     product_data: {
@@ -93,35 +138,33 @@ serve(async (req) => {
                             variant_id: item.variantId || '',
                         },
                     },
-                    unit_amount: Math.round(item.price * 100), // Convert to cents
+                    unit_amount: Math.round(item.price * 100),
                     ...(item.isSubscription && {
                         recurring: getStripeInterval(item.subscriptionFrequency || 'monthly'),
                     }),
                 },
                 quantity: item.quantity,
             };
-
-            return baseLineItem;
         });
 
-        // Create Stripe Checkout Session
+        // Create Stripe Checkout Session params
         const sessionParams: Stripe.Checkout.SessionCreateParams = {
             mode: hasSubscription ? 'subscription' : 'payment',
             payment_method_types: ['card'],
             line_items: lineItems,
             shipping_address_collection: {
-                allowed_countries: ['US'], // US only per user requirement
+                allowed_countries: ['US'],
             },
             success_url: successUrl || `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: cancelUrl || `${origin}/offerings`,
             metadata: {
                 order_source: 'nefer-kali-healing',
                 is_nonprofit: 'true',
+                coupon_id: validatedCoupon?.coupon_id || '',
+                coupon_code: couponCode || '',
             },
             billing_address_collection: 'required',
-            phone_number_collection: {
-                enabled: true,
-            },
+            phone_number_collection: { enabled: true },
             custom_text: {
                 submit: {
                     message: 'Nefer Kali Healing is a 501(c)(3) non-profit. Thank you for your support!',
@@ -134,29 +177,29 @@ serve(async (req) => {
             sessionParams.customer_email = customerEmail;
         }
 
+        // Apply coupon discount via Stripe if validated
+        if (validatedCoupon && validatedCoupon.discount_amount && validatedCoupon.discount_amount > 0) {
+            const stripeCoupon = await stripe.coupons.create({
+                amount_off: Math.round(validatedCoupon.discount_amount * 100),
+                currency: 'usd',
+                duration: 'once',
+                name: couponCode,
+            });
+            sessionParams.discounts = [{ coupon: stripeCoupon.id }];
+        }
+
         // For one-time payments, add shipping options
         if (!hasSubscription) {
-            // Calculate cart subtotal
-            const cartTotal = items.reduce((sum: number, item: CheckoutItem) =>
-                sum + (item.price * item.quantity), 0
-            );
-
-            // Free shipping threshold
             const FREE_SHIPPING_THRESHOLD = 75.00;
-
-            // Check for FREESHIPTEST coupon (for testing without shipping charges)
             const isTestCoupon = couponCode && couponCode.toUpperCase() === 'FREESHIPTEST';
 
             if (isTestCoupon || cartTotal >= FREE_SHIPPING_THRESHOLD) {
-                // FREE SHIPPING for orders $75+
+                // FREE SHIPPING
                 sessionParams.shipping_options = [
                     {
                         shipping_rate_data: {
                             type: 'fixed_amount',
-                            fixed_amount: {
-                                amount: 0, // FREE
-                                currency: 'usd',
-                            },
+                            fixed_amount: { amount: 0, currency: 'usd' },
                             display_name: 'Free Shipping (USPS Ground Advantage)',
                             delivery_estimate: {
                                 minimum: { unit: 'business_day', value: 6 },
@@ -167,10 +210,7 @@ serve(async (req) => {
                     {
                         shipping_rate_data: {
                             type: 'fixed_amount',
-                            fixed_amount: {
-                                amount: 0, // FREE
-                                currency: 'usd',
-                            },
+                            fixed_amount: { amount: 0, currency: 'usd' },
                             display_name: 'Free Priority Mail',
                             delivery_estimate: {
                                 minimum: { unit: 'business_day', value: 1 },
@@ -180,15 +220,12 @@ serve(async (req) => {
                     },
                 ];
             } else {
-                // Standard shipping rates for orders under $75
+                // Standard shipping rates
                 sessionParams.shipping_options = [
                     {
                         shipping_rate_data: {
                             type: 'fixed_amount',
-                            fixed_amount: {
-                                amount: 530, // $5.30 - USPS Ground Advantage
-                                currency: 'usd',
-                            },
+                            fixed_amount: { amount: 530, currency: 'usd' },
                             display_name: 'USPS Ground Advantage',
                             delivery_estimate: {
                                 minimum: { unit: 'business_day', value: 6 },
@@ -199,10 +236,7 @@ serve(async (req) => {
                     {
                         shipping_rate_data: {
                             type: 'fixed_amount',
-                            fixed_amount: {
-                                amount: 985, // $9.85 - Priority Mail
-                                currency: 'usd',
-                            },
+                            fixed_amount: { amount: 985, currency: 'usd' },
                             display_name: 'Priority Mail',
                             delivery_estimate: {
                                 minimum: { unit: 'business_day', value: 1 },
@@ -213,10 +247,7 @@ serve(async (req) => {
                     {
                         shipping_rate_data: {
                             type: 'fixed_amount',
-                            fixed_amount: {
-                                amount: 3075, // $30.75 - Priority Mail Express
-                                currency: 'usd',
-                            },
+                            fixed_amount: { amount: 3075, currency: 'usd' },
                             display_name: 'Priority Mail Express',
                             delivery_estimate: {
                                 minimum: { unit: 'business_day', value: 1 },
@@ -232,20 +263,14 @@ serve(async (req) => {
 
         return new Response(
             JSON.stringify({ url: session.url }),
-            {
-                status: 200,
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
 
     } catch (error: any) {
         console.error('Checkout error:', error);
         return new Response(
             JSON.stringify({ error: error.message }),
-            {
-                status: 500,
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
     }
 });

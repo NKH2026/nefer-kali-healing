@@ -17,6 +17,18 @@ const supabase = createClient(
 
 const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
 const resendApiKey = Deno.env.get('RESEND_API_KEY');
+const shippoApiKey = Deno.env.get('SHIPPO_API_KEY');
+
+// Business ship-from address
+const SHIP_FROM_ADDRESS = {
+  name: 'Nefer Kali Healing',
+  street1: 'PO Box 322',
+  city: 'McCordsville',
+  state: 'IN',
+  zip: '46055',
+  country: 'US',
+  email: 'asasa@neferkalihealing.org',
+};
 
 // Non-profit info for receipts
 const NONPROFIT_INFO = {
@@ -151,6 +163,94 @@ async function sendConfirmationEmail(order: any, orderItems: any[]) {
   }
 }
 
+// Create order in Shippo
+async function createShippoOrder(order: any, orderItems: any[]) {
+  if (!shippoApiKey) {
+    console.log('SHIPPO_API_KEY not set, skipping Shippo order creation');
+    return null;
+  }
+
+  try {
+    // Calculate total weight (estimate 8oz per item)
+    const totalItems = orderItems.reduce((sum: number, item: any) => sum + item.quantity, 0);
+    const weightOz = Math.max(8, totalItems * 8); // Minimum 8oz
+
+    // Build line items for Shippo
+    const lineItems = orderItems.map((item: any) => ({
+      title: item.product_title,
+      quantity: item.quantity,
+      total_price: (item.unit_price * item.quantity).toFixed(2),
+      currency: 'USD',
+      weight: '8',
+      weight_unit: 'oz',
+    }));
+
+    // Create the order in Shippo
+    const response = await fetch('https://api.goshippo.com/orders/', {
+      method: 'POST',
+      headers: {
+        'Authorization': `ShippoToken ${shippoApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        // Required fields
+        order_number: order.order_number,
+        order_status: 'PAID',
+        placed_at: new Date().toISOString(),
+
+        // Ship-to address (customer)
+        to_address: {
+          name: order.customer_name,
+          street1: order.shipping_address_line1,
+          street2: order.shipping_address_line2 || '',
+          city: order.shipping_city,
+          state: order.shipping_state,
+          zip: order.shipping_postal_code,
+          country: order.shipping_country || 'US',
+          phone: order.customer_phone || '',
+          email: order.customer_email,
+        },
+
+        // Ship-from address (business)
+        from_address: SHIP_FROM_ADDRESS,
+
+        // Line items
+        line_items: lineItems,
+
+        // Total weight for the order
+        weight: weightOz.toString(),
+        weight_unit: 'oz',
+
+        // Currency
+        currency: 'USD',
+        total_price: order.total.toFixed(2),
+        subtotal_price: order.subtotal.toFixed(2),
+        total_shipping: (order.shipping_cost || 0).toFixed(2),
+      }),
+    });
+
+    if (response.ok) {
+      const shippoOrder = await response.json();
+      console.log('Shippo order created:', shippoOrder.object_id);
+
+      // Update order in database with Shippo order ID
+      await supabase
+        .from('orders')
+        .update({ shippo_order_id: shippoOrder.object_id })
+        .eq('id', order.id);
+
+      return shippoOrder;
+    } else {
+      const error = await response.text();
+      console.error('Shippo order creation error:', error);
+      return null;
+    }
+  } catch (error) {
+    console.error('Shippo order exception:', error);
+    return null;
+  }
+}
+
 serve(async (req) => {
   const signature = req.headers.get('stripe-signature');
 
@@ -227,6 +327,28 @@ serve(async (req) => {
 // Handle completed checkout session
 async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   console.log('Processing checkout session:', session.id);
+
+  // IDEMPOTENCY CHECK: Check if order already exists for this session
+  const { data: existingOrder } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('stripe_checkout_session_id', session.id)
+    .single();
+
+  if (existingOrder) {
+    console.log('Order already exists for session:', session.id, '- Order:', existingOrder.order_number);
+    // Still try to create Shippo order and send email in case they failed before
+    const { data: existingItems } = await supabase
+      .from('order_items')
+      .select('*')
+      .eq('order_id', existingOrder.id);
+
+    if (existingItems && existingItems.length > 0) {
+      await createShippoOrder(existingOrder, existingItems);
+      await sendConfirmationEmail(existingOrder, existingItems);
+    }
+    return;
+  }
 
   // Get line items
   const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
@@ -348,7 +470,29 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       .eq('id', order.id);
   }
 
-  // TODO: Create shipping label via Shippo
+  // Create order in Shippo for fulfillment
+  await createShippoOrder(order, orderItems);
+
+  // Record coupon redemption if a coupon was used
+  const couponId = session.metadata?.coupon_id;
+  const couponCode = session.metadata?.coupon_code;
+  if (couponId && couponId !== '') {
+    try {
+      await supabase
+        .from('coupon_redemptions')
+        .insert({
+          coupon_id: couponId,
+          customer_email: order.customer_email,
+          order_id: order.id,
+          discount_amount: order.discount_amount || 0,
+          order_total: order.subtotal,
+          final_total: order.total,
+        });
+      console.log('Coupon redemption recorded:', couponCode);
+    } catch (couponError) {
+      console.error('Failed to record coupon redemption:', couponError);
+    }
+  }
 
   // Send confirmation email with non-profit receipt
   await sendConfirmationEmail(order, orderItems);

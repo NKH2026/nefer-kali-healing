@@ -61,7 +61,7 @@ const About: React.FC = () => {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                             <div className="absolute bottom-12 left-12 right-12">
                                 <p className="text-2xl md:text-3xl font-display italic text-[#D4AF37] mb-2">Sacred Union</p>
-                                <p className="text-sm md:text-base text-white/60 font-light uppercase tracking-[0.3em]">Ogun Keyede & Y'Marii Shango BunMi</p>
+                                <p className="text-sm md:text-base text-white/60 font-light uppercase tracking-[0.3em]">Ogun Keyede Balewa & Y'Marii Shango Bunmi Balewa</p>
                             </div>
                         </div>
                     </div>
@@ -79,8 +79,12 @@ const About: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch max-w-5xl mx-auto">
                         {/* Ogun Keyede - Square Card */}
                         <div className="bg-white/5 border border-white/10 p-8 md:p-12 md:aspect-square rounded-[2rem] md:rounded-[3rem] flex flex-col justify-center animate-content hover:border-[#D4AF37]/30 transition-colors">
-                            <h3 className="text-2xl font-display text-[#D4AF37] mb-8 uppercase tracking-widest text-center">Ogun Keyede</h3>
+                            <h3 className="text-2xl font-display text-[#D4AF37] mb-8 uppercase tracking-widest text-center">Ogun Keyede Balewa</h3>
                             <ul className="space-y-6 text-xs md:text-sm text-white/60 font-light leading-relaxed">
+                                <li className="flex gap-4">
+                                    <Star className="text-[#D4AF37] shrink-0" size={18} />
+                                    <span>Ogun Priesthood (Ongoing) • Under Chief Olode Iya Nifa Osun Monife Balewa</span>
+                                </li>
                                 <li className="flex gap-4">
                                     <ShieldCheck className="text-[#D4AF37] shrink-0" size={18} />
                                     <span>Blue Dragon Medical QiGong Instructor • Certified 2022</span>
@@ -100,25 +104,29 @@ const About: React.FC = () => {
                             </ul>
                         </div>
 
-                        {/* Y'Marii Shango BunMi - Square Card */}
+                        {/* Y'Marii Shango Bunmi Balewa - Square Card */}
                         <div className="bg-white/5 border border-white/10 p-8 md:p-12 md:aspect-square rounded-[2rem] md:rounded-[3rem] flex flex-col justify-center animate-content hover:border-[#D4AF37]/30 transition-colors">
-                            <h3 className="text-2xl font-display text-[#D4AF37] mb-8 uppercase tracking-widest text-center">Y'Marii Shango BunMi</h3>
+                            <h3 className="text-2xl font-display text-[#D4AF37] mb-8 uppercase tracking-widest text-center">Y'Marii Shango Bunmi Balewa</h3>
                             <ul className="space-y-6 text-xs md:text-sm text-white/60 font-light leading-relaxed">
                                 <li className="flex gap-4">
                                     <Star className="text-[#D4AF37] shrink-0" size={18} />
-                                    <span>Parāśara Jyotiṣa (Ongoing) • Teaching of Sanjay Rath</span>
+                                    <span>Shango Priesthood (Ongoing) • Under Chief Olode Iya Nifa Osun Monife Balewa</span>
+                                </li>
+                                <li className="flex gap-4">
+                                    <Star className="text-[#D4AF37] shrink-0" size={18} />
+                                    <span>Parāśara Jyotiṣa (Oct 2023 - Ongoing) • Teaching of Sanjay Rath</span>
                                 </li>
                                 <li className="flex gap-4">
                                     <Award className="text-[#D4AF37] shrink-0" size={18} />
-                                    <span>Associates in Ayurveda & Panchakarma • Kerala India</span>
+                                    <span>Associates in Ayurveda & Panchakarma • Kerala India (Feb 2022 - Feb 2023)</span>
                                 </li>
                                 <li className="flex gap-4">
                                     <Heart className="text-[#D4AF37] shrink-0" size={18} />
-                                    <span>Certified Ayurvedic Pregnancy Care & Baby Message</span>
+                                    <span>Certified Ayurvedic Pregnancy Care & Baby Message (Feb 2022 - Feb 2023)</span>
                                 </li>
                                 <li className="flex gap-4">
                                     <ShieldCheck className="text-[#D4AF37] shrink-0" size={18} />
-                                    <span>Health Coach (Ongoing) • Inst. for Integrative Nutrition</span>
+                                    <span>Certified Health Coach • Inst. for Integrative Nutrition (Nov 2024 - Nov 2025)</span>
                                 </li>
                             </ul>
                         </div>

@@ -299,7 +299,7 @@ export const BlogEditor = ({ postId, onBack }: { postId?: string, onBack: () => 
     const [excerpt, setExcerpt] = useState('');
     const [coverImage, setCoverImage] = useState('');
     const [category, setCategory] = useState('Astrology');
-    const [author, setAuthor] = useState("Y'Marii Shango BunMi");
+    const [author, setAuthor] = useState("Y'Marii Shango Bunmi Balewa");
     const [isPublished, setIsPublished] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
@@ -672,8 +672,8 @@ export const BlogEditor = ({ postId, onBack }: { postId?: string, onBack: () => 
                                 onChange={(e) => setAuthor(e.target.value)}
                                 className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none"
                             >
-                                <option value="Y'Marii Shango BunMi">Y'Marii Shango BunMi</option>
-                                <option value="Ogun Keyede">Ogun Keyede</option>
+                                <option value="Y'Marii Shango Bunmi Balewa">Y'Marii Shango Bunmi Balewa</option>
+                                <option value="Ogun Keyede Balewa">Ogun Keyede Balewa</option>
                             </select>
                         </div>
                     </div>
