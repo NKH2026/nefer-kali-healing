@@ -159,6 +159,9 @@ const Footer: React.FC = () => {
             <Link to="/privacy-policy" className="text-[9px] uppercase tracking-widest text-white/40 hover:text-[#D4AF37] transition-colors">
               Privacy Policy
             </Link>
+            <Link to="/terms" className="text-[9px] uppercase tracking-widest text-white/40 hover:text-[#D4AF37] transition-colors">
+              Terms & Conditions
+            </Link>
             <a href="https://www.instagram.com/neferkalihealing/" target="_blank" rel="noopener noreferrer" className="text-[9px] uppercase tracking-widest text-white/40 hover:text-[#D4AF37] transition-colors">
               Instagram
             </a>

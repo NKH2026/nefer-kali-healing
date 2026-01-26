@@ -30,6 +30,7 @@ import UatchetGuide from './pages/guides/UatchetGuide';
 import GullyRootGuide from './pages/guides/GullyRootGuide';
 import CashewBarkGuide from './pages/guides/CashewBarkGuide';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsAndConditions from './pages/TermsAndConditions';
 
 // Cart
 import { CartProvider, CartDrawer } from './components/cart';
@@ -116,6 +117,7 @@ const App: React.FC = () => {
               <Route path="/guides/gully-root" element={<GullyRootGuide />} />
               <Route path="/guides/cashew-bark" element={<CashewBarkGuide />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsAndConditions />} />
 
               {/* Admin Routes */}
               <Route path="/admin/login" element={<Login />} />

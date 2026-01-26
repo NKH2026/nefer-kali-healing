@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Tag, Check, X, Loader } from 'lucide-react';
 import { useCoupon } from '../hooks/useCoupon';
 import { useCart } from './cart/CartContext';

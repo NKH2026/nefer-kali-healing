@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { X, Minus, Plus, Trash2, ShoppingBag, RefreshCw, Loader2, Check, Tag } from 'lucide-react';
 import { useCart, CartItem } from './CartContext';
 import { redirectToCheckout, CheckoutItem } from '../../lib/stripe';
@@ -20,6 +21,7 @@ const CartDrawer: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [couponCode, setCouponCode] = useState('');
+    const [termsAccepted, setTermsAccepted] = useState(false);
 
     // Sync coupon code input with applied coupon
     useEffect(() => {
@@ -256,10 +258,32 @@ const CartDrawer: React.FC = () => {
                             </p>
                         )}
 
+                        {/* Terms Agreement Checkbox */}
+                        <div className="flex items-start gap-3 mb-4">
+                            <input
+                                type="checkbox"
+                                id="terms-checkbox"
+                                checked={termsAccepted}
+                                onChange={(e) => setTermsAccepted(e.target.checked)}
+                                className="mt-1 w-4 h-4 rounded border-white/30 bg-transparent text-[#D4AF37] focus:ring-[#D4AF37] focus:ring-offset-0 cursor-pointer"
+                            />
+                            <label htmlFor="terms-checkbox" className="text-white/60 text-xs leading-relaxed cursor-pointer">
+                                I have read and agree to the{' '}
+                                <Link
+                                    to="/terms"
+                                    onClick={closeCart}
+                                    className="text-[#D4AF37] underline hover:text-white transition-colors"
+                                >
+                                    Terms & Conditions
+                                </Link>
+                                , including the health disclaimer. I understand that products are not intended to diagnose, treat, cure, or prevent any disease.
+                            </label>
+                        </div>
+
                         {/* Checkout Button */}
                         <button
                             onClick={handleCheckout}
-                            disabled={isLoading}
+                            disabled={isLoading || !termsAccepted}
                             className="w-full py-4 bg-gradient-to-r from-[#D4AF37] to-[#8B7322] text-black font-bold text-sm uppercase tracking-[0.2em] rounded-full hover:shadow-2xl hover:shadow-[#D4AF37]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
                             {isLoading ? (
