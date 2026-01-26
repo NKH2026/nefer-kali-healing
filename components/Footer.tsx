@@ -156,6 +156,9 @@ const Footer: React.FC = () => {
             © 2024 Nefer Kali Healing & Spiritual Education. All Rights Reserved.
           </p>
           <div className="flex gap-8">
+            <Link to="/privacy-policy" className="text-[9px] uppercase tracking-widest text-white/40 hover:text-[#D4AF37] transition-colors">
+              Privacy Policy
+            </Link>
             <a href="https://www.instagram.com/neferkalihealing/" target="_blank" rel="noopener noreferrer" className="text-[9px] uppercase tracking-widest text-white/40 hover:text-[#D4AF37] transition-colors">
               Instagram
             </a>

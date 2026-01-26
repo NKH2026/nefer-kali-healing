@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, Minus, Plus, Trash2, ShoppingBag, RefreshCw, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Minus, Plus, Trash2, ShoppingBag, RefreshCw, Loader2, Check, Tag } from 'lucide-react';
 import { useCart, CartItem } from './CartContext';
 import { redirectToCheckout, CheckoutItem } from '../../lib/stripe';
 
@@ -12,12 +12,21 @@ const CartDrawer: React.FC = () => {
         updateQuantity,
         removeItem,
         toggleSubscription,
-        clearCart
+        clearCart,
+        appliedCoupon,
+        setCoupon
     } = useCart();
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [couponCode, setCouponCode] = useState('');
+
+    // Sync coupon code input with applied coupon
+    useEffect(() => {
+        if (appliedCoupon) {
+            setCouponCode(appliedCoupon.code);
+        }
+    }, [appliedCoupon]);
 
     const handleCheckout = async () => {
         if (items.length === 0) return;
@@ -42,7 +51,7 @@ const CartDrawer: React.FC = () => {
 
             await redirectToCheckout({
                 items: checkoutItems,
-                couponCode: couponCode.trim() || undefined,
+                couponCode: appliedCoupon?.code || couponCode.trim() || undefined,
             });
         } catch (err: any) {
             console.error('Checkout error:', err);
@@ -190,24 +199,45 @@ const CartDrawer: React.FC = () => {
                 {/* Footer */}
                 {items.length > 0 && (
                     <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-white/10 bg-[#0a0a0a]">
-                        {/* Coupon Code Input */}
-                        <div className="flex gap-2 mb-4">
-                            <input
-                                type="text"
-                                value={couponCode}
-                                onChange={(e) => setCouponCode(e.target.value)}
-                                placeholder="Coupon code"
-                                className="flex-1 px-3 py-2 bg-[#1a1a1a] border border-white/10 rounded-lg text-white text-sm placeholder:text-white/30 focus:border-[#D4AF37] focus:outline-none transition-colors"
-                            />
-                            {couponCode && (
+                        {/* Coupon Section */}
+                        {appliedCoupon ? (
+                            <div className="flex items-center justify-between mb-4 bg-green-900/20 border border-green-500/30 rounded-lg px-3 py-2">
+                                <div className="flex items-center gap-2">
+                                    <Check className="text-green-400" size={16} />
+                                    <span className="text-green-400 text-sm font-urbanist">
+                                        {appliedCoupon.code} • {appliedCoupon.discountType === 'percentage'
+                                            ? `${appliedCoupon.discountValue}% off`
+                                            : appliedCoupon.discountType === 'free_shipping'
+                                                ? 'Free Shipping'
+                                                : `$${appliedCoupon.discountAmount.toFixed(2)} off`}
+                                    </span>
+                                </div>
                                 <button
-                                    onClick={() => setCouponCode('')}
-                                    className="px-3 py-2 text-white/40 hover:text-white text-xs"
+                                    onClick={() => setCoupon(null)}
+                                    className="text-white/40 hover:text-white text-xs"
                                 >
-                                    Clear
+                                    Remove
                                 </button>
-                            )}
-                        </div>
+                            </div>
+                        ) : (
+                            <div className="flex gap-2 mb-4">
+                                <input
+                                    type="text"
+                                    value={couponCode}
+                                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                    placeholder="Coupon code"
+                                    className="flex-1 px-3 py-2 bg-[#1a1a1a] border border-white/10 rounded-lg text-white text-sm placeholder:text-white/30 focus:border-[#D4AF37] focus:outline-none transition-colors"
+                                />
+                                {couponCode && (
+                                    <button
+                                        onClick={() => setCouponCode('')}
+                                        className="px-3 py-2 text-white/40 hover:text-white text-xs"
+                                    >
+                                        Clear
+                                    </button>
+                                )}
+                            </div>
+                        )}
 
                         {/* Subtotal */}
                         <div className="flex items-center justify-between mb-4">

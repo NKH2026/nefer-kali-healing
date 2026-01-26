@@ -16,11 +16,19 @@ export interface CartItem {
     maxQuantity?: number;
 }
 
+interface AppliedCoupon {
+    code: string;
+    discountType: string;
+    discountValue: number;
+    discountAmount: number;
+}
+
 interface CartContextType {
     items: CartItem[];
     isOpen: boolean;
     itemCount: number;
     subtotal: number;
+    appliedCoupon: AppliedCoupon | null;
     addItem: (item: Omit<CartItem, 'id'>) => void;
     removeItem: (id: string) => void;
     updateQuantity: (id: string, quantity: number) => void;
@@ -28,25 +36,31 @@ interface CartContextType {
     clearCart: () => void;
     openCart: () => void;
     closeCart: () => void;
+    setCoupon: (coupon: AppliedCoupon | null) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const CART_STORAGE_KEY = 'nkh-cart';
+const COUPON_STORAGE_KEY = 'nkh-coupon';
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [items, setItems] = useState<CartItem[]>([]);
     const [isOpen, setIsOpen] = useState(false);
+    const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
 
-    // Load cart from localStorage on mount
+    // Load cart and coupon from localStorage on mount
     useEffect(() => {
         try {
             const savedCart = localStorage.getItem(CART_STORAGE_KEY);
             if (savedCart) {
                 setItems(JSON.parse(savedCart));
             }
+            const savedCoupon = localStorage.getItem(COUPON_STORAGE_KEY);
+            if (savedCoupon) {
+                setAppliedCoupon(JSON.parse(savedCoupon));
+            }
         } catch (e) {
-            // localStorage may be blocked by browser security settings
             console.warn('Could not access localStorage:', e);
         }
     }, []);
@@ -140,6 +154,19 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const clearCart = () => {
         setItems([]);
+        setAppliedCoupon(null);
+        try { localStorage.removeItem(COUPON_STORAGE_KEY); } catch (e) { }
+    };
+
+    const setCoupon = (coupon: AppliedCoupon | null) => {
+        setAppliedCoupon(coupon);
+        try {
+            if (coupon) {
+                localStorage.setItem(COUPON_STORAGE_KEY, JSON.stringify(coupon));
+            } else {
+                localStorage.removeItem(COUPON_STORAGE_KEY);
+            }
+        } catch (e) { }
     };
 
     const openCart = () => setIsOpen(true);
@@ -161,6 +188,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             isOpen,
             itemCount,
             subtotal,
+            appliedCoupon,
             addItem,
             removeItem,
             updateQuantity,
@@ -168,6 +196,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             clearCart,
             openCart,
             closeCart,
+            setCoupon,
         }}>
             {children}
         </CartContext.Provider>

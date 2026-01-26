@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Tag, Check, X, Loader } from 'lucide-react';
 import { useCoupon } from '../hooks/useCoupon';
+import { useCart } from './cart/CartContext';
 
 interface CouponInputProps {
     orderTotal: number;
@@ -20,6 +21,7 @@ export const CouponInput = ({
     const [couponCode, setCouponCode] = useState('');
     const [error, setError] = useState('');
     const { validateCoupon, applyCoupon, removeCoupon, appliedCoupon, validating } = useCoupon();
+    const { setCoupon, appliedCoupon: cartCoupon } = useCart();
 
     const handleApply = async () => {
         if (!couponCode.trim()) {
@@ -32,6 +34,13 @@ export const CouponInput = ({
 
         if (result.isValid) {
             applyCoupon(result);
+            // Save coupon to cart context for persistence
+            setCoupon({
+                code: couponCode.toUpperCase(),
+                discountType: result.discountType || '',
+                discountValue: result.discountValue || 0,
+                discountAmount: result.discountAmount || 0,
+            });
             setCouponCode('');
             if (onCouponApplied && result.discountAmount) {
                 onCouponApplied(result.discountAmount);
@@ -43,6 +52,7 @@ export const CouponInput = ({
 
     const handleRemove = () => {
         removeCoupon();
+        setCoupon(null); // Clear from cart context
         setError('');
         if (onCouponRemoved) {
             onCouponRemoved();

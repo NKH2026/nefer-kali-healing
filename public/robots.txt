@@ -1,0 +1,47 @@
+# Robots.txt for Nefer Kali Healing
+# https://neferkalihealing.org
+
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Google
+User-agent: Googlebot
+Allow: /
+
+# Bing
+User-agent: Bingbot
+Allow: /
+
+# OpenAI GPTBot (for ChatGPT visibility)
+User-agent: GPTBot
+Allow: /
+
+# OpenAI SearchBot
+User-agent: OAI-SearchBot
+Allow: /
+
+# Perplexity AI
+User-agent: PerplexityBot
+Allow: /
+
+# Claude/Anthropic
+User-agent: ClaudeBot
+Allow: /
+User-agent: anthropic-ai
+Allow: /
+
+# Google AI / Gemini
+User-agent: Google-Extended
+Allow: /
+
+# Apple
+User-agent: Applebot
+Allow: /
+
+# Block admin pages from indexing
+Disallow: /admin/
+Disallow: /admin/*
+
+# Sitemap location
+Sitemap: https://neferkalihealing.org/sitemap.xml
