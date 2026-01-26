@@ -133,7 +133,7 @@ async function sendConfirmationEmail(order: any, orderItems: any[]) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Nefer Kali Healing <onboarding@resend.dev>',
+        from: 'Nefer Kali Healing <info@neferkalihealing.org>',
         to: order.customer_email,
         subject: `Order Confirmed: ${order.order_number} | Nefer Kali Healing`,
         html: emailHTML,
@@ -154,19 +154,43 @@ async function sendConfirmationEmail(order: any, orderItems: any[]) {
 serve(async (req) => {
   const signature = req.headers.get('stripe-signature');
 
+  // Log incoming request for debugging
+  console.log('Webhook received, signature present:', !!signature);
+  console.log('Webhook secret configured:', !!webhookSecret);
+
   if (!signature) {
+    console.error('No stripe-signature header found');
     return new Response('No signature', { status: 400 });
+  }
+
+  if (!webhookSecret) {
+    console.error('STRIPE_WEBHOOK_SECRET is not configured');
+    return new Response('Webhook secret not configured', { status: 500 });
   }
 
   try {
     const body = await req.text();
-    const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    console.log('Request body length:', body.length);
 
-    console.log('Webhook event:', event.type);
+    let event;
+    try {
+      // Use constructEventAsync for Deno (SubtleCrypto requires async)
+      event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
+    } catch (verifyError: any) {
+      console.error('Signature verification failed:', verifyError.message);
+      return new Response(
+        JSON.stringify({ error: 'Signature verification failed: ' + verifyError.message }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Webhook event verified successfully:', event.type);
 
     switch (event.type) {
       case 'checkout.session.completed':
+        console.log('Processing checkout.session.completed...');
         await handleCheckoutComplete(event.data.object as Stripe.Checkout.Session);
+        console.log('checkout.session.completed processed successfully');
         break;
 
       case 'invoice.payment_succeeded':
@@ -180,6 +204,9 @@ serve(async (req) => {
       case 'customer.subscription.deleted':
         await handleSubscriptionCancelled(event.data.object as Stripe.Subscription);
         break;
+
+      default:
+        console.log('Unhandled event type:', event.type);
     }
 
     return new Response(JSON.stringify({ received: true }), {
@@ -188,10 +215,11 @@ serve(async (req) => {
     });
 
   } catch (error: any) {
-    console.error('Webhook error:', error);
+    console.error('Webhook error:', error.message);
+    console.error('Error stack:', error.stack);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { status: 400 }
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
     );
   }
 });
@@ -274,14 +302,19 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     console.error('Error creating order items:', itemsError);
   }
 
-  // Update product inventory
+  // Update product inventory (optional - may not be implemented yet)
   for (const item of orderItems) {
     if (item.product_id) {
-      await supabase.rpc('decrement_inventory', {
-        p_product_id: item.product_id,
-        p_variant_id: item.variant_id,
-        p_quantity: item.quantity,
-      });
+      try {
+        await supabase.rpc('decrement_inventory', {
+          p_product_id: item.product_id,
+          p_variant_id: item.variant_id,
+          p_quantity: item.quantity,
+        });
+      } catch (inventoryError) {
+        // Inventory tracking not implemented yet - continue without failing
+        console.log('Inventory update skipped (function may not exist):', inventoryError);
+      }
     }
   }
 

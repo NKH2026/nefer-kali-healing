@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle, Package, Truck, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { useCart } from '../components/cart';
+import { supabase } from '../lib/supabase';
 
 interface OrderDetails {
     orderNumber: string;
@@ -28,37 +29,92 @@ const OrderConfirmation: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [order, setOrder] = useState<OrderDetails | null>(null);
+    const cartCleared = useRef(false);
 
     const sessionId = searchParams.get('session_id');
 
     useEffect(() => {
-        // Clear cart on successful order
-        clearCart();
+        // Clear cart only once on mount
+        if (!cartCleared.current) {
+            clearCart();
+            cartCleared.current = true;
+        }
 
-        // In a real implementation, fetch order details from the session_id
-        // For now, show a generic success message
-        const timer = setTimeout(() => {
-            setLoading(false);
-            // Mock order data - in production, fetch from API
-            setOrder({
-                orderNumber: 'NKH-26-00001',
-                customerEmail: 'customer@example.com',
-                customerName: 'Valued Customer',
-                total: 45.99,
-                items: [
-                    { title: 'Sample Product', quantity: 1, price: 39.00 }
-                ],
-                shippingAddress: {
-                    line1: '123 Main St',
-                    city: 'Indianapolis',
-                    state: 'IN',
-                    postalCode: '46205',
+        // Fetch order from database
+        const fetchOrder = async () => {
+            if (!sessionId) {
+                setError('No session ID provided');
+                setLoading(false);
+                return;
+            }
+
+            // Poll for order (webhook may take a moment to create it)
+            let attempts = 0;
+            const maxAttempts = 10;
+            const pollInterval = 2000; // 2 seconds
+
+            const poll = async () => {
+                attempts++;
+
+                const { data: orderData, error: orderError } = await supabase
+                    .from('orders')
+                    .select('*')
+                    .eq('stripe_checkout_session_id', sessionId)
+                    .single();
+
+                if (orderData) {
+                    // Fetch order items
+                    const { data: itemsData } = await supabase
+                        .from('order_items')
+                        .select('*')
+                        .eq('order_id', orderData.id);
+
+                    setOrder({
+                        orderNumber: orderData.order_number,
+                        customerEmail: orderData.customer_email,
+                        customerName: orderData.customer_name,
+                        total: orderData.total,
+                        items: (itemsData || []).map((item: any) => ({
+                            title: item.product_title,
+                            quantity: item.quantity,
+                            price: item.unit_price
+                        })),
+                        shippingAddress: {
+                            line1: orderData.shipping_address_line1 || '',
+                            line2: orderData.shipping_address_line2,
+                            city: orderData.shipping_city || '',
+                            state: orderData.shipping_state || '',
+                            postalCode: orderData.shipping_postal_code || ''
+                        }
+                    });
+                    setLoading(false);
+                } else if (attempts < maxAttempts) {
+                    // Order not found yet, keep polling
+                    setTimeout(poll, pollInterval);
+                } else {
+                    // Max attempts reached, show generic success
+                    setOrder({
+                        orderNumber: 'Processing...',
+                        customerEmail: '',
+                        customerName: 'Valued Customer',
+                        total: 0,
+                        items: [],
+                        shippingAddress: {
+                            line1: '',
+                            city: '',
+                            state: '',
+                            postalCode: ''
+                        }
+                    });
+                    setLoading(false);
                 }
-            });
-        }, 1500);
+            };
 
-        return () => clearTimeout(timer);
-    }, [clearCart]);
+            poll();
+        };
+
+        fetchOrder();
+    }, [sessionId]); // Remove clearCart from dependencies
 
     if (loading) {
         return (
