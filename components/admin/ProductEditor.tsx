@@ -890,12 +890,17 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                         {trackInventory && (
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Quantity</label>
+                                    <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">
+                                        Quantity {hasVariants && variants.length > 0 && <span className="text-purple-400 normal-case">(auto-calculated from variants)</span>}
+                                    </label>
                                     <input
                                         type="number"
-                                        value={inventoryQuantity}
+                                        value={hasVariants && variants.length > 0
+                                            ? variants.reduce((sum, v) => sum + (parseInt(v.inventory) || 0), 0)
+                                            : inventoryQuantity}
                                         onChange={(e) => setInventoryQuantity(e.target.value)}
-                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
+                                        readOnly={hasVariants && variants.length > 0}
+                                        className={`w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist ${hasVariants && variants.length > 0 ? 'cursor-not-allowed opacity-70' : ''}`}
                                     />
                                 </div>
                                 <div>
