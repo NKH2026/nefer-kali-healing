@@ -4,6 +4,7 @@ import gsap from 'gsap';
 import { BookOpen, Search, ArrowRight, Calendar, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { subscribeToNewsletter } from '../lib/kit';
+import { supabase } from '../lib/supabase';
 
 const Wisdom: React.FC = () => {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -44,14 +45,12 @@ const Wisdom: React.FC = () => {
     useLayoutEffect(() => {
         const fetchPosts = async () => {
             try {
-                // We're selecting all fields. Note: Ensure your Supabase table has a 'category' column 
-                // or we'll default it to 'Wisdom' in the map below.
-                const { data, error } = await import('../lib/supabase').then(m => m.supabase
+                // Fetch published blog posts
+                const { data, error } = await supabase
                     .from('blog_posts')
                     .select('*')
                     .eq('published', true)
-                    .order('created_at', { ascending: false })
-                );
+                    .order('created_at', { ascending: false });
 
                 if (error) {
                     console.error('Error fetching posts:', error);
