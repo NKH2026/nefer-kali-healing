@@ -70,17 +70,6 @@ const Hero: React.FC = () => {
         },
         animation: gsap.timeline()
           .to(".hero-text", { opacity: 0, y: -50, stagger: 0.05 })
-          .to(".wedge", {
-            xPercent: (i) => {
-              const angles = [-150, -80, 0, 80, 150];
-              return angles[i] || 0;
-            },
-            yPercent: (i) => [100, -80, -150, -80, 100][i] || 0,
-            rotation: (i) => (i - 2) * 45,
-            scale: 0.8,
-            opacity: 0.8,
-            stagger: 0.05
-          }, 0)
           .to(sunRef.current, {
             scale: 0.08,
             x: "-42vw",
@@ -172,17 +161,7 @@ const Hero: React.FC = () => {
             style={{ backgroundImage: `radial-gradient(ellipse at center, transparent 30%, #121212 90%), linear-gradient(to top, #121212, transparent 50%)` }} />
         </div>
 
-        {/* Wedges (Fracturing Sun) */}
-        {DESTINY_PATHS.map((path) => (
-          <div
-            key={path.id}
-            className="wedge absolute w-64 h-64 rounded-full border border-white/10 flex flex-col items-center justify-center bg-gradient-to-br from-[#D4AF37]/20 to-black/80 backdrop-blur-sm opacity-0"
-            style={{ pointerEvents: 'none' }}
-          >
-            <div className="text-[#D4AF37] mb-2">{ICONS[path.icon as keyof typeof ICONS]}</div>
-            <p className="text-[10px] uppercase tracking-widest text-white">{path.label}</p>
-          </div>
-        ))}
+
 
         {/* Hero Text */}
         <div className="relative z-30">
