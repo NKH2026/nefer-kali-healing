@@ -205,38 +205,38 @@ export default function CreosoteBushGuide() {
 
                     {/* Usage Instructions */}
                     <div className="grid md:grid-cols-2 gap-6">
-                        <div className="bg-gradient-to-br from-stone-900/50 to-amber-950/40 border border-amber-500/20 rounded-xl p-6">
-                            <h3 className="text-lg font-semibold text-amber-300 mb-4">💧 Internal Use</h3>
-                            <ul className="space-y-3 text-stone-200/80">
+                        <div className="bg-gradient-to-br from-stone-900/50 to-amber-950/40 border border-amber-500/20 rounded-xl p-4 sm:p-6">
+                            <h3 className="text-base sm:text-lg font-semibold text-amber-300 mb-4">💧 Internal Use</h3>
+                            <ul className="space-y-3 text-stone-200/80 text-sm sm:text-base">
                                 <li className="flex items-start gap-2">
-                                    <span className="text-amber-400">•</span>
-                                    Add <span className="text-amber-300 font-semibold">10 to 30 drops</span> to a glass of water or juice
+                                    <span className="text-amber-400 flex-shrink-0">•</span>
+                                    <span>Add <span className="text-amber-300 font-semibold whitespace-nowrap">10 to 30 drops</span> to a glass of water or juice</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-amber-400">•</span>
-                                    Drink the mixture
+                                    <span className="text-amber-400 flex-shrink-0">•</span>
+                                    <span>Drink the mixture</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-amber-400">•</span>
-                                    Can be taken <span className="text-amber-300 font-semibold">1-3 times per day</span>
+                                    <span className="text-amber-400 flex-shrink-0">•</span>
+                                    <span>Can be taken <span className="text-amber-300 font-semibold whitespace-nowrap">1-3 times per day</span></span>
                                 </li>
                             </ul>
                         </div>
 
-                        <div className="bg-gradient-to-br from-stone-900/50 to-yellow-950/40 border border-yellow-500/20 rounded-xl p-6">
-                            <h3 className="text-lg font-semibold text-yellow-300 mb-4">🌿 External Use</h3>
-                            <ul className="space-y-3 text-stone-200/80">
+                        <div className="bg-gradient-to-br from-stone-900/50 to-yellow-950/40 border border-yellow-500/20 rounded-xl p-4 sm:p-6">
+                            <h3 className="text-base sm:text-lg font-semibold text-yellow-300 mb-4">🌿 External Use</h3>
+                            <ul className="space-y-3 text-stone-200/80 text-sm sm:text-base">
                                 <li className="flex items-start gap-2">
-                                    <span className="text-yellow-400">•</span>
-                                    Dilute <span className="text-yellow-300 font-semibold">3 to 10 drops</span> with carrier oil
+                                    <span className="text-yellow-400 flex-shrink-0">•</span>
+                                    <span>Dilute <span className="text-yellow-300 font-semibold whitespace-nowrap">3 to 10 drops</span> with carrier oil</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-yellow-400">•</span>
-                                    Use coconut or almond oil
+                                    <span className="text-yellow-400 flex-shrink-0">•</span>
+                                    <span>Use coconut or almond oil</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-yellow-400">•</span>
-                                    Apply to <span className="text-yellow-300 font-semibold">affected area</span>
+                                    <span className="text-yellow-400 flex-shrink-0">•</span>
+                                    <span>Apply to <span className="text-yellow-300 font-semibold">affected area</span></span>
                                 </li>
                             </ul>
                         </div>

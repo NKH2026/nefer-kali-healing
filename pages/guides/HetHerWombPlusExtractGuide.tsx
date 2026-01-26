@@ -236,32 +236,32 @@ export default function HetHerWombPlusExtractGuide() {
 
                     {/* Dosage Instructions */}
                     <div className="mt-12 grid md:grid-cols-2 gap-6">
-                        <div className="bg-gradient-to-br from-emerald-900/30 to-emerald-950/40 border border-emerald-500/20 rounded-xl p-6">
-                            <h3 className="text-lg font-semibold text-emerald-300 mb-4">💧 Suggested Use</h3>
-                            <ul className="space-y-3 text-emerald-100/80">
+                        <div className="bg-gradient-to-br from-emerald-900/30 to-emerald-950/40 border border-emerald-500/20 rounded-xl p-4 sm:p-6">
+                            <h3 className="text-base sm:text-lg font-semibold text-emerald-300 mb-4">💧 Suggested Use</h3>
+                            <ul className="space-y-3 text-emerald-100/80 text-sm sm:text-base">
                                 <li className="flex items-start gap-2">
-                                    <span className="text-emerald-400">•</span>
-                                    <span className="text-emerald-300 font-semibold">Shake well</span> before use
+                                    <span className="text-emerald-400 flex-shrink-0">•</span>
+                                    <span><span className="text-emerald-300 font-semibold">Shake well</span> before use</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-emerald-400">•</span>
-                                    Take <span className="text-emerald-300 font-semibold">0.5 - 2 mL daily</span>
+                                    <span className="text-emerald-400 flex-shrink-0">•</span>
+                                    <span>Take <span className="text-emerald-300 font-semibold whitespace-nowrap">0.5 - 2 mL</span> daily</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-emerald-400">•</span>
-                                    Under the tongue or in room temperature drink
+                                    <span className="text-emerald-400 flex-shrink-0">•</span>
+                                    <span>Under the tongue or in room temperature drink</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-amber-400">⚠️</span>
-                                    Should <span className="text-amber-300 font-semibold">NOT take longer than 2 weeks</span> at a time
+                                    <span className="text-amber-400 flex-shrink-0">⚠️</span>
+                                    <span>Should <span className="text-amber-300 font-semibold">NOT</span> take longer than <span className="text-amber-300 font-semibold whitespace-nowrap">2 weeks</span> at a time</span>
                                 </li>
                             </ul>
                         </div>
 
-                        <div className="bg-gradient-to-br from-pink-900/30 to-pink-950/40 border border-pink-500/20 rounded-xl p-6">
-                            <h3 className="text-lg font-semibold text-pink-300 mb-4">🌸 30-Day Detox Option</h3>
-                            <p className="text-pink-100/80">
-                                Can be taken for <span className="text-pink-300 font-semibold">30 days consecutively</span> for
+                        <div className="bg-gradient-to-br from-pink-900/30 to-pink-950/40 border border-pink-500/20 rounded-xl p-4 sm:p-6">
+                            <h3 className="text-base sm:text-lg font-semibold text-pink-300 mb-4">🌸 30-Day Detox Option</h3>
+                            <p className="text-pink-100/80 text-sm sm:text-base">
+                                Can be taken for <span className="text-pink-300 font-semibold whitespace-nowrap">30 days consecutively</span> for
                                 one month <span className="text-pink-300 font-semibold">only</span> if doing a womb detox.
                             </p>
                             <p className="text-pink-200/60 text-sm mt-3 italic">

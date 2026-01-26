@@ -177,32 +177,32 @@ export default function StJohnsBushTeaGuide() {
 
                     {/* Brewing Instructions */}
                     <div className="mt-12 grid md:grid-cols-2 gap-6">
-                        <div className="bg-gradient-to-br from-red-900/30 to-red-950/40 border border-red-500/20 rounded-xl p-6">
-                            <h3 className="text-lg font-semibold text-red-300 mb-4">☕ Brewing Instructions</h3>
-                            <ul className="space-y-3 text-red-100/80">
+                        <div className="bg-gradient-to-br from-red-900/30 to-red-950/40 border border-red-500/20 rounded-xl p-4 sm:p-6">
+                            <h3 className="text-base sm:text-lg font-semibold text-red-300 mb-4">☕ Brewing Instructions</h3>
+                            <ul className="space-y-3 text-red-100/80 text-sm sm:text-base">
                                 <li className="flex items-start gap-2">
-                                    <span className="text-red-400">1.</span>
-                                    Use <span className="text-red-300 font-semibold">2 tablespoons</span> of the herb
+                                    <span className="text-red-400 flex-shrink-0">1.</span>
+                                    <span>Use <span className="text-red-300 font-semibold whitespace-nowrap">2 tablespoons</span> of the herb</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-red-400">2.</span>
-                                    Steep in <span className="text-red-300 font-semibold">1-2 cups</span> of boiling water
+                                    <span className="text-red-400 flex-shrink-0">2.</span>
+                                    <span>Steep in <span className="text-red-300 font-semibold whitespace-nowrap">1-2 cups</span> of boiling water</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-red-400">3.</span>
-                                    Simmer for <span className="text-red-300 font-semibold">15-20 minutes</span>
+                                    <span className="text-red-400 flex-shrink-0">3.</span>
+                                    <span>Simmer for <span className="text-red-300 font-semibold whitespace-nowrap">15-20 minutes</span></span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-red-400">4.</span>
-                                    Strain and enhance with Agave or lemon
+                                    <span className="text-red-400 flex-shrink-0">4.</span>
+                                    <span>Strain and enhance with Agave or lemon</span>
                                 </li>
                             </ul>
                         </div>
 
-                        <div className="bg-gradient-to-br from-rose-900/30 to-rose-950/40 border border-rose-500/20 rounded-xl p-6">
-                            <h3 className="text-lg font-semibold text-rose-300 mb-4">⚠️ Important Note</h3>
-                            <p className="text-rose-100/80">
-                                <span className="text-rose-300 font-semibold">Take no longer than 2 weeks at a time.</span>
+                        <div className="bg-gradient-to-br from-rose-900/30 to-rose-950/40 border border-rose-500/20 rounded-xl p-4 sm:p-6">
+                            <h3 className="text-base sm:text-lg font-semibold text-rose-300 mb-4">⚠️ Important Note</h3>
+                            <p className="text-rose-100/80 text-sm sm:text-base">
+                                <span className="text-rose-300 font-semibold">Take no longer than <span className="whitespace-nowrap">2 weeks</span> at a time.</span>
                             </p>
                             <p className="text-rose-200/60 text-sm mt-3">
                                 This tea can also be taken when noticing an onset of pre-menopause and menopause signs and symptoms.

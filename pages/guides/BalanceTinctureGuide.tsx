@@ -248,31 +248,31 @@ export default function BalanceTinctureGuide() {
 
                     {/* Dosage Instructions */}
                     <div className="mt-12 grid md:grid-cols-2 gap-6">
-                        <div className="bg-gradient-to-br from-blue-900/30 to-blue-950/40 border border-blue-500/20 rounded-xl p-6">
-                            <h3 className="text-lg font-semibold text-blue-300 mb-4">💧 Suggested Use</h3>
-                            <ul className="space-y-3 text-blue-100/80">
+                        <div className="bg-gradient-to-br from-blue-900/30 to-blue-950/40 border border-blue-500/20 rounded-xl p-4 sm:p-6">
+                            <h3 className="text-base sm:text-lg font-semibold text-blue-300 mb-4">💧 Suggested Use</h3>
+                            <ul className="space-y-3 text-blue-100/80 text-sm sm:text-base">
                                 <li className="flex items-start gap-2">
-                                    <span className="text-blue-400">•</span>
-                                    <span className="text-blue-300 font-semibold">Shake well</span> before use
+                                    <span className="text-blue-400 flex-shrink-0">•</span>
+                                    <span><span className="text-blue-300 font-semibold">Shake well</span> before use</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-blue-400">•</span>
-                                    Take <span className="text-blue-300 font-semibold">0.5 - 2 mL daily</span>
+                                    <span className="text-blue-400 flex-shrink-0">•</span>
+                                    <span>Take <span className="text-blue-300 font-semibold whitespace-nowrap">0.5 - 2 mL</span> daily</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-blue-400">•</span>
-                                    Under the tongue or in room temperature drink
+                                    <span className="text-blue-400 flex-shrink-0">•</span>
+                                    <span>Under the tongue or in room temperature drink</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-yellow-400">⚠️</span>
-                                    Should <span className="text-yellow-300 font-semibold">NOT take longer than 2 weeks</span> at a time
+                                    <span className="text-yellow-400 flex-shrink-0">⚠️</span>
+                                    <span>Should <span className="text-yellow-300 font-semibold">NOT</span> take longer than <span className="text-yellow-300 font-semibold whitespace-nowrap">2 weeks</span> at a time</span>
                                 </li>
                             </ul>
                         </div>
 
-                        <div className="bg-gradient-to-br from-yellow-900/30 to-amber-950/40 border border-yellow-500/20 rounded-xl p-6">
-                            <h3 className="text-lg font-semibold text-yellow-300 mb-4">☮️ Important Notes</h3>
-                            <p className="text-yellow-100/80">
+                        <div className="bg-gradient-to-br from-yellow-900/30 to-amber-950/40 border border-yellow-500/20 rounded-xl p-4 sm:p-6">
+                            <h3 className="text-base sm:text-lg font-semibold text-yellow-300 mb-4">☮️ Important Notes</h3>
+                            <p className="text-yellow-100/80 text-sm sm:text-base">
                                 Extended use should be done <span className="text-yellow-300 font-semibold">only with practitioner guidance</span>.
                             </p>
                             <p className="text-yellow-200/60 text-sm mt-3 italic">

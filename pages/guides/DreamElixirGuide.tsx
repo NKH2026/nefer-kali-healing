@@ -216,50 +216,50 @@ export default function DreamElixirGuide() {
 
                     {/* Usage Instructions */}
                     <div className="grid md:grid-cols-2 gap-6">
-                        <div className="bg-gradient-to-br from-indigo-950/50 to-purple-950/40 border border-indigo-500/20 rounded-xl p-6">
-                            <h3 className="text-lg font-semibold text-indigo-300 mb-4">💧 Suggested Use</h3>
-                            <ul className="space-y-3 text-indigo-100/80">
+                        <div className="bg-gradient-to-br from-indigo-950/50 to-purple-950/40 border border-indigo-500/20 rounded-xl p-4 sm:p-6">
+                            <h3 className="text-base sm:text-lg font-semibold text-indigo-300 mb-4">💧 Suggested Use</h3>
+                            <ul className="space-y-3 text-indigo-100/80 text-sm sm:text-base">
                                 <li className="flex items-start gap-2">
-                                    <span className="text-indigo-400">•</span>
-                                    <span className="text-indigo-300 font-semibold">Shake well</span> before use
+                                    <span className="text-indigo-400 flex-shrink-0">•</span>
+                                    <span><span className="text-indigo-300 font-semibold">Shake well</span> before use</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-indigo-400">•</span>
-                                    Take <span className="text-indigo-300 font-semibold">11-22 drops</span>, 1 to 2 times daily
+                                    <span className="text-indigo-400 flex-shrink-0">•</span>
+                                    <span>Take <span className="text-indigo-300 font-semibold whitespace-nowrap">11-22 drops</span>, 1 to 2 times daily</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-indigo-400">•</span>
-                                    Can gradually increase as you see fit
+                                    <span className="text-indigo-400 flex-shrink-0">•</span>
+                                    <span>Can gradually increase as you see fit</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-indigo-400">•</span>
-                                    Under the tongue or in room temperature drink
+                                    <span className="text-indigo-400 flex-shrink-0">•</span>
+                                    <span>Under the tongue or in room temperature drink</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-purple-400">🌙</span>
-                                    Best taken <span className="text-purple-300 font-semibold">2-6 hours before bed</span>
+                                    <span className="text-purple-400 flex-shrink-0">🌙</span>
+                                    <span>Best taken <span className="text-purple-300 font-semibold whitespace-nowrap">2-6 hours</span> before bed</span>
                                 </li>
                             </ul>
                         </div>
 
-                        <div className="bg-gradient-to-br from-purple-950/50 to-blue-950/40 border border-purple-500/20 rounded-xl p-6">
-                            <h3 className="text-lg font-semibold text-purple-300 mb-4">✨ Ritual Enhancement</h3>
-                            <ul className="space-y-3 text-purple-100/80">
+                        <div className="bg-gradient-to-br from-purple-950/50 to-blue-950/40 border border-purple-500/20 rounded-xl p-4 sm:p-6">
+                            <h3 className="text-base sm:text-lg font-semibold text-purple-300 mb-4">✨ Ritual Enhancement</h3>
+                            <ul className="space-y-3 text-purple-100/80 text-sm sm:text-base">
                                 <li className="flex items-start gap-2">
-                                    <span className="text-purple-400">🌑</span>
-                                    Take during <span className="text-purple-300 font-semibold">new moon</span> leading up to full moon
+                                    <span className="text-purple-400 flex-shrink-0">🌑</span>
+                                    <span>Take during <span className="text-purple-300 font-semibold">new moon</span> leading up to full moon</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-purple-400">🕯️</span>
-                                    Light <span className="text-blue-300 font-semibold">ocean blue candles</span>, honoring Auset
+                                    <span className="text-purple-400 flex-shrink-0">🕯️</span>
+                                    <span>Light <span className="text-blue-300 font-semibold">ocean blue candles</span>, honoring Auset</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-purple-400">🙏🏾</span>
-                                    Set your intention before taking
+                                    <span className="text-purple-400 flex-shrink-0">🙏🏾</span>
+                                    <span>Set your intention before taking</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-purple-400">💎</span>
-                                    Place <span className="text-indigo-300 font-semibold">moonstone</span> or <span className="text-violet-300 font-semibold">amethyst</span> nearby during use
+                                    <span className="text-purple-400 flex-shrink-0">💎</span>
+                                    <span>Place <span className="text-indigo-300 font-semibold">moonstone</span> or <span className="text-violet-300 font-semibold">amethyst</span> nearby during use</span>
                                 </li>
                             </ul>
                         </div>

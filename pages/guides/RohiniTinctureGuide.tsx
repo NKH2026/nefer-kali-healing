@@ -281,27 +281,27 @@ export default function RohiniTinctureGuide() {
 
                     {/* Dosage Instructions */}
                     <div className="mt-12 grid md:grid-cols-2 gap-6">
-                        <div className="bg-gradient-to-br from-pink-900/30 to-pink-950/40 border border-pink-500/20 rounded-xl p-6">
-                            <h3 className="text-lg font-semibold text-pink-300 mb-4">💧 Suggested Use</h3>
-                            <ul className="space-y-3 text-pink-100/80">
+                        <div className="bg-gradient-to-br from-pink-900/30 to-pink-950/40 border border-pink-500/20 rounded-xl p-4 sm:p-6">
+                            <h3 className="text-base sm:text-lg font-semibold text-pink-300 mb-4">💧 Suggested Use</h3>
+                            <ul className="space-y-3 text-pink-100/80 text-sm sm:text-base">
                                 <li className="flex items-start gap-2">
-                                    <span className="text-pink-400">•</span>
-                                    <span className="text-pink-300 font-semibold">Shake well</span> before use
+                                    <span className="text-pink-400 flex-shrink-0">•</span>
+                                    <span><span className="text-pink-300 font-semibold">Shake well</span> before use</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-pink-400">•</span>
-                                    Take <span className="text-pink-300 font-semibold">0.5 - 1 mL daily</span>
+                                    <span className="text-pink-400 flex-shrink-0">•</span>
+                                    <span>Take <span className="text-pink-300 font-semibold whitespace-nowrap">0.5 - 1 mL</span> daily</span>
                                 </li>
                                 <li className="flex items-start gap-2">
-                                    <span className="text-pink-400">•</span>
-                                    Under the tongue or in room temperature drink
+                                    <span className="text-pink-400 flex-shrink-0">•</span>
+                                    <span>Under the tongue or in room temperature drink</span>
                                 </li>
                             </ul>
                         </div>
 
-                        <div className="bg-gradient-to-br from-amber-900/30 to-amber-950/40 border border-amber-400/20 rounded-xl p-6">
-                            <h3 className="text-lg font-semibold text-amber-300 mb-4">🐄 Best During Follicular Phase</h3>
-                            <p className="text-amber-100/80">
+                        <div className="bg-gradient-to-br from-amber-900/30 to-amber-950/40 border border-amber-400/20 rounded-xl p-4 sm:p-6">
+                            <h3 className="text-base sm:text-lg font-semibold text-amber-300 mb-4">🐄 Best During Follicular Phase</h3>
+                            <p className="text-amber-100/80 text-sm sm:text-base">
                                 This herbal tincture is best taken during the <span className="text-amber-300 font-semibold">follicular phase</span> —
                                 from Day 3 of menstruation until a few days before ovulation.
                             </p>
