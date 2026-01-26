@@ -49,7 +49,7 @@ const Section: React.FC<SectionProps> = ({ id, path, content, href }) => {
     <section
       id={id}
       ref={containerRef}
-      className={`min-h-screen py-32 px-8 flex flex-col items-center justify-center bg-gradient-to-b ${path.color} border-t border-white/5`}
+      className={`min-h-screen py-32 px-4 sm:px-8 flex flex-col items-center justify-center bg-gradient-to-b ${path.color} border-t border-white/5 overflow-hidden`}
     >
       <div className="max-w-4xl w-full flex flex-col items-center text-center">
         {/* Header Cluster */}

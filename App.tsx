@@ -83,11 +83,11 @@ const App: React.FC = () => {
     <CartProvider>
       <Router>
         <ScrollToTop />
-        <div className="relative bg-[#0a0a0a] text-white">
+        <div className="relative bg-[#0a0a0a] text-white overflow-x-hidden">
           <Navbar />
           <CartDrawer />
 
-          <main>
+          <main className="overflow-x-hidden">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
