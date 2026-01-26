@@ -4,27 +4,54 @@ import RohiniCycleChart from '../../components/guides/RohiniCycleChart';
 import SEOHead from '../../components/SEOHead';
 import { getArticleSchema, getFAQSchema, getBreadcrumbSchema } from '../../lib/schema';
 
-// FAQ data for schema
+// Expanded FAQ data for schema - targeting fertility searches AND ingredient searches
 const rohiniTinctureFAQs = [
+    // Fertility-focused questions (what people actually search)
     {
-        question: 'What is Rohini Tincture?',
-        answer: 'Rohini Tincture is a sacred herbal formula named after the brightest star in Taurus constellation, containing Shatavari, Wild Yam, Ashwagandha, Holy Basil, Milk Thistle, and other fertility-supporting herbs. It supports the follicular phase of the menstrual cycle.'
+        question: 'What are natural ways to increase fertility?',
+        answer: 'Natural ways to increase fertility include taking fertility-supporting herbs like Shatavari, Vitex (Chasteberry), Dong Quai, Wild Yam, and Red Clover. These herbs support hormonal balance, egg quality, and healthy ovulation. Rohini Tincture combines 12 fertility-supporting herbs in one formula designed for the follicular phase of the menstrual cycle.'
     },
     {
-        question: 'What are the benefits of Rohini Tincture?',
-        answer: 'Benefits include hormonal balance through FSH and LH regulation, egg quality support, fertility enhancement, liver detoxification for hormone metabolism, and stress relief through adaptogens.'
+        question: 'What herbs help with fertility and getting pregnant?',
+        answer: 'Herbs that help with fertility include Shatavari (the "Queen of Herbs" for women), Vitex for hormone regulation, Dong Quai ("Female Ginseng"), Wild Yam for progesterone support, Red Clover for uterine health, and Ashwagandha for stress reduction. Rohini Tincture contains all of these plus Milk Thistle, Dandelion Root, Burdock Root, Schisandra Berry, Nettle Leaf, and Holy Basil.'
     },
     {
-        question: 'When should you take Rohini Tincture?',
-        answer: 'Take from the beginning of menstruation (Day 3) up until a few days before ovulation. This is during the follicular phase when eggs are developing.'
+        question: 'How can I improve my egg quality naturally?',
+        answer: 'You can improve egg quality naturally with herbs like Shatavari, Ashwagandha, and Dong Quai which support reproductive health. Liver-supporting herbs like Milk Thistle, Dandelion Root, and Burdock Root help detoxify excess hormones. Taking these during the follicular phase (Day 3 to ovulation) supports healthy egg development. Rohini Tincture combines all these herbs specifically for egg quality support.'
+    },
+    // Ingredient-specific questions (so people searching these find Rohini)
+    {
+        question: 'What is Shatavari good for?',
+        answer: 'Shatavari is called the "Queen of Herbs" for women and supports female reproductive health, hormonal balance, and fertility. It helps regulate FSH and LH levels, supports healthy ovulation, and nourishes the uterus. Shatavari is a key ingredient in Rohini Tincture for follicular phase support.'
     },
     {
-        question: 'How do you take Rohini Tincture?',
-        answer: 'Shake well before use. Take 0.5-1 mL daily, either under the tongue or in a room temperature drink.'
+        question: 'What does Vitex (Chasteberry) do for fertility?',
+        answer: 'Vitex (Chasteberry) helps regulate hormones by supporting the pituitary gland, which controls FSH and LH. It can help lengthen the luteal phase, support healthy progesterone levels, and promote regular ovulation. Vitex is included in Rohini Tincture along with other fertility-supporting herbs.'
+    },
+    {
+        question: 'What is Dong Quai used for?',
+        answer: 'Dong Quai is known as "Female Ginseng" and has been used for centuries to support menstrual health, fertility, and hormonal balance. It promotes healthy blood flow to the reproductive organs and supports egg quality. Dong Quai is one of the 12 herbs in Rohini Tincture.'
+    },
+    {
+        question: 'How does Wild Yam support fertility?',
+        answer: 'Wild Yam contains natural compounds that support hormone balance and progesterone production. It has been traditionally used to support fertility, ease menstrual discomfort, and nourish the reproductive system. Wild Yam is included in Rohini Tincture for follicular phase support.'
+    },
+    {
+        question: 'What are the benefits of Red Clover for fertility?',
+        answer: 'Red Clover is rich in isoflavones and supports uterine health, healthy blood flow to the reproductive organs, and hormonal balance. It has been traditionally used to support fertility and prepare the body for conception. Red Clover is one of the herbs in Rohini Tincture.'
+    },
+    // Original product questions
+    {
+        question: 'What is Rohini Tincture and what does it contain?',
+        answer: 'Rohini Tincture is a sacred herbal formula containing 12 fertility-supporting herbs: Shatavari, Wild Yam, Ashwagandha, Holy Basil, Milk Thistle, Dandelion Root, Burdock Root, Red Clover, Dong Quai, Vitex, Schisandra Berry, and Nettle Leaf. It is named after the brightest star in Taurus and is designed for the follicular phase.'
+    },
+    {
+        question: 'When should I take Rohini Tincture in my cycle?',
+        answer: 'Take Rohini Tincture from Day 3 of menstruation until a few days before ovulation. This is during the follicular phase when eggs are developing. Take 0.5-1 mL daily under the tongue or in room temperature water.'
     },
     {
         question: 'What is the difference between Rohini and Balance Tinctures?',
-        answer: 'Rohini is for the follicular phase (menstruation to ovulation) to support egg development. Balance Tincture is for the luteal phase (after ovulation to menstruation) to support hormone balance.'
+        answer: 'Rohini Tincture is for the follicular phase (menstruation to ovulation) and supports egg development, estrogen balance, and fertility. Balance Tincture is for the luteal phase (after ovulation to menstruation) and supports progesterone and hormone balance. Using both together provides complete cycle support.'
     }
 ];
 
@@ -32,15 +59,32 @@ export default function RohiniTinctureGuide() {
     return (
         <>
             <SEOHead
-                title="Rohini Tincture Guide - Fertility & Follicular Phase Support"
-                description="Sacred herbal formula for the follicular phase with Shatavari, Wild Yam, and fertility-supporting herbs. Learn how to use Rohini Tincture for egg quality and hormonal balance."
-                keywords={['Rohini Tincture', 'fertility herbs', 'follicular phase support', 'Shatavari', 'egg quality herbs', 'menstrual cycle support']}
+                title="Rohini Tincture - Natural Fertility Herbs with Shatavari, Vitex & Dong Quai"
+                description="Natural fertility support with 12 herbs including Shatavari, Vitex, Dong Quai, Wild Yam, Red Clover, and Ashwagandha. Supports egg quality, hormonal balance, and the follicular phase. Shop Rohini Tincture."
+                keywords={[
+                    'natural fertility herbs',
+                    'increase fertility naturally',
+                    'Shatavari fertility',
+                    'Vitex Chasteberry fertility',
+                    'Dong Quai fertility',
+                    'Wild Yam fertility',
+                    'Red Clover fertility',
+                    'egg quality herbs',
+                    'follicular phase support',
+                    'Rohini Tincture',
+                    'fertility tincture',
+                    'herbs to get pregnant',
+                    'natural conception support',
+                    'Ashwagandha fertility',
+                    'Milk Thistle hormones',
+                    'Nettle Leaf fertility'
+                ]}
                 url="/guides/rohini-tincture"
                 schema={[
                     getArticleSchema({
-                        title: 'Rohini Tincture Guide',
+                        title: 'Natural Fertility Herbs - Rohini Tincture with Shatavari, Vitex & Dong Quai',
                         slug: 'rohini-tincture',
-                        description: 'Sacred herbal formula for fertility and follicular phase support.',
+                        description: 'Sacred herbal formula with 12 fertility-supporting herbs for natural conception support and egg quality.',
                         publishDate: '2024-01-01',
                         modifiedDate: '2025-01-01'
                     }),
@@ -48,10 +92,11 @@ export default function RohiniTinctureGuide() {
                     getBreadcrumbSchema([
                         { name: 'Home', url: '/' },
                         { name: 'Healing Guides', url: '/healing-guides' },
-                        { name: 'Rohini Tincture', url: '/guides/rohini-tincture' }
+                        { name: 'Rohini Tincture - Natural Fertility Herbs', url: '/guides/rohini-tincture' }
                     ])
                 ]}
             />
+
             <div className="min-h-screen bg-gradient-to-b from-[#1a0f1a] via-[#2d1f2a] to-[#1a1015]">
                 {/* Hero Section - Taurus/Rohini Theme: Cream, Pink, Constellation */}
                 <section className="relative py-20 px-4 overflow-hidden">
