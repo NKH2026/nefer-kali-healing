@@ -156,11 +156,15 @@ const Footer: React.FC = () => {
             © 2024 Nefer Kali Healing & Spiritual Education. All Rights Reserved.
           </p>
           <div className="flex gap-8">
-            {['Instagram', 'Youtube', 'Wisdom'].map(social => (
-              <a key={social} href="#" className="text-[9px] uppercase tracking-widest text-white/40 hover:text-[#D4AF37] transition-colors">
-                {social}
-              </a>
-            ))}
+            <a href="https://www.instagram.com/neferkalihealing/" target="_blank" rel="noopener noreferrer" className="text-[9px] uppercase tracking-widest text-white/40 hover:text-[#D4AF37] transition-colors">
+              Instagram
+            </a>
+            <a href="https://www.youtube.com/@neferkalihealing" target="_blank" rel="noopener noreferrer" className="text-[9px] uppercase tracking-widest text-white/40 hover:text-[#D4AF37] transition-colors">
+              Youtube
+            </a>
+            <a href="https://www.pinterest.com/NeferKaliHealing/" target="_blank" rel="noopener noreferrer" className="text-[9px] uppercase tracking-widest text-white/40 hover:text-[#D4AF37] transition-colors">
+              Pinterest
+            </a>
           </div>
         </div>
       </div>
