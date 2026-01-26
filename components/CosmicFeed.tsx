@@ -150,7 +150,7 @@ const CosmicFeed: React.FC<Props> = ({ id, path }) => {
     <section
       id={id}
       ref={containerRef}
-      className={`relative py-32 px-8 min-h-screen bg-black overflow-hidden bg-gradient-to-b ${path.color}`}
+      className={`relative py-16 sm:py-32 px-4 sm:px-8 min-h-screen bg-black overflow-hidden bg-gradient-to-b ${path.color}`}
     >
       {/* Background Constellation Lines */}
       <svg className="absolute inset-0 w-full h-full opacity-10 pointer-events-none">
@@ -166,21 +166,21 @@ const CosmicFeed: React.FC<Props> = ({ id, path }) => {
           <h2 className="text-5xl font-display">Nefer Kali Healing</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 perspective-1000 mb-32">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-16 md:gap-24 perspective-1000 mb-16 sm:mb-32">
           {blogs.map((blog) => (
             <Link
               key={blog.id}
               to={`/wisdom/${blog.slug}`}
-              className="blog-card group relative bg-[#121212]/80 border border-white/5 p-12 rounded-2xl cursor-pointer hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-shadow block"
+              className="blog-card group relative bg-[#121212]/80 border border-white/5 p-6 sm:p-12 rounded-2xl cursor-pointer hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-shadow block"
               style={{ transformStyle: 'preserve-3d' }}
             >
-              <span className="text-[10px] uppercase tracking-widest text-[#D4AF37] mb-6 block font-bold">
+              <span className="text-[10px] uppercase tracking-widest text-[#D4AF37] mb-4 sm:mb-6 block font-bold">
                 {blog.category}
               </span>
-              <h4 className="text-3xl font-display mb-6 group-hover:text-[#D4AF37] transition-colors">
+              <h4 className="text-xl sm:text-3xl font-display mb-4 sm:mb-6 group-hover:text-[#D4AF37] transition-colors">
                 {blog.title}
               </h4>
-              <p className="text-white/50 font-light text-lg mb-8 leading-relaxed line-clamp-3">
+              <p className="text-white/50 font-light text-sm sm:text-lg mb-6 sm:mb-8 leading-relaxed line-clamp-3">
                 {blog.excerpt}
               </p>
               <div className="flex items-center gap-4">
@@ -196,7 +196,7 @@ const CosmicFeed: React.FC<Props> = ({ id, path }) => {
           ))}
         </div>
 
-        <div className="flex justify-center mb-32">
+        <div className="flex justify-center mb-16 sm:mb-32">
           <Link
             to="/wisdom"
             className="px-12 py-5 border border-[#D4AF37]/30 text-[#D4AF37] text-[10px] uppercase font-bold tracking-[0.2em] rounded-full hover:bg-[#D4AF37] hover:text-black transition-all duration-300"
