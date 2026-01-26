@@ -6,6 +6,8 @@ import gsap from 'gsap';
 import CouponInput from '../components/CouponInput';
 import ReviewDisplay from '../components/reviews/ReviewDisplay';
 import { useCart } from '../components/cart';
+import SEOHead from '../components/SEOHead';
+import { getProductSchema, getBreadcrumbSchema } from '../lib/schema';
 
 interface ProductVariant {
     id: string;
@@ -271,342 +273,374 @@ const ProductDetail = () => {
     }
 
     return (
-        <div ref={containerRef} className="min-h-screen bg-[#0a0a0a] pt-32 pb-24">
-            <div className="max-w-7xl mx-auto px-8">
-                {/* Product Navigation */}
-                {(prevProduct || nextProduct) && (
-                    <div className="flex items-center justify-start gap-1 mb-8 font-urbanist">
-                        <button
-                            onClick={() => {
-                                if (prevProduct) {
-                                    navigate(`/offerings/${prevProduct.slug}`);
-                                    window.scrollTo(0, 0);
-                                }
-                            }}
-                            disabled={!prevProduct}
-                            className={`flex items-center gap-1 px-3 py-2 text-sm transition-colors ${prevProduct
-                                ? 'text-white/70 hover:text-[#D4AF37] cursor-pointer'
-                                : 'text-white/20 cursor-not-allowed'
-                                }`}
-                        >
-                            <ChevronLeft size={16} />
-                            <span>Previous</span>
-                        </button>
-                        <span className="text-white/30">|</span>
-                        <button
-                            onClick={() => {
-                                if (nextProduct) {
-                                    navigate(`/offerings/${nextProduct.slug}`);
-                                    window.scrollTo(0, 0);
-                                }
-                            }}
-                            disabled={!nextProduct}
-                            className={`flex items-center gap-1 px-3 py-2 text-sm transition-colors ${nextProduct
-                                ? 'text-white/70 hover:text-[#D4AF37] cursor-pointer'
-                                : 'text-white/20 cursor-not-allowed'
-                                }`}
-                        >
-                            <span>Next</span>
-                            <ChevronRight size={16} />
-                        </button>
-                    </div>
-                )}
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-                    {/* Product Image */}
-                    <div className="product-image">
-                        <div className="aspect-square rounded-2xl overflow-hidden bg-[#121212] shadow-2xl">
-                            <img
-                                src={product.featured_image_url || '/assets/blood_bush_tea.png'}
-                                alt={product.title}
-                                className="w-full h-full object-cover"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Product Info */}
-                    <div className="product-info">
-                        {/* Category */}
-                        <div className="text-[#D4AF37] text-xs uppercase tracking-[0.3em] mb-4 font-urbanist">
-                            {product.category}
-                        </div>
-
-                        {/* Title */}
-                        <h1 className="text-3xl md:text-5xl font-display text-white mb-6">
-                            {product.title}
-                        </h1>
-
-                        {/* Rating */}
-                        <div className="flex items-center gap-1 mb-6">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                                <Star
-                                    key={i}
-                                    size={16}
-                                    fill="#D4AF37"
-                                    className="text-[#D4AF37]"
-                                />
-                            ))}
-                            <span className="text-sm text-white/30 ml-2 font-urbanist">({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})</span>
-                        </div>
-
-                        {/* Price */}
-                        <div className="text-4xl font-medium text-[#D4AF37] mb-8">
-                            {getCurrentPrice()}
-                        </div>
-
-                        {/* Description */}
-                        {product.short_description && (
-                            <p className="text-white/60 font-light leading-relaxed mb-8 font-urbanist">
-                                {product.short_description}
-                            </p>
-                        )}
-
-                        {/* Variants - Dropdown Style */}
-                        {product.has_variants && variants.length > 0 && (
-                            <div className="mb-8 space-y-4">
-                                {/* Option 1 Dropdown (Size/Weight) */}
-                                {option1Values.length > 0 && (
-                                    <div>
-                                        <label className="block text-sm text-white/60 mb-2 font-urbanist">
-                                            Weight: {selectedOption1}
-                                        </label>
-                                        <select
-                                            value={selectedOption1}
-                                            onChange={(e) => {
-                                                const newOpt1 = e.target.value;
-                                                setSelectedOption1(newOpt1);
-                                                // Find matching variant
-                                                const match = variants.find(v =>
-                                                    v.option1 === newOpt1 &&
-                                                    (option2Values.length === 0 || v.option2 === selectedOption2)
-                                                );
-                                                if (match) setSelectedVariant(match);
-                                            }}
-                                            className="w-full bg-[#121212] border-2 border-white/20 rounded-lg px-4 py-3 text-white focus:border-[#D4AF37] focus:outline-none font-urbanist transition-all appearance-none cursor-pointer"
-                                            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
-                                        >
-                                            {option1Values.map((opt) => (
-                                                <option key={opt} value={opt}>{opt}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                )}
-
-                                {/* Option 2 Dropdown (Base) - Only show if there are option2 values */}
-                                {option2Values.length > 0 && (
-                                    <div>
-                                        <label className="block text-sm text-white/60 mb-2 font-urbanist">
-                                            Base: {selectedOption2}
-                                        </label>
-                                        <select
-                                            value={selectedOption2}
-                                            onChange={(e) => {
-                                                const newOpt2 = e.target.value;
-                                                setSelectedOption2(newOpt2);
-                                                // Find matching variant
-                                                const match = variants.find(v =>
-                                                    v.option1 === selectedOption1 && v.option2 === newOpt2
-                                                );
-                                                if (match) setSelectedVariant(match);
-                                            }}
-                                            className="w-full bg-[#121212] border-2 border-white/20 rounded-lg px-4 py-3 text-white focus:border-[#D4AF37] focus:outline-none font-urbanist transition-all appearance-none cursor-pointer"
-                                            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
-                                        >
-                                            {option2Values.map((opt) => (
-                                                <option key={opt} value={opt}>{opt}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                )}
-
-                                {/* Inventory Status */}
-                                {selectedVariant && (
-                                    <p className="text-sm text-white/40 font-urbanist">
-                                        {selectedVariant.inventory_quantity > 0
-                                            ? `${selectedVariant.inventory_quantity} in stock`
-                                            : 'Out of stock'}
-                                    </p>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Subscription Options */}
-                        {product.subscription_available && (
-                            <div className="mb-8">
-                                <label className="flex items-center gap-3 text-sm text-white/80 mb-4 font-urbanist cursor-pointer group">
-                                    <input
-                                        type="checkbox"
-                                        checked={isSubscription}
-                                        onChange={(e) => {
-                                            setIsSubscription(e.target.checked);
-                                            // Reset to first available frequency if enabling subscription
-                                            if (e.target.checked && product.subscription_frequency_options?.length > 0) {
-                                                setSubscriptionFrequency(product.subscription_frequency_options[0]);
-                                            }
-                                        }}
-                                        className="rounded border-white/20 bg-white/5 text-[#D4AF37] focus:ring-[#D4AF37] focus:ring-offset-0 w-5 h-5 transition-all"
-                                    />
-                                    <span className="group-hover:text-[#D4AF37] transition-colors">
-                                        Subscribe for Monthly Support
-                                        {product.subscription_discount_percent > 0 && (
-                                            <span className="ml-2 text-[#D4AF37] font-medium">
-                                                (Save {product.subscription_discount_percent}%)
-                                            </span>
-                                        )}
-                                    </span>
-                                </label>
-
-                                {isSubscription && product.subscription_frequency_options && product.subscription_frequency_options.length > 0 && (
-                                    <div className="ml-8 mt-4">
-                                        <label className="block text-xs text-white/60 uppercase tracking-wider mb-3 font-urbanist">
-                                            Delivery Frequency
-                                        </label>
-                                        <select
-                                            value={subscriptionFrequency}
-                                            onChange={(e) => setSubscriptionFrequency(e.target.value)}
-                                            className="w-full bg-white/5 border-2 border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-[#D4AF37] focus:outline-none font-urbanist transition-all"
-                                        >
-                                            {product.subscription_frequency_options.map((freq) => (
-                                                <option key={freq} value={freq}>
-                                                    {getFrequencyLabel(freq)}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Coupon Input */}
-                        <div className="mb-8">
-                            <CouponInput
-                                orderTotal={product.price || 0}
-                                productIds={[product.id]}
-                                onCouponApplied={(discountAmount) => setCouponDiscount(discountAmount)}
-                                onCouponRemoved={() => setCouponDiscount(0)}
-                            />
-                        </div>
-
-                        {/* Quantity Selector */}
-                        <div className="mb-8">
-                            <label className="block text-sm text-white/60 mb-3 font-urbanist">Quantity</label>
-                            <div className="flex items-center gap-4">
-                                <button
-                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    className="w-12 h-12 rounded-full border-2 border-white/20 flex items-center justify-center text-white hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors"
-                                >
-                                    <Minus size={18} />
-                                </button>
-                                <span className="text-2xl font-medium text-white w-12 text-center font-urbanist">{quantity}</span>
-                                <button
-                                    onClick={() => setQuantity(quantity + 1)}
-                                    className="w-12 h-12 rounded-full border-2 border-white/20 flex items-center justify-center text-white hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors"
-                                >
-                                    <Plus size={18} />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Add to Cart Button */}
-                        {product?.is_sold_out || (selectedVariant && selectedVariant.inventory_quantity === 0) ? (
-                            <div className="w-full py-4 bg-gray-700 text-white font-bold text-sm uppercase tracking-[0.2em] rounded-full text-center font-urbanist">
-                                Sold Out
-                            </div>
-                        ) : (
+        <>
+            <SEOHead
+                title={product.title}
+                description={product.short_description || product.description?.substring(0, 160) || `Shop ${product.title} - Natural herbal product from Nefer Kali Healing`}
+                keywords={[product.title, product.category || 'herbal product', 'natural remedy', 'holistic healing', 'herbal tincture']}
+                url={`/offerings/${slug}`}
+                image={product.featured_image_url}
+                type="product"
+                product={{
+                    price: selectedVariant?.price || product.price,
+                    currency: 'USD',
+                    availability: product.is_sold_out ? 'outofstock' : 'instock'
+                }}
+                schema={[
+                    getProductSchema({
+                        name: product.title,
+                        slug: slug || '',
+                        description: product.short_description || product.description || '',
+                        price: selectedVariant?.price || product.price || 0,
+                        image: product.featured_image_url,
+                        inStock: !product.is_sold_out,
+                        rating: 5,
+                        reviewCount: reviewCount
+                    }),
+                    getBreadcrumbSchema([
+                        { name: 'Home', url: '/' },
+                        { name: 'Natural Wellness Store', url: '/offerings' },
+                        { name: product.title, url: `/offerings/${slug}` }
+                    ])
+                ]}
+            />
+            <div ref={containerRef} className="min-h-screen bg-[#0a0a0a] pt-32 pb-24">
+                <div className="max-w-7xl mx-auto px-8">
+                    {/* Product Navigation */}
+                    {(prevProduct || nextProduct) && (
+                        <div className="flex items-center justify-start gap-1 mb-8 font-urbanist">
                             <button
-                                onClick={handleAddToCart}
-                                className="w-full py-4 bg-gradient-to-r from-[#D4AF37] to-[#8B7322] text-black font-bold text-sm uppercase tracking-[0.2em] rounded-full hover:shadow-2xl hover:shadow-[#D4AF37]/20 transition-all duration-300 flex items-center justify-center gap-3 font-urbanist"
+                                onClick={() => {
+                                    if (prevProduct) {
+                                        navigate(`/offerings/${prevProduct.slug}`);
+                                        window.scrollTo(0, 0);
+                                    }
+                                }}
+                                disabled={!prevProduct}
+                                className={`flex items-center gap-1 px-3 py-2 text-sm transition-colors ${prevProduct
+                                    ? 'text-white/70 hover:text-[#D4AF37] cursor-pointer'
+                                    : 'text-white/20 cursor-not-allowed'
+                                    }`}
                             >
-                                <ShoppingBag size={20} />
-                                {isSubscription ? 'Subscribe & Support' : 'Add to Cart'}
+                                <ChevronLeft size={16} />
+                                <span>Previous</span>
                             </button>
-                        )}
+                            <span className="text-white/30">|</span>
+                            <button
+                                onClick={() => {
+                                    if (nextProduct) {
+                                        navigate(`/offerings/${nextProduct.slug}`);
+                                        window.scrollTo(0, 0);
+                                    }
+                                }}
+                                disabled={!nextProduct}
+                                className={`flex items-center gap-1 px-3 py-2 text-sm transition-colors ${nextProduct
+                                    ? 'text-white/70 hover:text-[#D4AF37] cursor-pointer'
+                                    : 'text-white/20 cursor-not-allowed'
+                                    }`}
+                            >
+                                <span>Next</span>
+                                <ChevronRight size={16} />
+                            </button>
+                        </div>
+                    )}
 
-                        {/* Additional Info Tabs */}
-                        <div className="mt-12 space-y-4">
-                            {product.ingredients && (
-                                <details className="group">
-                                    <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
-                                        Ingredients
-                                    </summary>
-                                    <div
-                                        className="py-4 text-white/60 text-sm leading-relaxed font-urbanist prose prose-invert max-w-none"
-                                        dangerouslySetInnerHTML={{ __html: product.ingredients }}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+                        {/* Product Image */}
+                        <div className="product-image">
+                            <div className="aspect-square rounded-2xl overflow-hidden bg-[#121212] shadow-2xl">
+                                <img
+                                    src={product.featured_image_url || '/assets/blood_bush_tea.png'}
+                                    alt={product.title}
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Product Info */}
+                        <div className="product-info">
+                            {/* Category */}
+                            <div className="text-[#D4AF37] text-xs uppercase tracking-[0.3em] mb-4 font-urbanist">
+                                {product.category}
+                            </div>
+
+                            {/* Title */}
+                            <h1 className="text-3xl md:text-5xl font-display text-white mb-6">
+                                {product.title}
+                            </h1>
+
+                            {/* Rating */}
+                            <div className="flex items-center gap-1 mb-6">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                    <Star
+                                        key={i}
+                                        size={16}
+                                        fill="#D4AF37"
+                                        className="text-[#D4AF37]"
                                     />
-                                </details>
+                                ))}
+                                <span className="text-sm text-white/30 ml-2 font-urbanist">({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})</span>
+                            </div>
+
+                            {/* Price */}
+                            <div className="text-4xl font-medium text-[#D4AF37] mb-8">
+                                {getCurrentPrice()}
+                            </div>
+
+                            {/* Description */}
+                            {product.short_description && (
+                                <p className="text-white/60 font-light leading-relaxed mb-8 font-urbanist">
+                                    {product.short_description}
+                                </p>
                             )}
 
-                            {product.usage_instructions && (
-                                <details className="group">
-                                    <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
-                                        How to Use
-                                    </summary>
-                                    <div
-                                        className="py-4 text-white/60 text-sm leading-relaxed font-urbanist prose prose-invert max-w-none"
-                                        dangerouslySetInnerHTML={{ __html: product.usage_instructions }}
-                                    />
-                                </details>
+                            {/* Variants - Dropdown Style */}
+                            {product.has_variants && variants.length > 0 && (
+                                <div className="mb-8 space-y-4">
+                                    {/* Option 1 Dropdown (Size/Weight) */}
+                                    {option1Values.length > 0 && (
+                                        <div>
+                                            <label className="block text-sm text-white/60 mb-2 font-urbanist">
+                                                Weight: {selectedOption1}
+                                            </label>
+                                            <select
+                                                value={selectedOption1}
+                                                onChange={(e) => {
+                                                    const newOpt1 = e.target.value;
+                                                    setSelectedOption1(newOpt1);
+                                                    // Find matching variant
+                                                    const match = variants.find(v =>
+                                                        v.option1 === newOpt1 &&
+                                                        (option2Values.length === 0 || v.option2 === selectedOption2)
+                                                    );
+                                                    if (match) setSelectedVariant(match);
+                                                }}
+                                                className="w-full bg-[#121212] border-2 border-white/20 rounded-lg px-4 py-3 text-white focus:border-[#D4AF37] focus:outline-none font-urbanist transition-all appearance-none cursor-pointer"
+                                                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
+                                            >
+                                                {option1Values.map((opt) => (
+                                                    <option key={opt} value={opt}>{opt}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    {/* Option 2 Dropdown (Base) - Only show if there are option2 values */}
+                                    {option2Values.length > 0 && (
+                                        <div>
+                                            <label className="block text-sm text-white/60 mb-2 font-urbanist">
+                                                Base: {selectedOption2}
+                                            </label>
+                                            <select
+                                                value={selectedOption2}
+                                                onChange={(e) => {
+                                                    const newOpt2 = e.target.value;
+                                                    setSelectedOption2(newOpt2);
+                                                    // Find matching variant
+                                                    const match = variants.find(v =>
+                                                        v.option1 === selectedOption1 && v.option2 === newOpt2
+                                                    );
+                                                    if (match) setSelectedVariant(match);
+                                                }}
+                                                className="w-full bg-[#121212] border-2 border-white/20 rounded-lg px-4 py-3 text-white focus:border-[#D4AF37] focus:outline-none font-urbanist transition-all appearance-none cursor-pointer"
+                                                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
+                                            >
+                                                {option2Values.map((opt) => (
+                                                    <option key={opt} value={opt}>{opt}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    {/* Inventory Status */}
+                                    {selectedVariant && (
+                                        <p className="text-sm text-white/40 font-urbanist">
+                                            {selectedVariant.inventory_quantity > 0
+                                                ? `${selectedVariant.inventory_quantity} in stock`
+                                                : 'Out of stock'}
+                                        </p>
+                                    )}
+                                </div>
                             )}
 
-                            {product.benefits && (
-                                <details className="group">
-                                    <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
-                                        Benefits
-                                    </summary>
-                                    <div
-                                        className="py-4 text-white/60 text-sm leading-relaxed font-urbanist prose prose-invert max-w-none"
-                                        dangerouslySetInnerHTML={{ __html: product.benefits }}
-                                    />
-                                </details>
+                            {/* Subscription Options */}
+                            {product.subscription_available && (
+                                <div className="mb-8">
+                                    <label className="flex items-center gap-3 text-sm text-white/80 mb-4 font-urbanist cursor-pointer group">
+                                        <input
+                                            type="checkbox"
+                                            checked={isSubscription}
+                                            onChange={(e) => {
+                                                setIsSubscription(e.target.checked);
+                                                // Reset to first available frequency if enabling subscription
+                                                if (e.target.checked && product.subscription_frequency_options?.length > 0) {
+                                                    setSubscriptionFrequency(product.subscription_frequency_options[0]);
+                                                }
+                                            }}
+                                            className="rounded border-white/20 bg-white/5 text-[#D4AF37] focus:ring-[#D4AF37] focus:ring-offset-0 w-5 h-5 transition-all"
+                                        />
+                                        <span className="group-hover:text-[#D4AF37] transition-colors">
+                                            Subscribe for Monthly Support
+                                            {product.subscription_discount_percent > 0 && (
+                                                <span className="ml-2 text-[#D4AF37] font-medium">
+                                                    (Save {product.subscription_discount_percent}%)
+                                                </span>
+                                            )}
+                                        </span>
+                                    </label>
+
+                                    {isSubscription && product.subscription_frequency_options && product.subscription_frequency_options.length > 0 && (
+                                        <div className="ml-8 mt-4">
+                                            <label className="block text-xs text-white/60 uppercase tracking-wider mb-3 font-urbanist">
+                                                Delivery Frequency
+                                            </label>
+                                            <select
+                                                value={subscriptionFrequency}
+                                                onChange={(e) => setSubscriptionFrequency(e.target.value)}
+                                                className="w-full bg-white/5 border-2 border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-[#D4AF37] focus:outline-none font-urbanist transition-all"
+                                            >
+                                                {product.subscription_frequency_options.map((freq) => (
+                                                    <option key={freq} value={freq}>
+                                                        {getFrequencyLabel(freq)}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+                                </div>
                             )}
 
-                            {product.warnings && (
-                                <details className="group">
-                                    <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
-                                        Warnings & Precautions
-                                    </summary>
-                                    <div
-                                        className="py-4 text-white/60 text-sm leading-relaxed font-urbanist prose prose-invert max-w-none"
-                                        dangerouslySetInnerHTML={{ __html: product.warnings }}
-                                    />
-                                </details>
+                            {/* Coupon Input */}
+                            <div className="mb-8">
+                                <CouponInput
+                                    orderTotal={product.price || 0}
+                                    productIds={[product.id]}
+                                    onCouponApplied={(discountAmount) => setCouponDiscount(discountAmount)}
+                                    onCouponRemoved={() => setCouponDiscount(0)}
+                                />
+                            </div>
+
+                            {/* Quantity Selector */}
+                            <div className="mb-8">
+                                <label className="block text-sm text-white/60 mb-3 font-urbanist">Quantity</label>
+                                <div className="flex items-center gap-4">
+                                    <button
+                                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                        className="w-12 h-12 rounded-full border-2 border-white/20 flex items-center justify-center text-white hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors"
+                                    >
+                                        <Minus size={18} />
+                                    </button>
+                                    <span className="text-2xl font-medium text-white w-12 text-center font-urbanist">{quantity}</span>
+                                    <button
+                                        onClick={() => setQuantity(quantity + 1)}
+                                        className="w-12 h-12 rounded-full border-2 border-white/20 flex items-center justify-center text-white hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors"
+                                    >
+                                        <Plus size={18} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Add to Cart Button */}
+                            {product?.is_sold_out || (selectedVariant && selectedVariant.inventory_quantity === 0) ? (
+                                <div className="w-full py-4 bg-gray-700 text-white font-bold text-sm uppercase tracking-[0.2em] rounded-full text-center font-urbanist">
+                                    Sold Out
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={handleAddToCart}
+                                    className="w-full py-4 bg-gradient-to-r from-[#D4AF37] to-[#8B7322] text-black font-bold text-sm uppercase tracking-[0.2em] rounded-full hover:shadow-2xl hover:shadow-[#D4AF37]/20 transition-all duration-300 flex items-center justify-center gap-3 font-urbanist"
+                                >
+                                    <ShoppingBag size={20} />
+                                    {isSubscription ? 'Subscribe & Support' : 'Add to Cart'}
+                                </button>
                             )}
 
-                            {product.return_policy && (
-                                <details className="group">
-                                    <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
-                                        Return Policy
-                                    </summary>
-                                    <div
-                                        className="py-4 text-white/60 text-sm leading-relaxed font-urbanist prose prose-invert max-w-none"
-                                        dangerouslySetInnerHTML={{ __html: product.return_policy }}
-                                    />
-                                </details>
-                            )}
+                            {/* Additional Info Tabs */}
+                            <div className="mt-12 space-y-4">
+                                {product.ingredients && (
+                                    <details className="group">
+                                        <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
+                                            Ingredients
+                                        </summary>
+                                        <div
+                                            className="py-4 text-white/60 text-sm leading-relaxed font-urbanist prose prose-invert max-w-none"
+                                            dangerouslySetInnerHTML={{ __html: product.ingredients }}
+                                        />
+                                    </details>
+                                )}
 
-                            {product.shipping_info && (
-                                <details className="group">
-                                    <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
-                                        Shipping Information
-                                    </summary>
-                                    <div
-                                        className="py-4 text-white/60 text-sm leading-relaxed font-urbanist prose prose-invert max-w-none"
-                                        dangerouslySetInnerHTML={{ __html: product.shipping_info }}
-                                    />
-                                </details>
-                            )}
+                                {product.usage_instructions && (
+                                    <details className="group">
+                                        <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
+                                            How to Use
+                                        </summary>
+                                        <div
+                                            className="py-4 text-white/60 text-sm leading-relaxed font-urbanist prose prose-invert max-w-none"
+                                            dangerouslySetInnerHTML={{ __html: product.usage_instructions }}
+                                        />
+                                    </details>
+                                )}
+
+                                {product.benefits && (
+                                    <details className="group">
+                                        <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
+                                            Benefits
+                                        </summary>
+                                        <div
+                                            className="py-4 text-white/60 text-sm leading-relaxed font-urbanist prose prose-invert max-w-none"
+                                            dangerouslySetInnerHTML={{ __html: product.benefits }}
+                                        />
+                                    </details>
+                                )}
+
+                                {product.warnings && (
+                                    <details className="group">
+                                        <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
+                                            Warnings & Precautions
+                                        </summary>
+                                        <div
+                                            className="py-4 text-white/60 text-sm leading-relaxed font-urbanist prose prose-invert max-w-none"
+                                            dangerouslySetInnerHTML={{ __html: product.warnings }}
+                                        />
+                                    </details>
+                                )}
+
+                                {product.return_policy && (
+                                    <details className="group">
+                                        <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
+                                            Return Policy
+                                        </summary>
+                                        <div
+                                            className="py-4 text-white/60 text-sm leading-relaxed font-urbanist prose prose-invert max-w-none"
+                                            dangerouslySetInnerHTML={{ __html: product.return_policy }}
+                                        />
+                                    </details>
+                                )}
+
+                                {product.shipping_info && (
+                                    <details className="group">
+                                        <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
+                                            Shipping Information
+                                        </summary>
+                                        <div
+                                            className="py-4 text-white/60 text-sm leading-relaxed font-urbanist prose prose-invert max-w-none"
+                                            dangerouslySetInnerHTML={{ __html: product.shipping_info }}
+                                        />
+                                    </details>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Reviews Section - Full Width */}
-                {product && (
-                    <div className="mt-24">
-                        <ReviewDisplay productId={product.id} mode="product" textColor="cream" />
-                    </div>
-                )}
+                    {/* Reviews Section - Full Width */}
+                    {product && (
+                        <div className="mt-24">
+                            <ReviewDisplay productId={product.id} mode="product" textColor="cream" />
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 

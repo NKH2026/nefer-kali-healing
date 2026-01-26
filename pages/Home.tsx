@@ -6,6 +6,8 @@ import Section from '../components/Section';
 import WombOfOfferings from '../components/WombOfOfferings';
 import CosmicFeed from '../components/CosmicFeed';
 import VacationBanner from '../components/VacationBanner';
+import SEOHead from '../components/SEOHead';
+import { getOrganizationSchema, getWebsiteSchema } from '../lib/schema';
 import { DESTINY_PATHS } from '../constants';
 
 const Home: React.FC = () => {
@@ -21,6 +23,13 @@ const Home: React.FC = () => {
 
     return (
         <>
+            <SEOHead
+                title="Holistic Healing & Spiritual Education"
+                description="Nefer Kali Healing provides accessible spiritual education and natural wellness through Kemetic, Orisha, and Vedic wisdom. Shop herbal tinctures, teas, and join our community."
+                keywords={['holistic healing', 'herbal medicine', 'Kemetic spirituality', 'natural wellness', 'spiritual education', 'herbal tinctures', 'sea moss', 'bobinsana', 'justicia secunda']}
+                url="/"
+                schema={[getOrganizationSchema(), getWebsiteSchema()]}
+            />
             <VacationBanner />
             <div ref={mainRef}>
                 <Hero />
