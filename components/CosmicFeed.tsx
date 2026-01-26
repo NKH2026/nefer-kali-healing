@@ -99,20 +99,25 @@ const CosmicFeed: React.FC<Props> = ({ id, path }) => {
     if (!blogsLoaded) return;
 
     const ctx = gsap.context(() => {
+      // Only apply parallax on desktop (768px+)
+      const isMobile = window.innerWidth < 768;
+
       gsap.utils.toArray<HTMLElement>(".blog-card").forEach((card, i) => {
-        // Parallax drift
-        gsap.to(card, {
-          scrollTrigger: {
-            trigger: card,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: true,
-          },
-          y: (i % 2 === 0 ? -100 : 100),
-          rotationZ: (i % 2 === 0 ? 2 : -2),
-          rotationX: 10,
-          ease: "none"
-        });
+        // Parallax drift - only on desktop
+        if (!isMobile) {
+          gsap.to(card, {
+            scrollTrigger: {
+              trigger: card,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: true,
+            },
+            y: (i % 2 === 0 ? -100 : 100),
+            rotationZ: (i % 2 === 0 ? 2 : -2),
+            rotationX: 10,
+            ease: "none"
+          });
+        }
 
         // Perspective hover
         card.addEventListener('mousemove', (e) => {
