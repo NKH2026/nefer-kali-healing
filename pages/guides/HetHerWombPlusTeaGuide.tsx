@@ -4,27 +4,55 @@ import CycleChart from '../../components/guides/CycleChart';
 import SEOHead from '../../components/SEOHead';
 import { getArticleSchema, getFAQSchema, getBreadcrumbSchema } from '../../lib/schema';
 
-// FAQ data for schema
+// Expanded FAQ data targeting fibroid, uterine health, and ingredient searches
 const hetHerWombFAQs = [
+    // Fibroid & uterine health searches (what people actually search)
     {
-        question: 'What is Het Her Womb PLUS Tea?',
-        answer: 'Het Her Womb PLUS Tea is a sacred herbal blend for divine feminine wellness, containing St John\'s Bush, Blue Vervain, and Red Raspberry Leaf. It is designed to support womb health, hormonal balance, and menstrual comfort.'
+        question: 'What are natural ways to deal with fibroids?',
+        answer: 'Natural ways to support uterine health with fibroids include taking herbs like St Johns Bush (Justicia secunda), Blue Vervain, and Red Raspberry Leaf which support womb detoxification and hormonal balance. Het Her Womb PLUS Tea contains these herbs in a blend designed to support uterine wellness and menstrual comfort.'
     },
     {
-        question: 'What are the benefits of Het Her Womb PLUS Tea?',
-        answer: 'Benefits include womb detoxification, fallopian tube cleansing, menstrual pain relief, hormonal balance support, menopause symptom relief, and overall uterine health.'
+        question: 'What herbs help shrink fibroids naturally?',
+        answer: 'Herbs traditionally used to support uterine health with fibroids include St Johns Bush (also called Blood Bush or Justicia secunda), Blue Vervain for hormone balance, and Red Raspberry Leaf for uterine toning. Het Her Womb PLUS Tea combines these womb-supporting herbs in one formula.'
+    },
+    {
+        question: 'What is the best herb for uterine health?',
+        answer: 'St Johns Bush (Justicia secunda) is considered one of the best herbs for uterine health in Caribbean tradition. Also known as Blood Bush, it has been used for generations to support womb wellness, menstrual health, and fibroid support. Het Her Womb PLUS Tea contains St Johns Bush as its primary ingredient.'
+    },
+    // Ingredient-specific searches
+    {
+        question: 'What is St Johns Bush (Justicia secunda)?',
+        answer: 'St Johns Bush (Justicia secunda), also called Blood Bush or Blood Root, is a powerful Caribbean herb exclusively grown in tropical regions. It has been traditionally used for centuries to support womb health, fibroids, menstrual issues, and uterine wellness. It is the primary ingredient in Het Her Womb PLUS Tea and Tincture.'
+    },
+    {
+        question: 'What is Justicia secunda used for?',
+        answer: 'Justicia secunda (St Johns Bush or Blood Bush) is traditionally used for uterine health, fibroid support, heavy menstrual bleeding, PMS symptoms, and womb detoxification. Het Her Womb PLUS Tea contains Justicia secunda along with Blue Vervain and Red Raspberry Leaf for comprehensive womb support.'
+    },
+    {
+        question: 'What is Blood Bush herb good for?',
+        answer: 'Blood Bush (also called St Johns Bush or Justicia secunda) is a Caribbean herb traditionally used for womb health, fibroids, heavy periods, and menstrual pain. It supports hormone balance and uterine wellness. Het Her Womb PLUS products contain this powerful herb for feminine healing.'
+    },
+    // PMS and menstrual searches
+    {
+        question: 'What herbs help with PMS and menstrual cramps?',
+        answer: 'Herbs that help with PMS and menstrual cramps include St Johns Bush (Blood Bush), Blue Vervain for nervous system and hormone support, and Red Raspberry Leaf for uterine toning. Het Her Womb PLUS Tea is a herbal blend designed to support menstrual comfort and reduce PMS symptoms.'
+    },
+    {
+        question: 'How do you do a natural womb detox?',
+        answer: 'A natural womb detox involves taking uterine-supporting herbs like St Johns Bush, Blue Vervain, and Red Raspberry Leaf during the luteal phase (after ovulation through menstruation). Het Her Womb PLUS Tea can be taken for up to 30 consecutive days once per year for a complete womb detox.'
+    },
+    // Original product questions
+    {
+        question: 'What is Het Her Womb PLUS Tea?',
+        answer: 'Het Her Womb PLUS Tea is a sacred herbal blend containing St Johns Bush (Justicia secunda), Blue Vervain, and Red Raspberry Leaf. It is a womb health tincture designed to support fibroids, hormonal balance, menstrual comfort, and uterine wellness. Named after Het Heru (Hathor), the Egyptian goddess of feminine energy.'
     },
     {
         question: 'When should you take Het Her Womb PLUS Tea?',
-        answer: 'Take after ovulation for 14-16 days, leading up to and throughout menstruation. It can be taken for 30 consecutive days only once a year for a womb detox.'
+        answer: 'Take after ovulation for 14-16 days, leading up to and throughout menstruation. Steep 1-2 teaspoons in 8-10 oz of hot water for 15-30 minutes. Can be taken for 30 consecutive days only once a year for a womb detox.'
     },
     {
-        question: 'How do you brew Het Her Womb PLUS Tea?',
-        answer: 'Steep 1-2 teaspoons of the herbal blend in 8-10 oz of hot water for 15-30 minutes. Strain and enjoy.'
-    },
-    {
-        question: 'What is the connection between Het Her Womb tea and Venus?',
-        answer: 'Het Her Womb PLUS tea is named after Het Heru (Hathor), the Egyptian goddess correlated to Venus. The blend embodies the sacred 584-day cycle of Venus that guides divine feminine healing.'
+        question: 'Is St Johns Bush the same as St Johns Wort?',
+        answer: 'No, St Johns Bush (Justicia secunda) is completely different from European St Johns Wort (Hypericum perforatum). St Johns Bush is a Caribbean herb specific to womb health and fibroids, while St Johns Wort is a European herb used for mood support. Het Her Womb products contain St Johns Bush, not St Johns Wort.'
     }
 ];
 
@@ -32,15 +60,32 @@ export default function HetHerWombPlusTeaGuide() {
     return (
         <>
             <SEOHead
-                title="Het Her Womb PLUS Tea Guide - Divine Feminine Wellness"
-                description="Sacred herbal tea for womb health with St John's Bush, Blue Vervain, and Red Raspberry Leaf. Learn how to use Het Her Womb tea for menstrual support and hormonal balance."
-                keywords={['Het Her Womb tea', 'womb health tea', 'feminine wellness', 'herbal tea for menstrual support', 'St Johns Bush tea', 'uterine health herbs']}
+                title="Het Her Womb PLUS Tea - Natural Fibroid & Uterine Health Herbs with St Johns Bush"
+                description="Natural herbal tea for fibroids, uterine health, and PMS with St Johns Bush (Justicia secunda), Blood Bush, Blue Vervain, and Red Raspberry Leaf. Womb health tincture for menstrual support."
+                keywords={[
+                    'natural fibroid treatment',
+                    'herbs for fibroids',
+                    'St Johns Bush',
+                    'Justicia secunda',
+                    'Blood Bush herb',
+                    'uterine health herbs',
+                    'womb health tincture',
+                    'womb detox tea',
+                    'PMS tincture',
+                    'menstrual cramps herbs',
+                    'Het Her Womb tea',
+                    'womens health herbs',
+                    'herbal tincture for fibroids',
+                    'hormone tincture',
+                    'detox tincture',
+                    'herbal medicine for uterus'
+                ]}
                 url="/guides/het-her-womb-plus-tea"
                 schema={[
                     getArticleSchema({
-                        title: 'Het Her Womb PLUS Tea Guide',
+                        title: 'Natural Fibroid & Uterine Health Herbs - Het Her Womb PLUS Tea',
                         slug: 'het-her-womb-plus-tea',
-                        description: 'Sacred herbal tea for divine feminine wellness and womb health.',
+                        description: 'Sacred herbal tea with St Johns Bush (Justicia secunda) for fibroids, uterine health, and womb wellness.',
                         publishDate: '2024-01-01',
                         modifiedDate: '2025-01-01'
                     }),
@@ -48,10 +93,11 @@ export default function HetHerWombPlusTeaGuide() {
                     getBreadcrumbSchema([
                         { name: 'Home', url: '/' },
                         { name: 'Healing Guides', url: '/healing-guides' },
-                        { name: 'Het Her Womb PLUS Tea', url: '/guides/het-her-womb-plus-tea' }
+                        { name: 'Het Her Womb PLUS Tea - Fibroid & Uterine Support', url: '/guides/het-her-womb-plus-tea' }
                     ])
                 ]}
             />
+
             <div className="min-h-screen bg-gradient-to-b from-[#1a0a05] via-[#2d1810] to-[#1a0a05]">
                 {/* Hero Section - Oshun Theme */}
                 <section className="relative py-12 md:py-20 px-4 overflow-hidden">

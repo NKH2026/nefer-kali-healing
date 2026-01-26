@@ -3,27 +3,56 @@ import { Download, ArrowLeft, Sparkles, Leaf, Droplets, Heart, Zap, Waves, HelpC
 import SEOHead from '../../components/SEOHead';
 import { getArticleSchema, getFAQSchema, getBreadcrumbSchema } from '../../lib/schema';
 
-// FAQ data for schema and display
+// Expanded FAQ data targeting health searches
 const seaMossFAQs = [
+    // Health condition searches (what people actually search)
     {
-        question: 'What is sea moss and what are its benefits?',
-        answer: 'Sea moss (Irish moss) is a type of red algae that contains 92 of the 102 minerals the body needs. Benefits include boosting immunity, supporting thyroid function, promoting healthy skin, hair and nails, improving digestion, and supporting bone health.'
+        question: 'What does sea moss do for your body?',
+        answer: 'Sea moss provides 92 of the 102 minerals your body needs including iodine for thyroid function, iron for energy, zinc for immunity, and potassium for heart health. It supports thyroid function, boosts immunity, improves skin health, aids digestion, and provides natural energy. St Lucian sea moss is wild-harvested for maximum mineral content.'
     },
     {
-        question: 'How do you prepare sea moss gel?',
-        answer: 'Soak dried sea moss in spring water for 6-12 hours, rinse thoroughly, blend with warm water until smooth, then refrigerate. The gel can be stored for up to 3 weeks. Hotter water creates a smoother gel consistency.'
+        question: 'Does sea moss help with thyroid problems?',
+        answer: 'Yes, sea moss is rich in iodine which is essential for healthy thyroid function. The thyroid needs iodine to produce hormones that regulate metabolism, energy, and weight. Sea moss provides natural iodine along with selenium and other minerals that support thyroid health. Always consult a healthcare provider if you have thyroid conditions.'
     },
+    {
+        question: 'Is sea moss good for fertility?',
+        answer: 'Sea moss contains zinc, selenium, and folate which are important for reproductive health in both men and women. The mineral content supports hormone production and overall reproductive wellness. Combined with fertility herbs like those in Rohini Tincture, sea moss can support a natural conception journey.'
+    },
+    {
+        question: 'Does sea moss help with weight loss?',
+        answer: 'Sea moss supports weight management through its iodine content which supports thyroid function and metabolism. It is also high in fiber which promotes feelings of fullness, and its mineral content supports energy levels for an active lifestyle. Sea moss is low in calories but nutrient-dense.'
+    },
+    // Specific benefit searches
+    {
+        question: 'What are the skin benefits of sea moss?',
+        answer: 'Sea moss is rich in vitamins A, C, E, and K plus sulfur compounds that promote collagen production, reduce inflammation, and hydrate skin. It can be applied topically as a gel or taken internally. Purple sea moss is highest in antioxidants (anthocyanin) which fight skin aging.'
+    },
+    {
+        question: 'Does sea moss boost immunity?',
+        answer: 'Yes, sea moss supports the immune system through its high content of zinc, iron, and antioxidants. It also has natural antimicrobial and antiviral properties. The potassium chloride in sea moss helps dissolve mucus and supports respiratory health during cold and flu season.'
+    },
+    {
+        question: 'Is sea moss good for gut health and digestion?',
+        answer: 'Sea moss is excellent for gut health because it acts as a prebiotic that feeds beneficial gut bacteria. It contains natural fiber that supports healthy bowel movements and its gel-like consistency soothes the digestive tract. The mucilage in sea moss coats the intestinal lining.'
+    },
+    // Preparation questions
+    {
+        question: 'How do you make sea moss gel at home?',
+        answer: 'Soak dried sea moss in spring water for 6-12 hours, rinse thoroughly to remove salt, then blend with warm water until smooth. Use 1 oz dried sea moss with about 1 cup water. Store in a glass jar in the refrigerator for up to 3 weeks. Hotter water creates a smoother gel.'
+    },
+    {
+        question: 'How much sea moss should I take daily?',
+        answer: 'A typical serving is 1-2 tablespoons of sea moss gel daily. You can add it to smoothies, teas, coffee, soups, or take it directly. Start with a smaller amount and increase gradually. 1 oz of dried sea moss makes approximately 16 oz of gel.'
+    },
+    // Type comparison
     {
         question: 'What is the difference between golden, green, and purple sea moss?',
-        answer: 'Golden sea moss is easiest to blend and provides comprehensive mineral support. Green sea moss is high in chlorophyll with detoxifying properties. Purple sea moss is highest in antioxidants (anthocyanin) and supports energy levels.'
+        answer: 'Golden sea moss is easiest to blend and provides comprehensive minerals. Green sea moss is high in chlorophyll for detoxification. Purple sea moss has the highest antioxidant content (anthocyanin) and supports energy and anti-aging. All three types contain 92+ minerals.'
     },
+    // Sourcing
     {
-        question: 'How much sea moss should you take daily?',
-        answer: 'A typical serving is 1-2 tablespoons of sea moss gel daily. It can be added to smoothies, teas, or taken directly. A little goes a long way - 1 oz of dried sea moss makes about 16oz of gel.'
-    },
-    {
-        question: 'Where does Nefer Kali Healing source their sea moss?',
-        answer: 'Our sea moss is wild-harvested from the pristine Caribbean waters of St. Lucia. It is 100% natural with no additives or preservatives.'
+        question: 'Where is Nefer Kali Healing sea moss from?',
+        answer: 'Our sea moss is wild-harvested from the pristine Caribbean waters of St. Lucia. It is 100% natural, sun-dried, and contains no additives or preservatives. St Lucian sea moss is prized for its high mineral content and purity.'
     }
 ];
 
@@ -31,15 +60,32 @@ export default function SeaMossGuide() {
     return (
         <>
             <SEOHead
-                title="Sea Moss Guide - Golden, Green & Purple Benefits"
-                description="Complete guide to sea moss benefits, preparation, and usage. Learn how to make sea moss gel from St. Lucian golden, green, and purple sea moss varieties."
-                keywords={['sea moss', 'sea moss benefits', 'how to make sea moss gel', 'Irish moss', 'golden sea moss', 'purple sea moss', 'green sea moss', 'sea moss preparation']}
+                title="Sea Moss Benefits - 92 Minerals for Thyroid, Immunity, Skin & Fertility"
+                description="Wild-harvested St Lucian sea moss with 92 minerals. Learn sea moss benefits for thyroid, immunity, weight loss, skin, gut health, and fertility. How to make sea moss gel at home."
+                keywords={[
+                    'sea moss benefits',
+                    'sea moss for thyroid',
+                    'sea moss for fertility',
+                    'sea moss for weight loss',
+                    'sea moss for skin',
+                    'sea moss for immunity',
+                    'how to make sea moss gel',
+                    'Irish moss benefits',
+                    'golden sea moss',
+                    'purple sea moss',
+                    'green sea moss',
+                    'St Lucia sea moss',
+                    '92 minerals sea moss',
+                    'sea moss for gut health',
+                    'wild harvested sea moss',
+                    'sea moss preparation'
+                ]}
                 url="/guides/sea-moss"
                 schema={[
                     getArticleSchema({
-                        title: 'Sea Moss Guide - Golden, Green & Purple Benefits',
+                        title: 'Sea Moss Benefits - 92 Minerals for Thyroid, Immunity, Skin & Fertility',
                         slug: 'sea-moss',
-                        description: 'Complete guide to sea moss benefits, preparation, and usage.',
+                        description: 'Complete guide to sea moss benefits, preparation, and usage from St Lucia.',
                         author: 'Nefer Kali Healing',
                         publishDate: '2024-01-01',
                         modifiedDate: '2025-01-01'
@@ -48,10 +94,11 @@ export default function SeaMossGuide() {
                     getBreadcrumbSchema([
                         { name: 'Home', url: '/' },
                         { name: 'Healing Guides', url: '/healing-guides' },
-                        { name: 'Sea Moss Guide', url: '/guides/sea-moss' }
+                        { name: 'Sea Moss - 92 Minerals & Benefits', url: '/guides/sea-moss' }
                     ])
                 ]}
             />
+
             <div className="min-h-screen bg-gradient-to-b from-[#030a12] via-[#0a1628] to-[#030a12]">
                 {/* Hero Section - Yemoja Ocean Theme */}
                 <section className="relative py-20 px-4 overflow-hidden">

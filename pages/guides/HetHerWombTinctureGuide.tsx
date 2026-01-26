@@ -4,27 +4,51 @@ import CycleChart from '../../components/guides/CycleChart';
 import SEOHead from '../../components/SEOHead';
 import { getArticleSchema, getFAQSchema, getBreadcrumbSchema } from '../../lib/schema';
 
-// FAQ data for schema
+// Expanded FAQ data targeting fibroid, uterine health, and ingredient searches
 const hetHerWombTinctureFAQs = [
+    // Fibroid & uterine health searches
+    {
+        question: 'What is the best natural remedy for fibroids?',
+        answer: 'Het Her Womb Tincture contains St Johns Bush (Justicia secunda), a Caribbean herb traditionally used for centuries to support uterine health and fibroid wellness. It is available in both glycerin (alcohol-free) and spirits formulas for different preferences.'
+    },
+    {
+        question: 'What tincture helps shrink fibroids naturally?',
+        answer: 'Het Her Womb Tincture contains St Johns Bush (also called Blood Bush or Blood Root), which has been traditionally used in Caribbean medicine for fibroid support, heavy periods, and uterine health. Take during the luteal phase for best results.'
+    },
+    {
+        question: 'What is the strongest herb for uterine fibroids?',
+        answer: 'St Johns Bush (Justicia secunda) is considered one of the most powerful Caribbean herbs for fibroid and uterine support. Het Her Womb Tincture contains concentrated St Johns Bush extract designed specifically for womb health and fibroid wellness.'
+    },
+    // Ingredient-specific searches
+    {
+        question: 'What is St Johns Bush (Justicia secunda)?',
+        answer: 'St Johns Bush (Justicia secunda), also called Blood Bush or Blood Root, is a powerful Caribbean herb exclusively grown in tropical regions. It has been used for generations to support womb health, fibroids, heavy bleeding, and menstrual issues. Het Her Womb Tincture contains this traditional herb.'
+    },
+    {
+        question: 'What is Blood Root tincture used for?',
+        answer: 'Blood Root (also called St Johns Bush or Justicia secunda) tincture is traditionally used for fibroid support, womb detoxification, heavy periods, menstrual cramps, and overall uterine wellness. Het Her Womb Tincture contains Blood Root in both glycerin and spirits formulas.'
+    },
+    {
+        question: 'Is St Johns Bush the same as St Johns Wort?',
+        answer: 'No, St Johns Bush (Justicia secunda or Blood Bush) is completely different from European St Johns Wort (Hypericum perforatum). St Johns Bush is a Caribbean herb specific to womb health and fibroids, while St Johns Wort is used for mood support. Het Her Womb contains St Johns Bush.'
+    },
+    // Product comparison
+    {
+        question: 'What is the difference between glycerin and spirits tincture?',
+        answer: 'The Glycerin formula is alcohol-free (great for those avoiding alcohol) with dosage of 1-2 mL daily. The Spirits formula uses 190 proof organic cane spirits (stronger extraction) with dosage of 0.5-1 mL daily. Both contain organic St Johns Bush for fibroid and womb support.'
+    },
+    {
+        question: 'Which Het Her Womb formula is better for fibroids?',
+        answer: 'Both the Glycerin and Spirits formulas contain St Johns Bush (Justicia secunda) and support fibroid wellness. The Spirits formula offers stronger extraction, while Glycerin is alcohol-free. Choose based on your preference - both are effective for womb health.'
+    },
+    // Product questions
     {
         question: 'What is Het Her Womb Tincture?',
-        answer: 'Het Her Womb Tincture is a sacred Caribbean womb healing formula made with St Johns Bush (Blood Root). It comes in two formulas: Glycerin (alcohol-free) and Spirits (alcohol-based). Best used for fibroids and menstrual health.'
-    },
-    {
-        question: 'What is the difference between Glycerin and Spirits formula?',
-        answer: 'The Glycerin formula is alcohol-free with dosage of 1-2 mL daily. The Spirits formula uses 190 proof organic cane spirits with dosage of 0.5-1 mL daily. Both contain organic St Johns Bush.'
-    },
-    {
-        question: 'What are the benefits of Het Her Womb Tincture?',
-        answer: 'Benefits include anti-inflammatory support, womb detoxification, iron replenishment, hormone balance, and is especially effective for improving fibroids and menstrual health.'
+        answer: 'Het Her Womb Tincture is a Caribbean womb healing formula made with St Johns Bush (Justicia secunda or Blood Root). It is specifically designed for fibroids, menstrual health, hormonal balance, and womb detoxification. Available in both glycerin and spirits formulas.'
     },
     {
         question: 'When should you take Het Her Womb Tincture?',
-        answer: 'Take after ovulation for 14-16 days, leading up to and throughout menstruation. Should not be taken longer than 2 weeks at a time. Can be taken for 30 days only once a year for womb detox.'
-    },
-    {
-        question: 'What is St Johns Bush (Blood Root)?',
-        answer: 'St Johns Bush (Justicia secunda) is a high-power herb exclusively grown in the Caribbean. It is different from European St Johns Wort and is traditionally used for womb healing.'
+        answer: 'Take after ovulation for 14-16 days, leading up to and throughout menstruation. Glycerin: 1-2 mL daily. Spirits: 0.5-1 mL daily. Can be taken for 30 days only once a year for a complete womb detox.'
     }
 ];
 
@@ -32,15 +56,31 @@ export default function HetHerWombTinctureGuide() {
     return (
         <>
             <SEOHead
-                title="Het Her Womb Tincture Guide - Fibroids & Menstrual Health"
-                description="Sacred Caribbean womb healing tincture with St Johns Bush (Blood Root). Available in glycerin and spirits formulas. Learn how to use for fibroids and menstrual support."
-                keywords={['Het Her Womb tincture', 'fibroids natural remedy', 'St Johns Bush tincture', 'Blood Root', 'womb healing herbs']}
+                title="Het Her Womb Tincture - Best Natural Remedy for Fibroids with St Johns Bush"
+                description="Caribbean womb healing tincture for fibroids with St Johns Bush (Justicia secunda), Blood Root, Blood Bush. Available in glycerin and spirits formulas. Natural fibroid and uterine health support."
+                keywords={[
+                    'fibroids natural remedy',
+                    'fibroid tincture',
+                    'St Johns Bush for fibroids',
+                    'Justicia secunda',
+                    'Blood Root tincture',
+                    'Blood Bush herb',
+                    'uterine fibroids herbs',
+                    'womb health tincture',
+                    'Het Her Womb tincture',
+                    'Caribbean womb herbs',
+                    'natural fibroid treatment',
+                    'heavy period herbs',
+                    'womb detox tincture',
+                    'hormone balance herbs',
+                    'menstrual health herbs'
+                ]}
                 url="/guides/het-her-womb-tincture"
                 schema={[
                     getArticleSchema({
-                        title: 'Het Her Womb Tincture Guide',
+                        title: 'Natural Fibroid Remedy - Het Her Womb Tincture with St Johns Bush',
                         slug: 'het-her-womb-tincture',
-                        description: 'Sacred Caribbean womb healing tincture for fibroids and menstrual health.',
+                        description: 'Caribbean womb healing tincture with St Johns Bush (Justicia secunda) for fibroids and uterine health.',
                         publishDate: '2024-01-01',
                         modifiedDate: '2025-01-01'
                     }),
@@ -48,10 +88,11 @@ export default function HetHerWombTinctureGuide() {
                     getBreadcrumbSchema([
                         { name: 'Home', url: '/' },
                         { name: 'Healing Guides', url: '/healing-guides' },
-                        { name: 'Het Her Womb Tincture', url: '/guides/het-her-womb-tincture' }
+                        { name: 'Het Her Womb Tincture - Fibroid Support', url: '/guides/het-her-womb-tincture' }
                     ])
                 ]}
             />
+
             <div className="min-h-screen bg-gradient-to-b from-[#1a0505] via-[#2d1010] to-[#1a0505]">
                 {/* Hero Section - Oya Theme */}
                 <section className="relative py-20 px-4 overflow-hidden">

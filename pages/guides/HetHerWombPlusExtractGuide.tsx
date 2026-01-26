@@ -4,27 +4,51 @@ import CycleChart from '../../components/guides/CycleChart';
 import SEOHead from '../../components/SEOHead';
 import { getArticleSchema, getFAQSchema, getBreadcrumbSchema } from '../../lib/schema';
 
-// FAQ data for schema
+// Expanded FAQ data targeting fibroid, uterine health, and ingredient searches
 const hetHerWombExtractFAQs = [
+    // Fibroid & uterine health searches
     {
-        question: 'What is Het Her Womb PLUS Extract?',
-        answer: 'Het Her Womb PLUS Extract is a sacred tincture for divine feminine restoration containing St Johns Bush, Blue Vervain, Red Raspberry Leaf, vegetable glycerin, and cane spirits. It supports womb health, hormonal balance, and menstrual comfort.'
+        question: 'What is the best tincture for fibroids?',
+        answer: 'Het Her Womb PLUS Extract contains St Johns Bush (Justicia secunda), a Caribbean herb traditionally used for centuries to support uterine health and fibroid wellness. Combined with Blue Vervain and Red Raspberry Leaf, it provides comprehensive womb support.'
     },
     {
-        question: 'What are the benefits of Het Her Womb PLUS Extract?',
-        answer: 'Benefits include anti-inflammatory support, womb detoxification, iron replenishment for strength, and hormone balance promotion for natural hormonal harmony.'
+        question: 'What herbs help with uterine fibroids naturally?',
+        answer: 'Herbs traditionally used for fibroid support include St Johns Bush (Blood Bush or Justicia secunda), Blue Vervain for hormonal balance, and Red Raspberry Leaf for uterine toning. Het Her Womb PLUS Extract contains all three of these powerful womb-supporting herbs.'
+    },
+    {
+        question: 'What is St Johns Bush extract good for?',
+        answer: 'St Johns Bush (Justicia secunda) extract is traditionally used for fibroids, heavy periods, menstrual cramps, womb detoxification, and overall uterine health. Het Her Womb PLUS Extract contains St Johns Bush along with Blue Vervain and Red Raspberry Leaf for complete womb support.'
+    },
+    // Ingredient-specific searches
+    {
+        question: 'What is Justicia secunda and what is it used for?',
+        answer: 'Justicia secunda (commonly called St Johns Bush, Blood Bush, or Blood Root) is a Caribbean herb traditionally used for womb health, fibroids, menstrual issues, and hormonal balance. Het Her Womb PLUS Extract contains Justicia secunda as its primary healing ingredient.'
+    },
+    {
+        question: 'What is Blood Bush herb and does it help with fibroids?',
+        answer: 'Blood Bush (also called St Johns Bush or Justicia secunda) is a powerful Caribbean herb used for generations to support womb health and fibroid wellness. It helps with hormone balance, heavy bleeding, and uterine detoxification. Het Her Womb products contain this traditional herb.'
+    },
+    // Womb wellness searches
+    {
+        question: 'How do you naturally support womb health?',
+        answer: 'Natural womb support includes taking herbs like St Johns Bush (Justicia secunda), Blue Vervain, and Red Raspberry Leaf during the luteal phase. Het Her Womb PLUS Extract combines these herbs in a tincture form for easy absorption and fast results.'
+    },
+    {
+        question: 'What is the best herbal extract for hormone balance?',
+        answer: 'Het Her Womb PLUS Extract supports hormone balance through St Johns Bush, Blue Vervain (which calms the nervous system and regulates hormones), and Red Raspberry Leaf for uterine toning. It is available in both glycerin and spirits formulas.'
+    },
+    // Product questions
+    {
+        question: 'What is Het Her Womb PLUS Extract?',
+        answer: 'Het Her Womb PLUS Extract is a womb health tincture containing St Johns Bush (Justicia secunda), Blue Vervain, Red Raspberry Leaf, vegetable glycerin, and cane spirits. It supports fibroids, hormonal balance, menstrual comfort, and womb detoxification. Named after Het-Heru (Hathor).'
     },
     {
         question: 'When should you take Het Her Womb PLUS Extract?',
-        answer: 'Take after ovulation for 14-16 days, leading up to and throughout menstruation. Can be taken for 30 consecutive days only once a year for a womb detox.'
+        answer: 'Take after ovulation for 14-16 days, leading up to and throughout menstruation. Take 0.5-2 mL daily under the tongue or in room temperature water. Can be taken for 30 consecutive days once a year for a complete womb detox.'
     },
     {
-        question: 'How do you take Het Her Womb PLUS Extract?',
-        answer: 'Shake well before use. Take 0.5-2 mL daily under the tongue or in a room temperature drink. Should not be taken longer than 2 weeks at a time unless doing a detox.'
-    },
-    {
-        question: 'What is the connection between Het Her Womb and Het Heru?',
-        answer: 'Het Her Womb is named after Het-Heru (Hathor), also known as Oshun in the Ifa tradition. Each herb carries her vibrational signature of joyful energy to restore sacred balance.'
+        question: 'Is St Johns Bush the same as St Johns Wort?',
+        answer: 'No, St Johns Bush (Justicia secunda) is completely different from European St Johns Wort (Hypericum perforatum). St Johns Bush is a Caribbean herb for womb health and fibroids, while St Johns Wort is used for mood. Het Her Womb products contain St Johns Bush, not St Johns Wort.'
     }
 ];
 
@@ -32,15 +56,31 @@ export default function HetHerWombPlusExtractGuide() {
     return (
         <>
             <SEOHead
-                title="Het Her Womb PLUS Extract Guide - Divine Feminine Tincture"
-                description="Sacred tincture for divine feminine restoration with St Johns Bush, Blue Vervain, and Red Raspberry Leaf. Learn how to use for womb health and hormonal balance."
-                keywords={['Het Her Womb extract', 'womb health tincture', 'St Johns Bush tincture', 'feminine wellness', 'herbal extract for women']}
+                title="Het Her Womb PLUS Extract - Fibroid & Uterine Support with St Johns Bush"
+                description="Natural tincture for fibroids and uterine health with St Johns Bush (Justicia secunda), Blood Bush, Blue Vervain, and Red Raspberry Leaf. Womb detox and hormone balance support."
+                keywords={[
+                    'fibroid tincture',
+                    'St Johns Bush extract',
+                    'Justicia secunda',
+                    'Blood Bush tincture',
+                    'uterine health herbs',
+                    'womb detox tincture',
+                    'herbal extract for fibroids',
+                    'hormone balance herbs',
+                    'Het Her Womb extract',
+                    'womb health tincture',
+                    'womens health herbs',
+                    'menstrual support tincture',
+                    'PMS herbs',
+                    'natural fibroid remedy',
+                    'Caribbean womb herbs'
+                ]}
                 url="/guides/het-her-womb-plus-extract"
                 schema={[
                     getArticleSchema({
-                        title: 'Het Her Womb PLUS Extract Guide',
+                        title: 'Fibroid & Uterine Support - Het Her Womb PLUS Extract with St Johns Bush',
                         slug: 'het-her-womb-plus-extract',
-                        description: 'Sacred tincture for divine feminine restoration and womb health.',
+                        description: 'Natural tincture with St Johns Bush (Justicia secunda) for fibroids and uterine health.',
                         publishDate: '2024-01-01',
                         modifiedDate: '2025-01-01'
                     }),
@@ -48,10 +88,11 @@ export default function HetHerWombPlusExtractGuide() {
                     getBreadcrumbSchema([
                         { name: 'Home', url: '/' },
                         { name: 'Healing Guides', url: '/healing-guides' },
-                        { name: 'Het Her Womb PLUS Extract', url: '/guides/het-her-womb-plus-extract' }
+                        { name: 'Het Her Womb PLUS Extract - Fibroid Support', url: '/guides/het-her-womb-plus-extract' }
                     ])
                 ]}
             />
+
             <div className="min-h-screen bg-gradient-to-b from-[#0a1a0a] via-[#1a2d1a] to-[#0a1510]">
                 {/* Hero Section - Oshun Theme with Green/Pink/Gold */}
                 <section className="relative py-20 px-4 overflow-hidden">

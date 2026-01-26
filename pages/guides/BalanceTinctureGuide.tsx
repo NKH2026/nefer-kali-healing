@@ -4,27 +4,55 @@ import CycleChart from '../../components/guides/CycleChart';
 import SEOHead from '../../components/SEOHead';
 import { getArticleSchema, getFAQSchema, getBreadcrumbSchema } from '../../lib/schema';
 
-// FAQ data for schema
+// Expanded FAQ data targeting fibroid, uterine care, St Johns Bush, and hormonal searches
 const balanceTinctureFAQs = [
+    // Fibroid & uterine health searches
     {
-        question: 'What is Balance Tincture?',
-        answer: 'Balance Tincture is a sacred herbal formula containing St Johns Bush, Peppermint, Red Raspberry Leaf, Holy Basil Krishna, Red Reishi Mushroom, Ashwagandha, Burdock Root, and Dandelion Root in organic cane spirits. It supports hormonal balance and feminine wellness.'
+        question: 'What tincture helps with fibroids naturally?',
+        answer: 'Balance Tincture contains St Johns Bush (Justicia secunda), known in Caribbean tradition as one of the most powerful herbs for fibroid and uterine support. Combined with adaptogens like Ashwagandha and Red Reishi, it supports hormonal balance which is key for fibroid management.'
     },
     {
-        question: 'What are the benefits of Balance Tincture?',
-        answer: 'Benefits include body comfort support, womb space cleansing, adaptogenic stress support, and cyclical harmony for natural feminine rhythms.'
+        question: 'What herbs support uterine health and hormonal balance?',
+        answer: 'Herbs that support uterine health include St Johns Bush (Blood Bush) for womb wellness, Red Raspberry Leaf for uterine toning, and adaptogenic herbs like Ashwagandha for stress-hormone balance. Balance Tincture combines all of these with Red Reishi Mushroom, Burdock Root, and Dandelion Root.'
     },
     {
-        question: 'How do you take Balance Tincture?',
-        answer: 'Shake well before use. Take 0.5-2 mL daily, either under the tongue or in a room temperature drink. Should not be taken longer than 2 weeks at a time without practitioner guidance.'
+        question: 'How does St Johns Bush help with womb health?',
+        answer: 'St Johns Bush (Justicia secunda), also called Blood Bush, is a Caribbean herb traditionally used for centuries to support womb cleansing, fibroid relief, menstrual comfort, and overall uterine wellness. Balance Tincture contains St Johns Bush as a primary ingredient for womb support.'
+    },
+    // Ingredient-specific searches
+    {
+        question: 'What is Blood Bush tincture used for?',
+        answer: 'Blood Bush (St Johns Bush or Justicia secunda) tincture is traditionally used for womb health, fibroid support, hormonal balance, heavy periods, and menstrual pain. Balance Tincture contains Blood Bush along with adaptogens for comprehensive feminine wellness support.'
     },
     {
-        question: 'When is the best time to take Balance Tincture?',
-        answer: 'Take after ovulation for 14-16 days, leading up to menstruation. This is during the luteal and menstrual phase for best results.'
+        question: 'Does Ashwagandha help with hormonal balance?',
+        answer: 'Yes, Ashwagandha is an adaptogenic herb that helps regulate stress hormones (cortisol), which directly impacts reproductive hormones like estrogen and progesterone. Balance Tincture contains Ashwagandha along with St Johns Bush and Red Reishi for complete hormonal support.'
     },
     {
-        question: 'What makes Balance Tincture unique?',
-        answer: 'Balance Tincture combines adaptogens like Ashwagandha and Red Reishi with traditional feminine herbs, creating a blend that supports both physical and energetic balance.'
+        question: 'What is Red Reishi Mushroom good for in women?',
+        answer: 'Red Reishi Mushroom supports the immune system, reduces inflammation, and helps the body adapt to stress. For women, it supports hormone balance and overall wellness. Balance Tincture combines Red Reishi with St Johns Bush and other womb-supporting herbs.'
+    },
+    // PMS and menstrual searches
+    {
+        question: 'What natural tincture helps with PMS symptoms?',
+        answer: 'Balance Tincture helps with PMS symptoms by combining St Johns Bush (Blood Bush) for womb support, Ashwagandha for stress relief, Red Raspberry Leaf for uterine toning, and Holy Basil for mood balance. Take during the luteal phase (after ovulation) for best results.'
+    },
+    {
+        question: 'What herbs help with hormone balance naturally?',
+        answer: 'Herbs that help with hormone balance include St Johns Bush (Justicia secunda) for womb health, Ashwagandha for stress hormones, Burdock Root and Dandelion Root for liver detox (which processes hormones), and Holy Basil for mood. Balance Tincture contains all of these herbs.'
+    },
+    // Product questions
+    {
+        question: 'What is Balance Tincture and what does it contain?',
+        answer: 'Balance Tincture is a herbal formula containing St Johns Bush (Justicia secunda), Peppermint, Red Raspberry Leaf, Holy Basil Krishna, Red Reishi Mushroom, Ashwagandha, Burdock Root, and Dandelion Root in organic cane spirits. It is designed for uterine health, fibroids, hormonal balance, and PMS support.'
+    },
+    {
+        question: 'When should I take Balance Tincture in my cycle?',
+        answer: 'Take Balance Tincture after ovulation for 14-16 days, leading up to menstruation. This is during the luteal phase. Take 0.5-2 mL daily under the tongue or in room temperature water. Should not be taken longer than 2 weeks without practitioner guidance.'
+    },
+    {
+        question: 'Is St Johns Bush the same as St Johns Wort?',
+        answer: 'No, St Johns Bush (Justicia secunda or Blood Bush) is completely different from European St Johns Wort (Hypericum perforatum). St Johns Bush is a Caribbean herb for womb health and fibroids, while St Johns Wort is used for mood. Balance Tincture contains St Johns Bush.'
     }
 ];
 
@@ -32,15 +60,32 @@ export default function BalanceTinctureGuide() {
     return (
         <>
             <SEOHead
-                title="Balance Tincture Guide - Adaptogenic Herbal Formula"
-                description="Sacred harmony of ancient plant wisdom with Ashwagandha, Red Reishi, and St Johns Bush. Learn how to use Balance Tincture for hormonal harmony and stress support."
-                keywords={['Balance Tincture', 'adaptogenic herbs', 'Ashwagandha tincture', 'Red Reishi', 'hormonal balance herbs', 'herbal tincture for women']}
+                title="Balance Tincture - Natural Fibroid & Hormone Support with St Johns Bush"
+                description="Herbal tincture for fibroids, uterine health, and hormonal balance with St Johns Bush (Justicia secunda), Blood Bush, Ashwagandha, and Red Reishi. Natural PMS and womb health support."
+                keywords={[
+                    'fibroid tincture',
+                    'hormone balance tincture',
+                    'St Johns Bush tincture',
+                    'Justicia secunda',
+                    'Blood Bush herb',
+                    'uterine health herbs',
+                    'womb health tincture',
+                    'PMS tincture',
+                    'Ashwagandha tincture',
+                    'Red Reishi for women',
+                    'Balance Tincture',
+                    'womens health herbs',
+                    'herbal tincture for fibroids',
+                    'hormone tincture',
+                    'detox tincture',
+                    'adaptogenic herbs for women'
+                ]}
                 url="/guides/balance-tincture"
                 schema={[
                     getArticleSchema({
-                        title: 'Balance Tincture Guide',
+                        title: 'Natural Fibroid & Hormone Support - Balance Tincture with St Johns Bush',
                         slug: 'balance-tincture',
-                        description: 'Sacred harmony of ancient plant wisdom for hormonal balance.',
+                        description: 'Herbal tincture with St Johns Bush (Justicia secunda) for fibroids, hormonal balance, and womb wellness.',
                         publishDate: '2024-01-01',
                         modifiedDate: '2025-01-01'
                     }),
@@ -48,10 +93,11 @@ export default function BalanceTinctureGuide() {
                     getBreadcrumbSchema([
                         { name: 'Home', url: '/' },
                         { name: 'Healing Guides', url: '/healing-guides' },
-                        { name: 'Balance Tincture', url: '/guides/balance-tincture' }
+                        { name: 'Balance Tincture - Fibroid & Hormone Support', url: '/guides/balance-tincture' }
                     ])
                 ]}
             />
+
             <div className="min-h-screen bg-gradient-to-b from-[#0a0a1a] via-[#0d1a2d] to-[#0a1020]">
                 {/* Hero Section - Ma'at Theme: Blue, Gold, Yellow */}
                 <section className="relative py-20 px-4 overflow-hidden">
