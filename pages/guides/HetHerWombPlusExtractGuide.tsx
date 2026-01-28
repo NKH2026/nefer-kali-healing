@@ -320,7 +320,7 @@ export default function HetHerWombPlusExtractGuide() {
 
                         {/* Animated Cycle Chart */}
                         <div className="bg-gradient-to-br from-slate-900/60 via-emerald-950/30 to-pink-950/40 border border-emerald-500/20 rounded-2xl p-8 backdrop-blur-sm">
-                            <CycleChart className="mb-8" />
+                            <CycleChart className="mb-8" productName="Het Her Womb PLUS Extract" />
                         </div>
 
                         {/* Dosage Instructions */}

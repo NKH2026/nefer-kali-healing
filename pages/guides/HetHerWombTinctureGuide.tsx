@@ -332,7 +332,7 @@ export default function HetHerWombTinctureGuide() {
 
                         {/* Animated Cycle Chart */}
                         <div className="bg-gradient-to-br from-slate-900/60 to-red-950/40 border border-red-500/20 rounded-2xl p-8 backdrop-blur-sm">
-                            <CycleChart className="mb-8" />
+                            <CycleChart className="mb-8" productName="Het Her Womb Tincture" />
                         </div>
 
                         {/* Usage Instructions */}

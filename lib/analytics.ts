@@ -5,7 +5,7 @@
 export const ANALYTICS_CONFIG = {
     // Google Analytics 4 Measurement ID
     // Get this from: https://analytics.google.com → Admin → Data Streams → Web
-    GA4_MEASUREMENT_ID: 'G-L504Y40N9W',
+    GA4_MEASUREMENT_ID: 'G-LS04Y40M0W',
 
     // Microsoft Clarity Project ID  
     // Get this from: https://clarity.microsoft.com → Settings → Overview

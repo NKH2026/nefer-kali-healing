@@ -73,6 +73,31 @@
     }
   </style>
   <link rel="stylesheet" href="/index.css">
+
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LS04Y40M0W"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-LS04Y40M0W', {
+      page_title: document.title,
+      page_location: window.location.href,
+      send_page_view: true
+    });
+  </script>
+
+  <!-- Microsoft Clarity -->
+  <!-- Get your Project ID from: https://clarity.microsoft.com → Settings → Setup → Project ID -->
+  <!-- Replace CLARITY_PROJECT_ID with your actual ID -->
+  <script type="text/javascript">
+    (function (c, l, a, r, i, t, y) {
+      c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments) };
+      t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
+      y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+    })(window, document, "clarity", "script", "v7m3wbvq12");
+  </script>
+
 </head>
 
 <body>

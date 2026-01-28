@@ -2,9 +2,10 @@ import React from 'react';
 
 interface CycleChartProps {
     className?: string;
+    productName?: string;
 }
 
-const CycleChart: React.FC<CycleChartProps> = ({ className = '' }) => {
+const CycleChart: React.FC<CycleChartProps> = ({ className = '', productName = 'Het Her Womb PLUS Tea' }) => {
     // 28 days in the cycle
     const days = Array.from({ length: 28 }, (_, i) => i + 1);
 
@@ -137,7 +138,7 @@ const CycleChart: React.FC<CycleChartProps> = ({ className = '' }) => {
                         <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-r from-amber-500 to-pink-500 animate-pulse flex items-center justify-center">
                             <span className="text-white text-base sm:text-lg">☕</span>
                         </div>
-                        <span className="text-sm sm:text-base lg:text-xl font-bold text-amber-200">Take Het Her Womb PLUS Tea</span>
+                        <span className="text-sm sm:text-base lg:text-xl font-bold text-amber-200">Take {productName}</span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         <div className="bg-green-900/30 border border-green-500/40 rounded-lg p-2.5 sm:p-3 flex items-center gap-2 sm:gap-3">

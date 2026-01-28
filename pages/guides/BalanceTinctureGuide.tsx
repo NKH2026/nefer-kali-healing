@@ -337,7 +337,7 @@ export default function BalanceTinctureGuide() {
 
                         {/* Animated Cycle Chart */}
                         <div className="bg-gradient-to-br from-slate-900/60 via-blue-950/30 to-amber-950/40 border border-blue-500/20 rounded-2xl p-8 backdrop-blur-sm">
-                            <CycleChart className="mb-8" />
+                            <CycleChart className="mb-8" productName="Balance Tincture" />
                         </div>
 
                         {/* Dosage Instructions */}
