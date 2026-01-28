@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { FileText, ExternalLink, BookOpen, Download } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import gsap from 'gsap';
 
 // Guide card component
@@ -229,8 +229,19 @@ const GUIDES: Record<TabKey, GuideCardProps[]> = {
 };
 
 const HealingGuides: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<TabKey>('herbal-extracts');
+    const [searchParams, setSearchParams] = useSearchParams();
     const contentRef = useRef<HTMLDivElement>(null);
+
+    // Get active tab from URL, default to 'herbal-extracts'
+    const tabFromUrl = searchParams.get('tab') as TabKey | null;
+    const activeTab: TabKey = tabFromUrl && TABS.some(t => t.key === tabFromUrl)
+        ? tabFromUrl
+        : 'herbal-extracts';
+
+    // Function to change tab and update URL
+    const setActiveTab = (tab: TabKey) => {
+        setSearchParams({ tab });
+    };
 
     // Animate cards when tab changes
     useEffect(() => {
