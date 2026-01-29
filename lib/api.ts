@@ -28,7 +28,8 @@ export const api = {
                         customer_email: review.customer_email,
                         product_id: review.product_id,
                         rating: review.rating,
-                        review_text: review.review_text
+                        review_text: review.review_text,
+                        status: 'pending'
                     }
                 ])
                 .select();
