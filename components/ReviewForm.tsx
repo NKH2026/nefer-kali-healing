@@ -10,12 +10,13 @@ const ReviewForm: React.FC = () => {
     const [hoverRating, setHoverRating] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [dbProducts, setDbProducts] = useState<{ id: string, title: string }[]>([]);
 
     // Form state
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        product: '',
+        product_id: '',
         review: ''
     });
 
@@ -35,16 +36,28 @@ const ReviewForm: React.FC = () => {
         return () => ctx.revert();
     }, []);
 
+    // Fetch products on mount
+    React.useEffect(() => {
+        const fetchProducts = async () => {
+            const { data } = await api.products.list();
+            if (data) {
+                setDbProducts(data.map((p: any) => ({ id: p.id, title: p.title })));
+            }
+        };
+        fetchProducts();
+    }, []);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
 
         try {
             await api.reviews.submit({
-                reviewer_name: formData.name,
-                product_id: formData.product,
+                customer_name: formData.name,
+                customer_email: formData.email,
+                product_id: formData.product_id,
                 rating: rating,
-                comment: formData.review
+                review_text: formData.review
             });
 
             setIsSubmitting(false);
@@ -53,7 +66,7 @@ const ReviewForm: React.FC = () => {
             // Reset after showing success message
             setTimeout(() => {
                 setIsSuccess(false);
-                setFormData({ name: '', email: '', product: '', review: '' });
+                setFormData({ name: '', email: '', product_id: '', review: '' });
                 setRating(0);
             }, 3000);
         } catch (error) {
@@ -140,13 +153,13 @@ const ReviewForm: React.FC = () => {
                                     <label className="text-xs uppercase tracking-widest text-white/40 ml-4">Select Product</label>
                                     <div className="relative">
                                         <select
-                                            value={formData.product}
-                                            onChange={(e) => setFormData({ ...formData, product: e.target.value })}
+                                            value={formData.product_id}
+                                            onChange={(e) => setFormData({ ...formData, product_id: e.target.value })}
                                             className="w-full bg-white/5 border border-white/10 rounded-full px-6 py-4 text-white appearance-none focus:outline-none focus:border-[#D4AF37] transition-colors cursor-pointer"
                                         >
                                             <option value="" className="bg-[#1a1a1a]">Select a product...</option>
-                                            {PRODUCTS.filter(p => p.type === 'Product').map(p => (
-                                                <option key={p.id} value={p.title} className="bg-[#1a1a1a]">
+                                            {dbProducts.map(p => (
+                                                <option key={p.id} value={p.id} className="bg-[#1a1a1a]">
                                                     {p.title}
                                                 </option>
                                             ))}

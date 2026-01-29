@@ -1,24 +1,34 @@
 import { supabase } from './supabase';
 
 export interface ReviewInsert {
-    reviewer_name: string;
-    product_id: string; // Storing the product name for now
+    customer_name: string;
+    customer_email: string;
+    product_id: string; // UUID
     rating: number;
-    comment: string;
-    // email: string; // We'll add this later if we update the schema
+    review_text: string;
 }
 
 export const api = {
+    products: {
+        async list() {
+            const { data, error } = await supabase
+                .from('products')
+                .select('id, title');
+            if (error) throw error;
+            return { data };
+        }
+    },
     reviews: {
         async submit(review: ReviewInsert) {
             const { data, error } = await supabase
                 .from('reviews')
                 .insert([
                     {
-                        reviewer_name: review.reviewer_name,
+                        customer_name: review.customer_name,
+                        customer_email: review.customer_email,
                         product_id: review.product_id,
                         rating: review.rating,
-                        comment: review.comment
+                        review_text: review.review_text
                     }
                 ])
                 .select();
@@ -31,7 +41,7 @@ export const api = {
             const { data, error } = await supabase
                 .from('reviews')
                 .select('*')
-                .eq('is_approved', true)
+                .eq('status', 'approved')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
