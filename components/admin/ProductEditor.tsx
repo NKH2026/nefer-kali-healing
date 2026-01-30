@@ -170,15 +170,21 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                             id: v.id,
                             title: v.title,
                             option1: v.option1,
+                            option2: v.option2 || undefined,  // Load option2!
                             price: v.price?.toString() || '',
                             sku: v.sku || '',
                             inventory: v.inventory_quantity?.toString() || '0'
                         })));
-                        // Set option name from first variant
-                        if (variantData[0].option1) {
-                            // Extract option name (before the colon if formatted as "Size: 2oz")
-                            const firstValue = variantData[0].option1;
-                            setVariantValues(variantData.map(v => v.option1));
+
+                        // Extract unique option1 values
+                        const uniqueOpt1 = [...new Set(variantData.map(v => v.option1).filter(Boolean))];
+                        setVariantValues(uniqueOpt1);
+
+                        // Extract unique option2 values and set hasSecondOption if any exist
+                        const uniqueOpt2 = [...new Set(variantData.map(v => v.option2).filter(Boolean))];
+                        if (uniqueOpt2.length > 0) {
+                            setHasSecondOption(true);
+                            setVariantValues2(uniqueOpt2);
                         }
                     }
                 }
