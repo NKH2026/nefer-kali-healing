@@ -46,7 +46,27 @@ export const ProductList = ({ onEdit, refreshTrigger }: ProductListProps) => {
 
             if (fetchError) throw fetchError;
 
-            setProducts(data || []);
+            // For products with variants, calculate inventory from variant totals
+            const productsWithVariantTotals = await Promise.all(
+                (data || []).map(async (product: any) => {
+                    if (product.has_variants) {
+                        const { data: variants } = await supabase
+                            .from('product_variants')
+                            .select('inventory_quantity')
+                            .eq('product_id', product.id);
+
+                        if (variants && variants.length > 0) {
+                            const variantTotal = variants.reduce(
+                                (sum: number, v: any) => sum + (v.inventory_quantity || 0), 0
+                            );
+                            return { ...product, inventory_quantity: variantTotal };
+                        }
+                    }
+                    return product;
+                })
+            );
+
+            setProducts(productsWithVariantTotals);
         } catch (err: any) {
             console.error('Error fetching products:', err);
             setError(err.message);
