@@ -633,8 +633,8 @@ const Orders: React.FC = () => {
                                                                 className="w-12 h-12 rounded-lg object-cover bg-[#1a1a1a]"
                                                             />
                                                         )}
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-white text-sm truncate">{item.product_title}</p>
+                                                        <div className="flex-1">
+                                                            <p className="text-white text-sm">{item.product_title}</p>
                                                             {item.variant_title && (
                                                                 <p className="text-gray-500 text-xs">{item.variant_title}</p>
                                                             )}

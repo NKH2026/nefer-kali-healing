@@ -3,6 +3,9 @@
 -- Run this in the Supabase SQL Editor
 -- ============================================
 
+-- Drop the old version first (required if signature changed)
+DROP FUNCTION IF EXISTS decrement_inventory(uuid, uuid, integer);
+
 -- Create the decrement_inventory RPC function
 -- Called by the stripe-webhook after a successful checkout
 create or replace function decrement_inventory(
