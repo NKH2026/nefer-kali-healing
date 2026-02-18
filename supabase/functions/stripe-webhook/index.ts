@@ -366,7 +366,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       product_id: product?.metadata?.product_id || null,
       variant_id: product?.metadata?.variant_id || null,
       product_title: item.description || product?.name || 'Unknown Product',
-      variant_title: null,
+      variant_title: product?.metadata?.variant_title || null,
       sku: null,
       image_url: product?.images?.[0] || null,
       quantity: item.quantity || 1,

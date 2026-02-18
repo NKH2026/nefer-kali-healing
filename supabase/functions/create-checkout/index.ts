@@ -136,6 +136,7 @@ serve(async (req) => {
                         metadata: {
                             product_id: item.productId,
                             variant_id: item.variantId || '',
+                            variant_title: item.variantTitle || '',
                         },
                     },
                     unit_amount: Math.round(item.price * 100),

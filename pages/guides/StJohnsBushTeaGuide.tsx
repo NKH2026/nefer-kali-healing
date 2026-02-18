@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Leaf, Flame, Wind, Heart, Shield, Sparkles } from 'lucide-react';
+import { ArrowLeft, Leaf, Flame, Wind, Heart, Shield, Sparkles, ShoppingBag } from 'lucide-react';
 import CycleChart from '../../components/guides/CycleChart';
 import SEOHead from '../../components/SEOHead';
 import { getArticleSchema, getFAQSchema, getBreadcrumbSchema } from '../../lib/schema';
@@ -88,17 +88,37 @@ export default function StJohnsBushTeaGuide() {
                             </p>
                         </div>
 
-                        {/* View PDF Button */}
-                        <div className="flex justify-center mb-12">
+                        {/* CTA Buttons */}
+                        <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+                            <Link
+                                to="/offerings/st-johns-bush-tea"
+                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#D4AF37] hover:bg-[#b5952f] text-black rounded-xl font-bold uppercase tracking-widest transition-all duration-300 shadow-lg shadow-yellow-900/20 hover:scale-105"
+                            >
+                                <ShoppingBag className="w-5 h-5" />
+                                Shop St. John's Bush
+                            </Link>
                             <a
                                 href="/guides/st-johns-bush-guide.pdf"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-700 to-rose-700 hover:from-red-600 hover:to-rose-600 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-red-900/50"
+                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-red-900/50 to-rose-900/50 hover:from-red-800/50 hover:to-rose-800/50 border border-red-500/30 text-red-100 rounded-xl font-semibold transition-all duration-300"
                             >
                                 <Leaf className="w-5 h-5" />
                                 View PDF Guide
                             </a>
+                        </div>
+
+                        {/* Product Image */}
+                        <div className="relative max-w-lg mx-auto mb-12 rounded-2xl overflow-hidden shadow-2xl shadow-red-900/40 border border-red-500/20 group">
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
+                            <img
+                                src="/guides/st-johns-bush-tea-product.jpg"
+                                alt="St Johns Bush Tea (Justicia secunda) - Caribbean Healing Herb"
+                                className="w-full h-auto transform group-hover:scale-105 transition-transform duration-700"
+                            />
+                            <div className="absolute bottom-4 left-4 right-4 z-20 text-center">
+                                <p className="text-white/90 text-sm font-medium tracking-wider uppercase">Justicia secunda</p>
+                            </div>
                         </div>
 
                         {/* Iba Oya Welcome Message */}
@@ -135,7 +155,7 @@ export default function StJohnsBushTeaGuide() {
                                 <h2 className="text-2xl font-bold text-red-200">Sacred Ingredients</h2>
                             </div>
                             <div className="bg-red-900/20 border border-red-500/20 rounded-xl p-6 text-center">
-                                <p className="text-red-300 font-semibold text-lg">Organic St Lucian St John's Bush</p>
+                                <p className="text-red-300 font-semibold text-lg">Organic St Lucian St John's Bush (Justicia secunda)</p>
                                 <p className="text-red-100/60 text-sm mt-1">Leaves and Stems • Caribbean Traditional Medicine</p>
                             </div>
                         </div>
