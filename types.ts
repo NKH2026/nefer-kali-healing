@@ -8,6 +8,7 @@ export interface Product {
   image_url: string | null;
   rating: number;
   reviews_count: number;
+  is_digital?: boolean;
 }
 
 export interface BlogPost {

@@ -47,7 +47,11 @@ async function sendConfirmationEmail(order: any, orderItems: any[]) {
 
   const itemsHTML = orderItems.map(item => `
         <tr>
-            <td style="padding: 12px; border-bottom: 1px solid #333;">${item.product_title}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #333;">
+              ${item.product_title}
+              ${item.is_digital && item.digital_asset_url ? `<br><a href="${item.digital_asset_url}" style="display: inline-block; margin-top: 8px; font-size: 12px; color: #D4AF37; text-decoration: none; border: 1px solid #D4AF37; padding: 4px 8px; border-radius: 4px;">⬇️ Download Item</a>` : ''}
+              ${item.is_digital && !item.digital_asset_url ? `<br><span style="font-size: 12px; color: #999;">Digital download will be emailed separately.</span>` : ''}
+            </td>
             <td style="padding: 12px; border-bottom: 1px solid #333; text-align: center;">${item.quantity}</td>
             <td style="padding: 12px; border-bottom: 1px solid #333; text-align: right;">$${item.unit_price.toFixed(2)}</td>
         </tr>
@@ -171,12 +175,20 @@ async function createShippoOrder(order: any, orderItems: any[]) {
   }
 
   try {
+    // Filter out digital items
+    const physicalItems = orderItems.filter((item: any) => !item.is_digital);
+
+    if (physicalItems.length === 0) {
+      console.log('Only digital items in this order, skipping Shippo order creation');
+      return null;
+    }
+
     // Calculate total weight (estimate 8oz per item)
-    const totalItems = orderItems.reduce((sum: number, item: any) => sum + item.quantity, 0);
+    const totalItems = physicalItems.reduce((sum: number, item: any) => sum + item.quantity, 0);
     const weightOz = Math.max(8, totalItems * 8); // Minimum 8oz
 
     // Build line items for Shippo
-    const lineItems = orderItems.map((item: any) => ({
+    const lineItems = physicalItems.map((item: any) => ({
       title: item.product_title,
       quantity: item.quantity,
       total_price: (item.unit_price * item.quantity).toFixed(2),
@@ -376,6 +388,26 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     };
   });
 
+  // Fetch product data to check for digital items
+  const productIds = orderItems.map(item => item.product_id).filter(Boolean);
+  let productsMap = new Map();
+  if (productIds.length > 0) {
+    const { data: productsData } = await supabase
+      .from('products')
+      .select('id, is_digital, digital_asset_url')
+      .in('id', productIds);
+    productsMap = new Map(productsData?.map((p: any) => [p.id, p]) || []);
+  }
+
+  const enhancedOrderItems = orderItems.map(item => {
+    const product = item.product_id ? productsMap.get(item.product_id) : null;
+    return {
+      ...item,
+      is_digital: product?.is_digital || false,
+      digital_asset_url: product?.digital_asset_url || null,
+    };
+  });
+
   // Insert order
   const { data: order, error: orderError } = await supabase
     .from('orders')
@@ -388,12 +420,12 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       customer_email: customer?.email || '',
       customer_name: customer?.name || shipping?.name || '',
       customer_phone: customer?.phone || '',
-      shipping_address_line1: shipping?.address?.line1 || '',
-      shipping_address_line2: shipping?.address?.line2 || '',
-      shipping_city: shipping?.address?.city || '',
-      shipping_state: shipping?.address?.state || '',
-      shipping_postal_code: shipping?.address?.postal_code || '',
-      shipping_country: shipping?.address?.country || 'US',
+      shipping_address_line1: shipping?.address?.line1 || customer?.address?.line1 || '',
+      shipping_address_line2: shipping?.address?.line2 || customer?.address?.line2 || '',
+      shipping_city: shipping?.address?.city || customer?.address?.city || '',
+      shipping_state: shipping?.address?.state || customer?.address?.state || '',
+      shipping_postal_code: shipping?.address?.postal_code || customer?.address?.postal_code || '',
+      shipping_country: shipping?.address?.country || customer?.address?.country || 'US',
       subtotal: (session.amount_subtotal || 0) / 100,
       shipping_cost: (session.shipping_cost?.amount_total || 0) / 100,
       discount_amount: (session.total_details?.amount_discount || 0) / 100,
@@ -410,10 +442,19 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
 
   console.log('Order created:', order.id);
 
-  // Insert order items
-  const itemsWithOrderId = orderItems.map((item) => ({
-    ...item,
+  // Insert order items into database (we only insert DB columns, so map back)
+  const itemsWithOrderId = enhancedOrderItems.map((item) => ({
     order_id: order.id,
+    product_id: item.product_id,
+    variant_id: item.variant_id,
+    product_title: item.product_title,
+    variant_title: item.variant_title,
+    sku: item.sku,
+    image_url: item.image_url,
+    quantity: item.quantity,
+    unit_price: item.unit_price,
+    total_price: item.total_price,
+    is_subscription: item.is_subscription,
   }));
 
   const { error: itemsError } = await supabase
@@ -451,12 +492,12 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
         stripe_customer_id: session.customer as string,
         customer_email: customer?.email || '',
         customer_name: customer?.name || '',
-        shipping_address_line1: shipping?.address?.line1 || '',
-        shipping_address_line2: shipping?.address?.line2 || '',
-        shipping_city: shipping?.address?.city || '',
-        shipping_state: shipping?.address?.state || '',
-        shipping_postal_code: shipping?.address?.postal_code || '',
-        shipping_country: shipping?.address?.country || 'US',
+        shipping_address_line1: shipping?.address?.line1 || customer?.address?.line1 || '',
+        shipping_address_line2: shipping?.address?.line2 || customer?.address?.line2 || '',
+        shipping_city: shipping?.address?.city || customer?.address?.city || '',
+        shipping_state: shipping?.address?.state || customer?.address?.state || '',
+        shipping_postal_code: shipping?.address?.postal_code || customer?.address?.postal_code || '',
+        shipping_country: shipping?.address?.country || customer?.address?.country || 'US',
         status: 'active',
         billing_interval: getBillingInterval(subscription),
         next_billing_date: new Date(subscription.current_period_end * 1000).toISOString(),
@@ -471,7 +512,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   }
 
   // Create order in Shippo for fulfillment
-  await createShippoOrder(order, orderItems);
+  await createShippoOrder(order, enhancedOrderItems);
 
   // Record coupon redemption if a coupon was used
   const couponId = session.metadata?.coupon_id;
@@ -494,8 +535,8 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     }
   }
 
-  // Send confirmation email with non-profit receipt
-  await sendConfirmationEmail(order, orderItems);
+  // Send confirmation email with non-profit receipt, including digital downloads
+  await sendConfirmationEmail(order, enhancedOrderItems);
 
   console.log('Checkout processing complete for order:', order.order_number);
 }

@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, Edit2, Trash2, Tag, TrendingUp, Power, PowerOff, Search } from 'lucide-react';
+import { Plus, Edit2, Trash2, Tag, TrendingUp, Power, PowerOff, Search, X } from 'lucide-react';
+
+interface CouponRedemption {
+    id: string;
+    redeemed_at: string;
+    customer_email: string;
+    discount_amount: number;
+    order_total: number;
+    final_total: number;
+}
 
 interface Coupon {
     id: string;
@@ -26,6 +35,10 @@ export const CouponList = ({ onEdit, onNew }: CouponListProps) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive' | 'expired'>('all');
 
+    const [selectedCouponId, setSelectedCouponId] = useState<string | null>(null);
+    const [redemptions, setRedemptions] = useState<CouponRedemption[]>([]);
+    const [loadingRedemptions, setLoadingRedemptions] = useState(false);
+
     useEffect(() => {
         fetchCoupons();
     }, []);
@@ -43,6 +56,26 @@ export const CouponList = ({ onEdit, onNew }: CouponListProps) => {
             console.error('Error fetching coupons:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchRedemptions = async (couponId: string) => {
+        setSelectedCouponId(couponId);
+        setLoadingRedemptions(true);
+        try {
+            const { data, error } = await supabase
+                .from('coupon_redemptions')
+                .select('*')
+                .eq('coupon_id', couponId)
+                .order('redeemed_at', { ascending: false });
+
+            if (error) throw error;
+            setRedemptions(data || []);
+        } catch (error) {
+            console.error('Error fetching redemptions:', error);
+            alert('Failed to load redemptions');
+        } finally {
+            setLoadingRedemptions(false);
         }
     };
 
@@ -164,8 +197,8 @@ export const CouponList = ({ onEdit, onNew }: CouponListProps) => {
                                     key={status}
                                     onClick={() => setFilterStatus(status as any)}
                                     className={`px-4 py-2 rounded-lg text-sm font-urbanist transition-all ${filterStatus === status
-                                            ? 'bg-purple-600 text-white'
-                                            : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                                        ? 'bg-purple-600 text-white'
+                                        : 'bg-white/5 text-gray-400 hover:bg-white/10'
                                         }`}
                                 >
                                     {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -231,12 +264,15 @@ export const CouponList = ({ onEdit, onNew }: CouponListProps) => {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => fetchRedemptions(coupon.id)}
+                                                    className="flex items-center gap-2 hover:bg-white/10 p-1.5 -ml-1.5 rounded transition-colors"
+                                                >
                                                     <TrendingUp className="text-gray-500" size={14} />
-                                                    <span className="text-gray-300 font-urbanist text-sm">
+                                                    <span className="text-gray-300 font-urbanist text-sm border-b border-dashed border-gray-500">
                                                         {coupon.current_usage}{coupon.usage_limit ? ` / ${coupon.usage_limit}` : ''}
                                                     </span>
-                                                </div>
+                                                </button>
                                                 {isLimitReached(coupon) && (
                                                     <div className="text-xs text-orange-400 font-urbanist mt-1">
                                                         Limit reached
@@ -246,8 +282,8 @@ export const CouponList = ({ onEdit, onNew }: CouponListProps) => {
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col gap-1">
                                                     <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-urbanist w-fit ${coupon.is_active && !isExpired(coupon)
-                                                            ? 'bg-green-500/20 text-green-400'
-                                                            : 'bg-gray-500/20 text-gray-400'
+                                                        ? 'bg-green-500/20 text-green-400'
+                                                        : 'bg-gray-500/20 text-gray-400'
                                                         }`}>
                                                         {coupon.is_active && !isExpired(coupon) ? 'Active' : 'Inactive'}
                                                     </span>
@@ -263,8 +299,8 @@ export const CouponList = ({ onEdit, onNew }: CouponListProps) => {
                                                     <button
                                                         onClick={() => toggleActive(coupon.id, coupon.is_active)}
                                                         className={`p-2 rounded-lg transition-colors ${coupon.is_active
-                                                                ? 'text-green-400 hover:bg-green-500/20'
-                                                                : 'text-gray-500 hover:bg-gray-500/20'
+                                                            ? 'text-green-400 hover:bg-green-500/20'
+                                                            : 'text-gray-500 hover:bg-gray-500/20'
                                                             }`}
                                                         title={coupon.is_active ? 'Deactivate' : 'Activate'}
                                                     >
@@ -294,6 +330,58 @@ export const CouponList = ({ onEdit, onNew }: CouponListProps) => {
                     </div>
                 )}
             </div>
+
+            {selectedCouponId && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-[#1a1a1a] rounded-xl max-w-2xl w-full border border-white/10 max-h-[80vh] flex flex-col">
+                        <div className="p-6 border-b border-white/10 flex items-center justify-between">
+                            <h3 className="text-xl text-white font-cinzel">Coupon Redemptions</h3>
+                            <button
+                                onClick={() => setSelectedCouponId(null)}
+                                className="text-gray-400 hover:text-white transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <div className="p-6 overflow-y-auto">
+                            {loadingRedemptions ? (
+                                <div className="text-gray-400 font-urbanist text-center">Loading redemptions...</div>
+                            ) : redemptions.length === 0 ? (
+                                <div className="text-gray-400 font-urbanist text-center">No redemptions found for this coupon.</div>
+                            ) : (
+                                <table className="w-full">
+                                    <thead className="text-left text-xs uppercase text-gray-500 font-urbanist mb-4 border-b border-white/10 block pb-2">
+                                        <tr className="flex">
+                                            <th className="flex-1">Date</th>
+                                            <th className="flex-[2]">Customer Email</th>
+                                            <th className="flex-1 text-right">Discount</th>
+                                            <th className="flex-1 text-right">Final Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="space-y-4 block pt-4">
+                                        {redemptions.map(r => (
+                                            <tr key={r.id} className="flex font-urbanist text-sm border-b border-white/5 pb-2">
+                                                <td className="flex-1 text-gray-400">
+                                                    {new Date(r.redeemed_at).toLocaleDateString()}
+                                                </td>
+                                                <td className="flex-[2] text-white overflow-hidden text-ellipsis px-2">
+                                                    {r.customer_email || 'Unknown'}
+                                                </td>
+                                                <td className="flex-1 text-green-400 text-right">
+                                                    ${Number(r.discount_amount || 0).toFixed(2)}
+                                                </td>
+                                                <td className="flex-1 text-white text-right font-medium">
+                                                    ${Number(r.final_total || 0).toFixed(2)}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

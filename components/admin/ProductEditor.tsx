@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { ArrowLeft, Save, Trash2, Upload, X, ImageIcon, Plus } from 'lucide-react';
@@ -30,6 +30,8 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
     const [shortDescription, setShortDescription] = useState('');
     const [category, setCategory] = useState(CATEGORIES[0]);
     const [status, setStatus] = useState<'draft' | 'active' | 'archived'>('draft');
+    const [isDigital, setIsDigital] = useState(false);
+    const [digitalAssetUrl, setDigitalAssetUrl] = useState('');
 
     // Pricing
     const [price, setPrice] = useState('');
@@ -139,6 +141,8 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                 setShortDescription(data.short_description || '');
                 setCategory(data.category);
                 setStatus(data.status);
+                setIsDigital(data.is_digital || false);
+                setDigitalAssetUrl(data.digital_asset_url || '');
                 setPrice(data.price?.toString() || '');
                 setOnSale(data.on_sale || false);
                 setCompareAtPrice(data.compare_at_price?.toString() || '');
@@ -221,7 +225,7 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
         try {
             const uploadedImages: { url: string, alt: string }[] = [];
 
-            for (const file of Array.from(files)) {
+            for (const file of Array.from(files) as File[]) {
                 const fileExt = file.name.split('.').pop();
                 const fileName = `${Math.random()}.${fileExt}`;
                 const filePath = `products/${fileName}`;
@@ -267,6 +271,8 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                 short_description: shortDescription,
                 category,
                 status,
+                is_digital: isDigital,
+                digital_asset_url: digitalAssetUrl,
                 price: price ? parseFloat(price) : null,
                 on_sale: onSale,
                 compare_at_price: compareAtPrice ? parseFloat(compareAtPrice) : null,
@@ -614,6 +620,33 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                 <EditorContent editor={descriptionEditor} className="prose prose-invert max-w-none" />
                             </div>
                         </div>
+
+                        <div className="mt-4 pt-4 border-t border-white/10">
+                            <label className="flex items-center gap-2 text-sm text-gray-300 font-urbanist h-6">
+                                <input
+                                    type="checkbox"
+                                    checked={isDigital}
+                                    onChange={(e) => setIsDigital(e.target.checked)}
+                                    className="rounded w-4 h-4 text-purple-600 focus:ring-purple-500/50 focus:ring-offset-gray-900 focus:ring-2 border-white/20 bg-white/5"
+                                />
+                                This is a Digital Product (e.g. PDF Download, eBook)
+                            </label>
+                            {isDigital && (
+                                <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <label className="block text-xs text-purple-400 uppercase tracking-wider mb-2 font-urbanist">Digital Asset File URL</label>
+                                    <input
+                                        type="text"
+                                        value={digitalAssetUrl}
+                                        onChange={(e) => setDigitalAssetUrl(e.target.value)}
+                                        placeholder="Enter secure Google Drive link or direct PDF URL..."
+                                        className="w-full bg-purple-900/10 border border-purple-500/30 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500 focus:outline-none placeholder-gray-500 font-urbanist"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-2 font-urbanist">
+                                        This link will be automatically emailed to the customer after their purchase is successfully processed via Stripe.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
                     </Section>
 
                     {/* Pricing */}
@@ -666,75 +699,77 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                     </Section>
 
                     {/* Inventory */}
-                    <Section title="Inventory Tracking">
-                        <div className="space-y-4">
-                            <label className="flex items-center gap-2 text-sm text-gray-400 font-urbanist h-6">
-                                <input
-                                    type="checkbox"
-                                    checked={trackInventory}
-                                    onChange={(e) => setTrackInventory(e.target.checked)}
-                                    className="rounded w-4 h-4"
-                                />
-                                Track quantity for this product
-                            </label>
+                    {!isDigital && (
+                        <Section title="Inventory Tracking">
+                            <div className="space-y-4">
+                                <label className="flex items-center gap-2 text-sm text-gray-400 font-urbanist h-6">
+                                    <input
+                                        type="checkbox"
+                                        checked={trackInventory}
+                                        onChange={(e) => setTrackInventory(e.target.checked)}
+                                        className="rounded w-4 h-4"
+                                    />
+                                    Track quantity for this product
+                                </label>
 
-                            {trackInventory && !hasVariants && (
+                                {trackInventory && !hasVariants && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Quantity</label>
+                                            <input
+                                                type="number"
+                                                value={inventoryQuantity}
+                                                onChange={(e) => setInventoryQuantity(e.target.value)}
+                                                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Low Stock Threshold</label>
+                                            <input
+                                                type="number"
+                                                value={lowStockThreshold}
+                                                onChange={(e) => setLowStockThreshold(e.target.value)}
+                                                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Quantity</label>
+                                        <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">SKU (Stock Keeping Unit)</label>
                                         <input
-                                            type="number"
-                                            value={inventoryQuantity}
-                                            onChange={(e) => setInventoryQuantity(e.target.value)}
-                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
+                                            type="text"
+                                            value={sku}
+                                            onChange={(e) => setSku(e.target.value)}
+                                            placeholder="PROD-001"
+                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none placeholder-gray-600 font-urbanist"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Low Stock Threshold</label>
-                                        <input
-                                            type="number"
-                                            value={lowStockThreshold}
-                                            onChange={(e) => setLowStockThreshold(e.target.value)}
-                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
-                                        />
+                                    <div className="flex flex-col justify-center space-y-2">
+                                        <label className="flex items-center gap-2 text-sm text-gray-400 font-urbanist h-6">
+                                            <input
+                                                type="checkbox"
+                                                checked={allowBackorders}
+                                                onChange={(e) => setAllowBackorders(e.target.checked)}
+                                                className="rounded w-4 h-4"
+                                            />
+                                            Continue selling when out of stock
+                                        </label>
+                                        <label className="flex items-center gap-2 text-sm text-gray-400 font-urbanist h-6">
+                                            <input
+                                                type="checkbox"
+                                                checked={isSoldOut}
+                                                onChange={(e) => setIsSoldOut(e.target.checked)}
+                                                className="rounded w-4 h-4"
+                                            />
+                                            Mark as Sold Out (Overides inventory)
+                                        </label>
                                     </div>
-                                </div>
-                            )}
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">SKU (Stock Keeping Unit)</label>
-                                    <input
-                                        type="text"
-                                        value={sku}
-                                        onChange={(e) => setSku(e.target.value)}
-                                        placeholder="PROD-001"
-                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none placeholder-gray-600 font-urbanist"
-                                    />
-                                </div>
-                                <div className="flex flex-col justify-center space-y-2">
-                                    <label className="flex items-center gap-2 text-sm text-gray-400 font-urbanist h-6">
-                                        <input
-                                            type="checkbox"
-                                            checked={allowBackorders}
-                                            onChange={(e) => setAllowBackorders(e.target.checked)}
-                                            className="rounded w-4 h-4"
-                                        />
-                                        Continue selling when out of stock
-                                    </label>
-                                    <label className="flex items-center gap-2 text-sm text-gray-400 font-urbanist h-6">
-                                        <input
-                                            type="checkbox"
-                                            checked={isSoldOut}
-                                            onChange={(e) => setIsSoldOut(e.target.checked)}
-                                            className="rounded w-4 h-4"
-                                        />
-                                        Mark as Sold Out (Overides inventory)
-                                    </label>
                                 </div>
                             </div>
-                        </div>
-                    </Section>
+                        </Section>
+                    )}
 
                     {/* Pre-order Settings */}
                     <Section title="Pre-order Settings">
@@ -1022,120 +1057,122 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                     </Section>
 
                     {/* Inventory */}
-                    <Section title="Inventory">
-                        <div className="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">SKU</label>
-                                <input
-                                    type="text"
-                                    value={sku}
-                                    onChange={(e) => setSku(e.target.value)}
-                                    placeholder="PRODUCT-SKU"
-                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
-                                />
-                            </div>
-                        </div>
-                        <label className="flex items-center gap-2 text-sm text-gray-400 mb-4 font-urbanist">
-                            <input
-                                type="checkbox"
-                                checked={trackInventory}
-                                onChange={(e) => setTrackInventory(e.target.checked)}
-                                className="rounded"
-                            />
-                            Track Inventory
-                        </label>
-                        {trackInventory && (
+                    {!isDigital && (
+                        <Section title="Inventory">
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">
-                                        Quantity {hasVariants && variants.length > 0 && <span className="text-purple-400 normal-case">(auto-calculated from variants)</span>}
-                                    </label>
+                                    <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">SKU</label>
                                     <input
-                                        type="number"
-                                        value={hasVariants && variants.length > 0
-                                            ? variants.reduce((sum, v) => sum + (parseInt(v.inventory) || 0), 0)
-                                            : inventoryQuantity}
-                                        onChange={(e) => setInventoryQuantity(e.target.value)}
-                                        readOnly={hasVariants && variants.length > 0}
-                                        className={`w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist ${hasVariants && variants.length > 0 ? 'cursor-not-allowed opacity-70' : ''}`}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Low Stock Alert</label>
-                                    <input
-                                        type="number"
-                                        value={lowStockThreshold}
-                                        onChange={(e) => setLowStockThreshold(e.target.value)}
+                                        type="text"
+                                        value={sku}
+                                        onChange={(e) => setSku(e.target.value)}
+                                        placeholder="PRODUCT-SKU"
                                         className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
                                     />
                                 </div>
                             </div>
-                        )}
-                        <label className="flex items-center gap-2 text-sm text-gray-400 mb-4 font-urbanist">
-                            <input
-                                type="checkbox"
-                                checked={allowBackorders}
-                                onChange={(e) => setAllowBackorders(e.target.checked)}
-                                className="rounded"
-                            />
-                            Allow Backorders
-                        </label>
-
-                        {/* Sold Out Toggle */}
-                        <div className="border-t border-white/10 pt-4 mt-4">
-                            <button
-                                type="button"
-                                onClick={() => setIsSoldOut(!isSoldOut)}
-                                className={`w-full py-4 rounded-lg font-urbanist font-bold text-sm uppercase tracking-wider transition-all ${isSoldOut
-                                    ? 'bg-red-600 hover:bg-red-700 text-white'
-                                    : 'bg-white/10 hover:bg-white/20 text-gray-300'
-                                    }`}
-                            >
-                                {isSoldOut ? '🚫 MARKED AS SOLD OUT' : '✓ Mark as Sold Out'}
-                            </button>
-                            <p className="text-xs text-gray-500 mt-2 font-urbanist">
-                                {isSoldOut
-                                    ? 'This product shows "Sold Out" on the frontend. Click to make it available again.'
-                                    : 'Click to mark this product as sold out (overrides inventory count).'
-                                }
-                            </p>
-                        </div>
-
-                        <div className="border-t border-white/10 pt-4 mt-4">
                             <label className="flex items-center gap-2 text-sm text-gray-400 mb-4 font-urbanist">
                                 <input
                                     type="checkbox"
-                                    checked={isPreorder}
-                                    onChange={(e) => setIsPreorder(e.target.checked)}
+                                    checked={trackInventory}
+                                    onChange={(e) => setTrackInventory(e.target.checked)}
                                     className="rounded"
                                 />
-                                This is a Pre-order Item
+                                Track Inventory
                             </label>
-                            {isPreorder && (
-                                <div className="space-y-3">
+                            {trackInventory && (
+                                <div className="grid grid-cols-2 gap-4 mb-4">
                                     <div>
-                                        <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Release Date</label>
+                                        <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">
+                                            Quantity {hasVariants && variants.length > 0 && <span className="text-purple-400 normal-case">(auto-calculated from variants)</span>}
+                                        </label>
                                         <input
-                                            type="date"
-                                            value={preorderReleaseDate}
-                                            onChange={(e) => setPreorderReleaseDate(e.target.value)}
-                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
+                                            type="number"
+                                            value={hasVariants && variants.length > 0
+                                                ? variants.reduce((sum, v) => sum + (parseInt(v.inventory) || 0), 0)
+                                                : inventoryQuantity}
+                                            onChange={(e) => setInventoryQuantity(e.target.value)}
+                                            readOnly={hasVariants && variants.length > 0}
+                                            className={`w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist ${hasVariants && variants.length > 0 ? 'cursor-not-allowed opacity-70' : ''}`}
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Pre-order Message</label>
+                                        <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Low Stock Alert</label>
                                         <input
-                                            type="text"
-                                            value={preorderMessage}
-                                            onChange={(e) => setPreorderMessage(e.target.value)}
-                                            placeholder="Ships February 2026"
+                                            type="number"
+                                            value={lowStockThreshold}
+                                            onChange={(e) => setLowStockThreshold(e.target.value)}
                                             className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
                                         />
                                     </div>
                                 </div>
                             )}
-                        </div>
-                    </Section>
+                            <label className="flex items-center gap-2 text-sm text-gray-400 mb-4 font-urbanist">
+                                <input
+                                    type="checkbox"
+                                    checked={allowBackorders}
+                                    onChange={(e) => setAllowBackorders(e.target.checked)}
+                                    className="rounded"
+                                />
+                                Allow Backorders
+                            </label>
+
+                            {/* Sold Out Toggle */}
+                            <div className="border-t border-white/10 pt-4 mt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsSoldOut(!isSoldOut)}
+                                    className={`w-full py-4 rounded-lg font-urbanist font-bold text-sm uppercase tracking-wider transition-all ${isSoldOut
+                                        ? 'bg-red-600 hover:bg-red-700 text-white'
+                                        : 'bg-white/10 hover:bg-white/20 text-gray-300'
+                                        }`}
+                                >
+                                    {isSoldOut ? '🚫 MARKED AS SOLD OUT' : '✓ Mark as Sold Out'}
+                                </button>
+                                <p className="text-xs text-gray-500 mt-2 font-urbanist">
+                                    {isSoldOut
+                                        ? 'This product shows "Sold Out" on the frontend. Click to make it available again.'
+                                        : 'Click to mark this product as sold out (overrides inventory count).'
+                                    }
+                                </p>
+                            </div>
+
+                            <div className="border-t border-white/10 pt-4 mt-4">
+                                <label className="flex items-center gap-2 text-sm text-gray-400 mb-4 font-urbanist">
+                                    <input
+                                        type="checkbox"
+                                        checked={isPreorder}
+                                        onChange={(e) => setIsPreorder(e.target.checked)}
+                                        className="rounded"
+                                    />
+                                    This is a Pre-order Item
+                                </label>
+                                {isPreorder && (
+                                    <div className="space-y-3">
+                                        <div>
+                                            <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Release Date</label>
+                                            <input
+                                                type="date"
+                                                value={preorderReleaseDate}
+                                                onChange={(e) => setPreorderReleaseDate(e.target.value)}
+                                                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Pre-order Message</label>
+                                            <input
+                                                type="text"
+                                                value={preorderMessage}
+                                                onChange={(e) => setPreorderMessage(e.target.value)}
+                                                placeholder="Ships February 2026"
+                                                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </Section>
+                    )}
 
                     {/* Subscription Options */}
                     <Section title="Subscription Options">
@@ -1182,41 +1219,45 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                     </Section>
 
                     {/* Additional Information */}
-                    <Collapsible title="Ingredients">
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-                            <EditorContent editor={ingredientsEditor} className="prose prose-invert max-w-none" />
-                        </div>
-                    </Collapsible>
+                    {!isDigital && (
+                        <>
+                            <Collapsible title="Ingredients">
+                                <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+                                    <EditorContent editor={ingredientsEditor} className="prose prose-invert max-w-none" />
+                                </div>
+                            </Collapsible>
 
-                    <Collapsible title="Usage Instructions">
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-                            <EditorContent editor={usageEditor} className="prose prose-invert max-w-none" />
-                        </div>
-                    </Collapsible>
+                            <Collapsible title="Usage Instructions">
+                                <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+                                    <EditorContent editor={usageEditor} className="prose prose-invert max-w-none" />
+                                </div>
+                            </Collapsible>
 
-                    <Collapsible title="Benefits">
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-                            <EditorContent editor={benefitsEditor} className="prose prose-invert max-w-none" />
-                        </div>
-                    </Collapsible>
+                            <Collapsible title="Benefits">
+                                <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+                                    <EditorContent editor={benefitsEditor} className="prose prose-invert max-w-none" />
+                                </div>
+                            </Collapsible>
 
-                    <Collapsible title="Warnings & Precautions">
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-                            <EditorContent editor={warningsEditor} className="prose prose-invert max-w-none" />
-                        </div>
-                    </Collapsible>
+                            <Collapsible title="Warnings & Precautions">
+                                <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+                                    <EditorContent editor={warningsEditor} className="prose prose-invert max-w-none" />
+                                </div>
+                            </Collapsible>
 
-                    <Collapsible title="Return Policy">
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-                            <EditorContent editor={returnPolicyEditor} className="prose prose-invert max-w-none" />
-                        </div>
-                    </Collapsible>
+                            <Collapsible title="Return Policy">
+                                <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+                                    <EditorContent editor={returnPolicyEditor} className="prose prose-invert max-w-none" />
+                                </div>
+                            </Collapsible>
 
-                    <Collapsible title="Shipping Information">
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-                            <EditorContent editor={shippingInfoEditor} className="prose prose-invert max-w-none" />
-                        </div>
-                    </Collapsible>
+                            <Collapsible title="Shipping Information">
+                                <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+                                    <EditorContent editor={shippingInfoEditor} className="prose prose-invert max-w-none" />
+                                </div>
+                            </Collapsible>
+                        </>
+                    )}
                 </div>
             </div>
         </div>
