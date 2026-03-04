@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://neferkalihealing.org/wisdom/the-ancient-power-of-st-john-s-bush-a-caribbean-healing-tradition</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
   <!-- Main Pages -->
   <url>
     <loc>https://neferkalihealing.org/</loc>

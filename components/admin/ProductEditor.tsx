@@ -536,7 +536,7 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                 <div className="space-y-6">
                     {/* Images Section */}
                     <Section title="Product Images">
-                        <div className="grid grid-cols-4 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             {images.map((img, idx) => (
                                 <div key={idx} className="relative group aspect-square">
                                     <img
@@ -546,7 +546,7 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                     />
                                     <button
                                         onClick={() => removeImage(idx)}
-                                        className="absolute top-2 right-2 p-1 bg-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                        className="absolute top-2 right-2 p-1 bg-red-600 rounded-full opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity"
                                     >
                                         <X size={14} className="text-white" />
                                     </button>
@@ -557,7 +557,7 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                     )}
                                 </div>
                             ))}
-                            <label className="aspect-square border-2 border-dashed border-white/20 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-purple-500/50 transition-colors">
+                            <label className="aspect-square border-2 border-dashed border-white/20 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-purple-500/50 transition-colors bg-white/5">
                                 <ImageIcon className="w-8 h-8 text-gray-600 mb-2" />
                                 <span className="text-xs text-gray-500 font-urbanist">Add Images</span>
                                 <input
@@ -574,13 +574,13 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
 
                     {/* Basic Info */}
                     <Section title="Basic Information">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Category</label>
                                 <select
                                     value={category}
                                     onChange={(e) => setCategory(e.target.value)}
-                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
                                 >
                                     {CATEGORIES.map(cat => (
                                         <option key={cat} value={cat}>{cat}</option>
@@ -594,7 +594,7 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                     value={slug}
                                     onChange={(e) => setSlug(e.target.value)}
                                     placeholder="product-slug"
-                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none placeholder-gray-600 font-urbanist"
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none placeholder-gray-600 font-urbanist"
                                 />
                             </div>
                         </div>
@@ -605,7 +605,7 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                 onChange={(e) => setShortDescription(e.target.value)}
                                 rows={2}
                                 placeholder="Brief description for product cards..."
-                                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none placeholder-gray-600 resize-none font-urbanist"
+                                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none placeholder-gray-600 resize-none font-urbanist"
                             />
                         </div>
                         <div>
@@ -618,7 +618,7 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
 
                     {/* Pricing */}
                     <Section title="Pricing">
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Price ($)</label>
                                 <input
@@ -627,16 +627,16 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                     value={price}
                                     onChange={(e) => setPrice(e.target.value)}
                                     placeholder="0.00"
-                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
                                 />
                             </div>
                             <div>
-                                <label className="flex items-center gap-2 text-sm text-gray-400 mb-2 font-urbanist">
+                                <label className="flex items-center gap-2 text-sm text-gray-400 mb-2 font-urbanist h-6">
                                     <input
                                         type="checkbox"
                                         checked={onSale}
                                         onChange={(e) => setOnSale(e.target.checked)}
-                                        className="rounded"
+                                        className="rounded w-4 h-4"
                                     />
                                     On Sale
                                 </label>
@@ -647,7 +647,7 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                         value={compareAtPrice}
                                         onChange={(e) => setCompareAtPrice(e.target.value)}
                                         placeholder="Original price"
-                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
+                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
                                     />
                                 )}
                             </div>
@@ -659,15 +659,166 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                     value={costPerItem}
                                     onChange={(e) => setCostPerItem(e.target.value)}
                                     placeholder="0.00"
-                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
                                 />
                             </div>
                         </div>
                     </Section>
 
+                    {/* Inventory */}
+                    <Section title="Inventory Tracking">
+                        <div className="space-y-4">
+                            <label className="flex items-center gap-2 text-sm text-gray-400 font-urbanist h-6">
+                                <input
+                                    type="checkbox"
+                                    checked={trackInventory}
+                                    onChange={(e) => setTrackInventory(e.target.checked)}
+                                    className="rounded w-4 h-4"
+                                />
+                                Track quantity for this product
+                            </label>
+
+                            {trackInventory && !hasVariants && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Quantity</label>
+                                        <input
+                                            type="number"
+                                            value={inventoryQuantity}
+                                            onChange={(e) => setInventoryQuantity(e.target.value)}
+                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Low Stock Threshold</label>
+                                        <input
+                                            type="number"
+                                            value={lowStockThreshold}
+                                            onChange={(e) => setLowStockThreshold(e.target.value)}
+                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">SKU (Stock Keeping Unit)</label>
+                                    <input
+                                        type="text"
+                                        value={sku}
+                                        onChange={(e) => setSku(e.target.value)}
+                                        placeholder="PROD-001"
+                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none placeholder-gray-600 font-urbanist"
+                                    />
+                                </div>
+                                <div className="flex flex-col justify-center space-y-2">
+                                    <label className="flex items-center gap-2 text-sm text-gray-400 font-urbanist h-6">
+                                        <input
+                                            type="checkbox"
+                                            checked={allowBackorders}
+                                            onChange={(e) => setAllowBackorders(e.target.checked)}
+                                            className="rounded w-4 h-4"
+                                        />
+                                        Continue selling when out of stock
+                                    </label>
+                                    <label className="flex items-center gap-2 text-sm text-gray-400 font-urbanist h-6">
+                                        <input
+                                            type="checkbox"
+                                            checked={isSoldOut}
+                                            onChange={(e) => setIsSoldOut(e.target.checked)}
+                                            className="rounded w-4 h-4"
+                                        />
+                                        Mark as Sold Out (Overides inventory)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </Section>
+
+                    {/* Pre-order Settings */}
+                    <Section title="Pre-order Settings">
+                        <label className="flex items-center gap-2 text-sm text-gray-400 mb-4 font-urbanist h-6">
+                            <input
+                                type="checkbox"
+                                checked={isPreorder}
+                                onChange={(e) => setIsPreorder(e.target.checked)}
+                                className="rounded w-4 h-4"
+                            />
+                            This is a pre-order item
+                        </label>
+
+                        {isPreorder && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Pre-order Message</label>
+                                    <input
+                                        type="text"
+                                        value={preorderMessage}
+                                        onChange={(e) => setPreorderMessage(e.target.value)}
+                                        placeholder="e.g., Shipping in late October"
+                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none placeholder-gray-600 font-urbanist"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Release Date (Optional)</label>
+                                    <input
+                                        type="date"
+                                        value={preorderReleaseDate}
+                                        onChange={(e) => setPreorderReleaseDate(e.target.value)}
+                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </Section>
+
+                    {/* Subscription Settings */}
+                    <Section title="Subscription Settings">
+                        <label className="flex items-center gap-2 text-sm text-gray-400 mb-4 font-urbanist h-6">
+                            <input
+                                type="checkbox"
+                                checked={subscriptionAvailable}
+                                onChange={(e) => setSubscriptionAvailable(e.target.checked)}
+                                className="rounded w-4 h-4"
+                            />
+                            Offer subscription for this product
+                        </label>
+
+                        {subscriptionAvailable && (
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Subscription Discount (%)</label>
+                                    <input
+                                        type="number"
+                                        value={subscriptionDiscount}
+                                        onChange={(e) => setSubscriptionDiscount(e.target.value)}
+                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist max-w-xs"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Frequency Options</label>
+                                    <div className="space-y-2">
+                                        {SUBSCRIPTION_FREQUENCIES.map((freq) => (
+                                            <label key={freq.value} className="flex items-center gap-2 text-sm text-gray-300 font-urbanist h-6">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={subscriptionFrequencies.includes(freq.value)}
+                                                    onChange={() => toggleSubscriptionFrequency(freq.value)}
+                                                    className="rounded w-4 h-4"
+                                                />
+                                                {freq.label}
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </Section>
+
                     {/* Variants Section */}
                     <Section title="Product Options & Variants">
-                        <label className="flex items-center gap-2 text-sm text-gray-400 mb-4 font-urbanist">
+                        <label className="flex items-center gap-2 text-sm text-gray-400 mb-4 font-urbanist h-6">
                             <input
                                 type="checkbox"
                                 checked={hasVariants}
@@ -681,7 +832,7 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                         setHasSecondOption(false);
                                     }
                                 }}
-                                className="rounded"
+                                className="rounded w-4 h-4"
                             />
                             This product has multiple options (sizes, bases, etc.)
                         </label>
@@ -689,18 +840,18 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                             <div className="space-y-4">
                                 {/* Option 1 (e.g., Size) */}
                                 <div className="bg-purple-900/10 border border-purple-500/20 rounded-lg p-4">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div>
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-3">
+                                        <div className="w-full sm:w-auto">
                                             <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Option 1 Name</label>
                                             <input
                                                 type="text"
                                                 value={variantOption1}
                                                 onChange={(e) => setVariantOption1(e.target.value)}
                                                 placeholder="Size, Weight, etc."
-                                                className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
+                                                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist"
                                             />
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 w-full sm:w-auto">
                                             <input
                                                 type="text"
                                                 value={newVariantValue}
@@ -712,12 +863,12 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                                     }
                                                 }}
                                                 placeholder={`e.g., 2oz, 4oz`}
-                                                className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist w-32"
+                                                className="flex-1 sm:flex-none bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500/50 focus:outline-none font-urbanist w-32"
                                             />
                                             <button
                                                 type="button"
                                                 onClick={addVariantValue}
-                                                className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-urbanist rounded-lg transition-colors"
+                                                className="flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white text-sm font-urbanist rounded-lg transition-colors whitespace-nowrap"
                                             >
                                                 <Plus size={16} />
                                                 Add {variantOption1}
@@ -726,11 +877,11 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                     </div>
                                     <div className="flex flex-wrap gap-2">
                                         {variantValues.map((value) => (
-                                            <div key={value} className="flex items-center gap-1 bg-white/10 px-3 py-1 rounded-full text-sm text-gray-300 font-urbanist">
+                                            <div key={value} className="flex items-center gap-1 bg-white/10 px-3 py-2 rounded-full text-sm text-gray-300 font-urbanist">
                                                 {value}
                                                 <button
                                                     onClick={() => removeVariantValue(value)}
-                                                    className="ml-1 text-red-400 hover:text-red-300"
+                                                    className="ml-1 text-red-400 hover:text-red-300 p-1"
                                                 >
                                                     <X size={14} />
                                                 </button>
@@ -740,7 +891,7 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                 </div>
 
                                 {/* Option 2 Toggle and Controls */}
-                                <label className="flex items-center gap-2 text-sm text-gray-400 font-urbanist">
+                                <label className="flex items-center gap-2 text-sm text-gray-400 font-urbanist h-6">
                                     <input
                                         type="checkbox"
                                         checked={hasSecondOption}
@@ -752,22 +903,22 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                                 setVariants(variants.map(v => ({ ...v, option2: undefined })));
                                             }
                                         }}
-                                        className="rounded"
+                                        className="rounded w-4 h-4"
                                     />
                                     Add a second option (e.g., Base type)
                                 </label>
 
                                 {hasSecondOption && (
                                     <div className="bg-green-900/10 border border-green-500/20 rounded-lg p-4">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <div>
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-3">
+                                            <div className="w-full sm:w-auto">
                                                 <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2 font-urbanist">Option 2 Name</label>
                                                 <input
                                                     type="text"
                                                     value={variantOption2}
                                                     onChange={(e) => setVariantOption2(e.target.value)}
                                                     placeholder="Base, Type, etc."
-                                                    className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-green-500/50 focus:outline-none font-urbanist"
+                                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-green-500/50 focus:outline-none font-urbanist"
                                                 />
                                             </div>
                                             <button
@@ -783,7 +934,7 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                                         }
                                                     }
                                                 }}
-                                                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-urbanist rounded-lg transition-colors"
+                                                className="flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white text-sm font-urbanist rounded-lg transition-colors w-full sm:w-auto"
                                             >
                                                 <Plus size={16} />
                                                 Add {variantOption2}
@@ -791,7 +942,7 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                         </div>
                                         <div className="flex flex-wrap gap-2">
                                             {variantValues2.map((value) => (
-                                                <div key={value} className="flex items-center gap-1 bg-green-500/20 px-3 py-1 rounded-full text-sm text-gray-300 font-urbanist">
+                                                <div key={value} className="flex items-center gap-1 bg-green-500/20 px-3 py-2 rounded-full text-sm text-gray-300 font-urbanist">
                                                     {value}
                                                     <button
                                                         onClick={() => {
@@ -799,7 +950,7 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                                             setVariantValues2(newValues);
                                                             regenerateVariants(newValues);
                                                         }}
-                                                        className="ml-1 text-red-400 hover:text-red-300"
+                                                        className="ml-1 text-red-400 hover:text-red-300 p-1"
                                                     >
                                                         <X size={14} />
                                                     </button>

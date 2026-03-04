@@ -186,6 +186,10 @@ const Shop: React.FC = () => {
                                 Sacred botanical remedies. Your contributions directly support
                                 our non-profit mission to preserve indigenous healing wisdom and serve our community.
                                 Sourced with reverence, offered with love.
+                                <br /><br />
+                                <Link to="/guides/st-johns-bush-tea" className="text-[#D4AF37] hover:underline hover:text-white transition-colors">
+                                    Read our complete St John's Bush Tea Guide →
+                                </Link>
                             </p>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 relative z-[100] w-full sm:w-auto">

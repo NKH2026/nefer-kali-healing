@@ -169,18 +169,18 @@ export const ProductList = ({ onEdit, refreshTrigger }: ProductListProps) => {
                 <table className="w-full">
                     <thead className="bg-white/5 border-b border-white/10">
                         <tr>
-                            <th className="text-left px-6 py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Product</th>
-                            <th className="text-left px-6 py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Category</th>
-                            <th className="text-left px-6 py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Price</th>
-                            <th className="text-left px-6 py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Inventory</th>
-                            <th className="text-left px-6 py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Status</th>
-                            <th className="text-right px-6 py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Actions</th>
+                            <th className="text-left px-4 md:px-6 py-3 md:py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Product</th>
+                            <th className="text-left px-4 md:px-6 py-3 md:py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Category</th>
+                            <th className="text-left px-4 md:px-6 py-3 md:py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Price</th>
+                            <th className="text-left px-4 md:px-6 py-3 md:py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Inventory</th>
+                            <th className="text-left px-4 md:px-6 py-3 md:py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Status</th>
+                            <th className="text-right px-4 md:px-6 py-3 md:py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/10">
                         {products.map((product) => (
                             <tr key={product.id} className="hover:bg-white/5 transition-colors">
-                                <td className="px-6 py-4">
+                                <td className="px-4 md:px-6 py-3 md:py-4">
                                     <div className="flex items-center gap-3">
                                         {product.featured_image_url ? (
                                             <img
@@ -201,17 +201,23 @@ export const ProductList = ({ onEdit, refreshTrigger }: ProductListProps) => {
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 text-gray-300 font-urbanist">{product.category}</td>
-                                <td className="px-6 py-4 text-gray-300 font-urbanist">
-                                    {product.price ? `$${product.price.toFixed(2)}` : '-'}
+                                <td className="px-4 md:px-6 py-3 md:py-4 text-gray-400 font-urbanist text-sm">
+                                    {product.category}
                                 </td>
-                                <td className="px-6 py-4 text-gray-300 font-urbanist">
-                                    {product.inventory_quantity}
+                                <td className="px-4 md:px-6 py-3 md:py-4 text-white font-urbanist font-medium">
+                                    {product.price ? `$${Number(product.price).toFixed(2)}` : '-'}
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="px-4 md:px-6 py-3 md:py-4 text-gray-400 font-urbanist text-sm">
+                                    {product.has_variants ? (
+                                        <span>{product.inventory_quantity} (Total)</span>
+                                    ) : (
+                                        <span>{product.inventory_quantity}</span>
+                                    )}
+                                </td>
+                                <td className="px-4 md:px-6 py-3 md:py-4">
                                     {getStatusBadge(product.status)}
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="px-4 md:px-6 py-3 md:py-4">
                                     <div className="flex items-center justify-end gap-2">
                                         <button
                                             onClick={() => onEdit(product.id)}

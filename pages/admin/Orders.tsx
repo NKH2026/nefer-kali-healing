@@ -512,7 +512,7 @@ const Orders: React.FC = () => {
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-[#1a1a1a] rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                         {/* Modal Header */}
-                        <div className="sticky top-0 bg-[#1a1a1a] p-6 border-b border-white/10 z-10">
+                        <div className="sticky top-0 bg-[#1a1a1a] p-4 md:p-6 border-b border-white/10 z-10">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <h2 className="text-xl font-bold text-white flex items-center gap-3">
@@ -533,7 +533,7 @@ const Orders: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="p-6 space-y-6">
+                        <div className="p-4 md:p-6 space-y-6">
                             {/* Quick Actions */}
                             <div className="flex flex-wrap gap-3">
                                 {selectedOrder.status === 'pending' && (

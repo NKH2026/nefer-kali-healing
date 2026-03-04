@@ -34,7 +34,7 @@ export default function StJohnsBushTeaGuide() {
             <SEOHead
                 title="St Johns Bush Tea Guide - Caribbean Healing Herb"
                 description="Complete guide to St Johns Bush (Justicia secunda), a sacred Caribbean herb for menstrual support, anti-inflammatory benefits, and transformation. Learn dosage and benefits."
-                keywords={['St Johns Bush', 'Justicia secunda', 'Caribbean herbs', 'menstrual support tea', 'anti-inflammatory herbs', 'womens health herbs']}
+                keywords={['St Johns Bush', 'Justicia secunda', 'Caribbean herbs', 'menstrual support tea', 'anti-inflammatory herbs', 'womens health herbs', 'where to buy St Johns Bush', 'St Johns Bush tea recipe', 'St Johns Bush benefits for fibroids']}
                 url="/guides/st-johns-bush-tea"
                 schema={[
                     getArticleSchema({
@@ -166,7 +166,7 @@ export default function StJohnsBushTeaGuide() {
                 <section className="py-16 px-4">
                     <div className="max-w-6xl mx-auto">
                         <div className="text-center mb-12">
-                            <h2 className="text-3xl font-bold text-red-200">Benefits of St John's Bush</h2>
+                            <h2 className="text-3xl font-bold text-red-200">Health Benefits of St John's Bush (Justicia secunda)</h2>
                             <p className="text-rose-200/60 mt-2">Powerful Caribbean healing tradition</p>
                         </div>
 
@@ -246,7 +246,7 @@ export default function StJohnsBushTeaGuide() {
                         {/* Brewing Instructions */}
                         <div className="mt-12 grid md:grid-cols-2 gap-6">
                             <div className="bg-gradient-to-br from-red-900/30 to-red-950/40 border border-red-500/20 rounded-xl p-4 sm:p-6">
-                                <h3 className="text-base sm:text-lg font-semibold text-red-300 mb-4">☕ Brewing Instructions</h3>
+                                <h3 className="text-base sm:text-lg font-semibold text-red-300 mb-4">☕ St John's Bush Tea Recipe & Brewing Instructions</h3>
                                 <ul className="space-y-3 text-red-100/80 text-sm sm:text-base">
                                     <li className="flex items-start gap-2">
                                         <span className="text-red-400 flex-shrink-0">1.</span>
