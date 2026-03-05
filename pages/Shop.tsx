@@ -189,8 +189,8 @@ const Shop: React.FC = () => {
                                 our non-profit mission to preserve indigenous healing wisdom and serve our community.
                                 Sourced with reverence, offered with love.
                                 <br /><br />
-                                <Link to="/guides/st-johns-bush-tea" className="text-[#D4AF37] hover:underline hover:text-white transition-colors">
-                                    Read our complete St John's Bush Tea Guide →
+                                <Link to="/healing-guides" className="text-[#D4AF37] hover:underline hover:text-white transition-colors">
+                                    Explore our Healing Guides →
                                 </Link>
                             </p>
                         </div>
@@ -281,13 +281,9 @@ const Shop: React.FC = () => {
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                 />
                                 {/* Badge */}
-                                {product.soldOut ? (
+                                {product.soldOut && (
                                     <div className="absolute top-4 left-4 bg-red-600 text-white text-[8px] uppercase tracking-[0.2em] px-3 py-1 rounded-full font-bold">
                                         Sold Out
-                                    </div>
-                                ) : (
-                                    <div className="absolute top-4 left-4 bg-[#8B7322] text-white text-[8px] uppercase tracking-[0.2em] px-3 py-1 rounded-full font-bold">
-                                        Handcrafted
                                     </div>
                                 )}
 
