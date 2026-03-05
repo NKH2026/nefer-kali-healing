@@ -10,6 +10,8 @@ interface OrderItem {
     unit_price: number;
     total_price: number;
     image_url: string | null;
+    is_digital?: boolean;
+    digital_asset_url?: string | null;
 }
 
 interface Order {
@@ -158,11 +160,25 @@ const Orders: React.FC = () => {
         try {
             const { data, error } = await supabase
                 .from('order_items')
-                .select('*')
+                .select(`
+                    *,
+                    product:product_id (
+                        is_digital,
+                        digital_asset_url
+                    )
+                `)
                 .eq('order_id', orderId);
 
             if (error) throw error;
-            setOrderItems(data || []);
+
+            // Map the joined product data into the item
+            const mappedData = (data || []).map(item => ({
+                ...item,
+                is_digital: item.product?.is_digital,
+                digital_asset_url: item.product?.digital_asset_url
+            }));
+
+            setOrderItems(mappedData);
         } catch (error) {
             console.error('Error fetching order items:', error);
         } finally {
@@ -637,6 +653,25 @@ const Orders: React.FC = () => {
                                                             <p className="text-white text-sm">{item.product_title}</p>
                                                             {item.variant_title && (
                                                                 <p className="text-gray-500 text-xs">{item.variant_title}</p>
+                                                            )}
+                                                            {item.is_digital && item.digital_asset_url && (
+                                                                <div className="mt-2 flex items-center gap-2">
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            navigator.clipboard.writeText(item.digital_asset_url!);
+                                                                            alert('Link copied to clipboard!');
+                                                                        }}
+                                                                        className="text-xs bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded transition-colors"
+                                                                    >
+                                                                        Copy Link
+                                                                    </button>
+                                                                    <a
+                                                                        href={`mailto:${selectedOrder.customer_email}?subject=Your Digital Download: ${encodeURIComponent(item.product_title)}&body=Thank you for your purchase!%0D%0A%0D%0AHere is your secure link to access ${encodeURIComponent(item.product_title)}:%0D%0A${encodeURIComponent(item.digital_asset_url!)}%0D%0A%0D%0ALet us know if you have any questions!`}
+                                                                        className="text-xs bg-[#D4AF37]/20 hover:bg-[#D4AF37]/30 text-[#D4AF37] px-2 py-1 rounded transition-colors"
+                                                                    >
+                                                                        Email Link to Customer
+                                                                    </a>
+                                                                </div>
                                                             )}
                                                         </div>
                                                         <div className="text-right">

@@ -49,8 +49,7 @@ async function sendConfirmationEmail(order: any, orderItems: any[]) {
         <tr>
             <td style="padding: 12px; border-bottom: 1px solid #333;">
               ${item.product_title}
-              ${item.is_digital && item.digital_asset_url ? `<br><a href="${item.digital_asset_url}" style="display: inline-block; margin-top: 8px; font-size: 12px; color: #D4AF37; text-decoration: none; border: 1px solid #D4AF37; padding: 4px 8px; border-radius: 4px;">⬇️ Download Item</a>` : ''}
-              ${item.is_digital && !item.digital_asset_url ? `<br><span style="font-size: 12px; color: #999;">Digital download will be emailed separately.</span>` : ''}
+              ${item.is_digital ? `<br><span style="font-size: 12px; color: #999;">Digital download will be emailed separately.</span>` : ''}
             </td>
             <td style="padding: 12px; border-bottom: 1px solid #333; text-align: center;">${item.quantity}</td>
             <td style="padding: 12px; border-bottom: 1px solid #333; text-align: right;">$${item.unit_price.toFixed(2)}</td>

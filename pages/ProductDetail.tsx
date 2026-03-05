@@ -38,6 +38,7 @@ interface Product {
     subscription_discount_percent: number;
     subscription_frequency_options: string[];
     is_sold_out?: boolean;
+    is_digital?: boolean;
 }
 
 const ProductDetail = () => {
@@ -557,7 +558,7 @@ const ProductDetail = () => {
 
                             {/* Additional Info Tabs */}
                             <div className="mt-12 space-y-4">
-                                {product.ingredients && (
+                                {!product.is_digital && product.ingredients && (
                                     <details className="group">
                                         <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
                                             Ingredients
@@ -581,7 +582,7 @@ const ProductDetail = () => {
                                     </details>
                                 )}
 
-                                {product.benefits && (
+                                {!product.is_digital && product.benefits && (
                                     <details className="group">
                                         <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
                                             Benefits
@@ -617,7 +618,7 @@ const ProductDetail = () => {
                                     </details>
                                 )}
 
-                                {product.shipping_info && (
+                                {!product.is_digital && product.shipping_info && (
                                     <details className="group">
                                         <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
                                             Shipping Information
