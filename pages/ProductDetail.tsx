@@ -570,7 +570,7 @@ const ProductDetail = () => {
                                     </details>
                                 )}
 
-                                {product.usage_instructions && (
+                                {!product.is_digital && product.usage_instructions && (
                                     <details className="group">
                                         <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
                                             How to Use
@@ -594,7 +594,7 @@ const ProductDetail = () => {
                                     </details>
                                 )}
 
-                                {product.warnings && (
+                                {!product.is_digital && product.warnings && (
                                     <details className="group">
                                         <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
                                             Warnings & Precautions
@@ -606,7 +606,7 @@ const ProductDetail = () => {
                                     </details>
                                 )}
 
-                                {product.return_policy && (
+                                {!product.is_digital && product.return_policy && (
                                     <details className="group">
                                         <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
                                             Return Policy
