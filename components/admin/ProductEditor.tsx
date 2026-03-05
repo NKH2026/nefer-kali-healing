@@ -641,9 +641,6 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                         placeholder="Enter secure Google Drive link or direct PDF URL..."
                                         className="w-full bg-purple-900/10 border border-purple-500/30 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500 focus:outline-none placeholder-gray-500 font-urbanist"
                                     />
-                                    <p className="text-xs text-gray-500 mt-2 font-urbanist">
-                                        This link will be automatically emailed to the customer after their purchase is successfully processed via Stripe.
-                                    </p>
                                 </div>
                             )}
                         </div>

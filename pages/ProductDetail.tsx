@@ -388,12 +388,7 @@ const ProductDetail = () => {
                                 {getCurrentPrice()}
                             </div>
 
-                            {/* Description */}
-                            {product.short_description && (
-                                <p className="text-white/60 font-light leading-relaxed mb-8 font-urbanist">
-                                    {product.short_description}
-                                </p>
-                            )}
+
 
                             {/* Variants - Dropdown Style */}
                             {product.has_variants && variants.length > 0 && (
@@ -558,6 +553,19 @@ const ProductDetail = () => {
 
                             {/* Additional Info Tabs */}
                             <div className="mt-12 space-y-4">
+                                {/* Always show Description Tab */}
+                                {(product.description || product.short_description) && (
+                                    <details className="group" open>
+                                        <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
+                                            Description
+                                        </summary>
+                                        <div
+                                            className="py-4 text-white/60 text-sm leading-relaxed font-urbanist prose prose-invert max-w-none"
+                                            dangerouslySetInnerHTML={{ __html: product.description || product.short_description }}
+                                        />
+                                    </details>
+                                )}
+
                                 {!product.is_digital && product.ingredients && (
                                     <details className="group">
                                         <summary className="cursor-pointer py-4 border-b border-white/10 text-white font-medium font-urbanist hover:text-[#D4AF37] transition-colors">
