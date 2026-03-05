@@ -458,7 +458,50 @@ const Orders: React.FC = () => {
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full">
+                        {/* Mobile Card Layout */}
+                        <div className="md:hidden divide-y divide-white/5">
+                            {filteredOrders.map((order) => (
+                                <div key={order.id} className="p-4 hover:bg-white/5 transition-colors">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[#D4AF37] font-medium text-sm">{order.order_number}</span>
+                                            {order.is_subscription_order && (
+                                                <span className="text-[8px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full uppercase">
+                                                    Sub
+                                                </span>
+                                            )}
+                                        </div>
+                                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${statusColors[order.status] || 'bg-gray-500/20 text-gray-400'}`}>
+                                            {statusIcons[order.status]}
+                                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                        </span>
+                                    </div>
+                                    <div className="mb-2">
+                                        <p className="text-white text-sm">{order.customer_name}</p>
+                                        <p className="text-gray-500 text-xs">{order.customer_email}</p>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-4 text-xs">
+                                            <span className="text-gray-400">{formatDate(order.created_at)}</span>
+                                            <span className="text-white font-medium">${order.total.toFixed(2)}</span>
+                                            <span className={`capitalize ${paymentStatusColors[order.payment_status] || 'text-gray-400'}`}>
+                                                {order.payment_status}
+                                            </span>
+                                        </div>
+                                        <button
+                                            onClick={() => setSelectedOrder(order)}
+                                            className="text-gray-400 hover:text-white transition-colors p-2 bg-white/5 rounded-lg hover:bg-white/10"
+                                            title="View Details"
+                                        >
+                                            <Eye size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Desktop Table Layout */}
+                        <table className="w-full hidden md:table">
                             <thead className="bg-[#0f0f0f]">
                                 <tr>
                                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Order</th>

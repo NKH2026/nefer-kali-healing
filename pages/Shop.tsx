@@ -44,7 +44,9 @@ const Shop: React.FC = () => {
                     .from('products')
                     .select('*')
                     .eq('status', 'active')
-                    .eq('published', true);
+                    .eq('published', true)
+                    .order('sort_order', { ascending: true })
+                    .order('created_at', { ascending: false });
 
                 if (abortController.signal.aborted) return;
 

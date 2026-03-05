@@ -159,7 +159,47 @@ const AdminSubscriptions: React.FC = () => {
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full">
+                        {/* Mobile Card Layout */}
+                        <div className="md:hidden divide-y divide-white/5">
+                            {filteredSubscriptions.map((sub) => (
+                                <div key={sub.id} className="p-4 hover:bg-white/5 transition-colors">
+                                    <div className="flex items-start justify-between mb-2">
+                                        <div>
+                                            <p className="text-white text-sm font-medium">{sub.customer_name}</p>
+                                            <p className="text-gray-400 text-xs">{sub.customer_email}</p>
+                                        </div>
+                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[sub.status] || 'bg-gray-500/20 text-gray-400'}`}>
+                                            {sub.status.charAt(0).toUpperCase() + sub.status.slice(1)}
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-3 text-xs mb-3">
+                                        <div>
+                                            <span className="text-gray-500 uppercase tracking-wider block mb-0.5">Amount</span>
+                                            <span className="text-[#D4AF37] font-medium">${sub.recurring_amount.toFixed(2)}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-500 uppercase tracking-wider block mb-0.5">Frequency</span>
+                                            <span className="text-white">{getIntervalLabel(sub.billing_interval)}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-500 uppercase tracking-wider block mb-0.5">Next Bill</span>
+                                            <span className="text-gray-300">{formatDate(sub.next_billing_date)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-end border-t border-white/5 pt-2">
+                                        <button
+                                            onClick={() => setSelectedSubscription(sub)}
+                                            className="text-gray-400 hover:text-white transition-colors text-xs underline"
+                                        >
+                                            Manage
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Desktop Table Layout */}
+                        <table className="w-full hidden md:table">
                             <thead className="bg-[#0f0f0f]">
                                 <tr>
                                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Customer</th>

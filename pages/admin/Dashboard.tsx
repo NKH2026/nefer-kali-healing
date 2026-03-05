@@ -62,7 +62,7 @@ const Dashboard = () => {
     return (
         <div className="space-y-8">
             <div>
-                <h2 className="text-3xl font-cinzel text-white mb-2">Dashboard Overview</h2>
+                <h1 className="text-2xl md:text-3xl font-cinzel text-white mb-4 md:mb-6">Dashboard</h1>
                 <p className="text-gray-400 font-urbanist">Welcome back to your command center.</p>
             </div>
 
@@ -94,10 +94,10 @@ const Dashboard = () => {
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className="text-purple-300 font-cinzel">{review.customer_name}</span>
                                         <span className={`text-xs px-2 py-0.5 rounded-full ${review.status === 'approved'
-                                                ? 'bg-green-900/30 text-green-400'
-                                                : review.status === 'rejected'
-                                                    ? 'bg-red-900/30 text-red-400'
-                                                    : 'bg-yellow-900/30 text-yellow-400'
+                                            ? 'bg-green-900/30 text-green-400'
+                                            : review.status === 'rejected'
+                                                ? 'bg-red-900/30 text-red-400'
+                                                : 'bg-yellow-900/30 text-yellow-400'
                                             }`}>
                                             {review.status === 'approved' ? 'Approved' : review.status === 'rejected' ? 'Rejected' : 'Pending'}
                                         </span>

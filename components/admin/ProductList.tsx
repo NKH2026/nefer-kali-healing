@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Edit, Trash2, Eye, EyeOff, Package } from 'lucide-react';
+import { Edit, Trash2, Eye, EyeOff, Package, ArrowUp, ArrowDown } from 'lucide-react';
 import ConfirmDialog from './ConfirmDialog';
 
 interface Product {
@@ -13,6 +13,7 @@ interface Product {
     featured_image_url: string | null;
     created_at: string;
     has_variants: boolean;
+    sort_order: number;
 }
 
 interface ProductListProps {
@@ -42,6 +43,7 @@ export const ProductList = ({ onEdit, refreshTrigger }: ProductListProps) => {
             const { data, error: fetchError } = await supabase
                 .from('products')
                 .select('*')
+                .order('sort_order', { ascending: true })
                 .order('created_at', { ascending: false });
 
             if (fetchError) throw fetchError;
@@ -72,6 +74,32 @@ export const ProductList = ({ onEdit, refreshTrigger }: ProductListProps) => {
             setError(err.message);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const moveProduct = async (index: number, direction: 'up' | 'down') => {
+        const newIndex = direction === 'up' ? index - 1 : index + 1;
+        if (newIndex < 0 || newIndex >= products.length) return;
+
+        const updated = [...products];
+        const [moved] = updated.splice(index, 1);
+        updated.splice(newIndex, 0, moved);
+
+        // Reassign sort_order based on new positions
+        const updates = updated.map((p, i) => ({ id: p.id, sort_order: i }));
+
+        // Optimistically update UI
+        setProducts(updated.map((p, i) => ({ ...p, sort_order: i })));
+
+        // Persist to DB
+        try {
+            for (const u of updates) {
+                await supabase.from('products').update({ sort_order: u.sort_order }).eq('id', u.id);
+            }
+        } catch (err: any) {
+            console.error('Error saving sort order:', err);
+            // Revert on failure
+            fetchProducts();
         }
     };
 
@@ -165,22 +193,123 @@ export const ProductList = ({ onEdit, refreshTrigger }: ProductListProps) => {
 
     return (
         <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
-            <div className="overflow-x-auto">
+            {/* Mobile Card Layout */}
+            <div className="md:hidden divide-y divide-white/10">
+                {products.map((product, index) => (
+                    <div key={product.id} className="p-4 hover:bg-white/5 transition-colors">
+                        <div className="flex items-start gap-3 mb-3">
+                            {product.featured_image_url ? (
+                                <img
+                                    src={product.featured_image_url}
+                                    alt={product.title}
+                                    className="w-14 h-14 object-cover rounded-lg border border-white/10 flex-shrink-0"
+                                />
+                            ) : (
+                                <div className="w-14 h-14 bg-white/5 rounded-lg border border-white/10 flex items-center justify-center flex-shrink-0">
+                                    <Package className="w-6 h-6 text-gray-600" />
+                                </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                                <div className="text-white font-urbanist font-medium text-sm leading-tight line-clamp-2">{product.title}</div>
+                                {product.has_variants && (
+                                    <div className="text-xs text-gray-500 font-urbanist mt-0.5">Has variants</div>
+                                )}
+                            </div>
+                            {getStatusBadge(product.status)}
+                        </div>
+                        <div className="grid grid-cols-3 gap-3 text-xs mb-3">
+                            <div>
+                                <span className="text-gray-500 uppercase tracking-wider block mb-0.5">Category</span>
+                                <span className="text-gray-300 font-urbanist">{product.category}</span>
+                            </div>
+                            <div>
+                                <span className="text-gray-500 uppercase tracking-wider block mb-0.5">Price</span>
+                                <span className="text-white font-urbanist font-medium">{product.price ? `$${Number(product.price).toFixed(2)}` : '-'}</span>
+                            </div>
+                            <div>
+                                <span className="text-gray-500 uppercase tracking-wider block mb-0.5">Inventory</span>
+                                <span className="text-gray-300 font-urbanist">
+                                    {product.has_variants ? `${product.inventory_quantity} (Total)` : product.inventory_quantity}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-between border-t border-white/5 pt-2">
+                            <div className="flex items-center gap-1">
+                                <button
+                                    onClick={() => moveProduct(index, 'up')}
+                                    disabled={index === 0}
+                                    className={`p-1.5 rounded transition-colors ${index === 0 ? 'text-white/10 cursor-not-allowed' : 'text-gray-400 hover:text-[#D4AF37] hover:bg-white/5'}`}
+                                    title="Move up"
+                                >
+                                    <ArrowUp size={14} />
+                                </button>
+                                <button
+                                    onClick={() => moveProduct(index, 'down')}
+                                    disabled={index === products.length - 1}
+                                    className={`p-1.5 rounded transition-colors ${index === products.length - 1 ? 'text-white/10 cursor-not-allowed' : 'text-gray-400 hover:text-[#D4AF37] hover:bg-white/5'}`}
+                                    title="Move down"
+                                >
+                                    <ArrowDown size={14} />
+                                </button>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <button
+                                    onClick={() => onEdit(product.id)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 text-purple-400 hover:bg-purple-500/10 rounded-lg transition-colors text-xs font-urbanist"
+                                >
+                                    <Edit size={14} /> Edit
+                                </button>
+                                <button
+                                    onClick={() => handleDeleteClick(product.id, product.title)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors text-xs font-urbanist"
+                                >
+                                    <Trash2 size={14} /> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Desktop Table Layout */}
+            <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                     <thead className="bg-white/5 border-b border-white/10">
                         <tr>
-                            <th className="text-left px-4 md:px-6 py-3 md:py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Product</th>
-                            <th className="text-left px-4 md:px-6 py-3 md:py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Category</th>
-                            <th className="text-left px-4 md:px-6 py-3 md:py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Price</th>
-                            <th className="text-left px-4 md:px-6 py-3 md:py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Inventory</th>
-                            <th className="text-left px-4 md:px-6 py-3 md:py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Status</th>
-                            <th className="text-right px-4 md:px-6 py-3 md:py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Actions</th>
+                            <th className="text-center px-3 py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist w-16">Order</th>
+                            <th className="text-left px-6 py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Product</th>
+                            <th className="text-left px-6 py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Category</th>
+                            <th className="text-left px-6 py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Price</th>
+                            <th className="text-left px-6 py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Inventory</th>
+                            <th className="text-left px-6 py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Status</th>
+                            <th className="text-right px-6 py-4 text-xs text-gray-500 uppercase tracking-wider font-urbanist">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/10">
-                        {products.map((product) => (
+                        {products.map((product, index) => (
                             <tr key={product.id} className="hover:bg-white/5 transition-colors">
-                                <td className="px-4 md:px-6 py-3 md:py-4">
+                                <td className="px-3 py-4">
+                                    <div className="flex flex-col items-center gap-0.5">
+                                        <button
+                                            onClick={() => moveProduct(index, 'up')}
+                                            disabled={index === 0}
+                                            className={`p-1 rounded transition-colors ${index === 0 ? 'text-white/10 cursor-not-allowed' : 'text-gray-400 hover:text-[#D4AF37] hover:bg-white/10'}`}
+                                            title="Move up"
+                                        >
+                                            <ArrowUp size={14} />
+                                        </button>
+                                        <span className="text-xs text-white/30 font-urbanist">{index + 1}</span>
+                                        <button
+                                            onClick={() => moveProduct(index, 'down')}
+                                            disabled={index === products.length - 1}
+                                            className={`p-1 rounded transition-colors ${index === products.length - 1 ? 'text-white/10 cursor-not-allowed' : 'text-gray-400 hover:text-[#D4AF37] hover:bg-white/10'}`}
+                                            title="Move down"
+                                        >
+                                            <ArrowDown size={14} />
+                                        </button>
+                                    </div>
+                                </td>
+                                <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
                                         {product.featured_image_url ? (
                                             <img
@@ -201,23 +330,23 @@ export const ProductList = ({ onEdit, refreshTrigger }: ProductListProps) => {
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-4 md:px-6 py-3 md:py-4 text-gray-400 font-urbanist text-sm">
+                                <td className="px-6 py-4 text-gray-400 font-urbanist text-sm">
                                     {product.category}
                                 </td>
-                                <td className="px-4 md:px-6 py-3 md:py-4 text-white font-urbanist font-medium">
+                                <td className="px-6 py-4 text-white font-urbanist font-medium">
                                     {product.price ? `$${Number(product.price).toFixed(2)}` : '-'}
                                 </td>
-                                <td className="px-4 md:px-6 py-3 md:py-4 text-gray-400 font-urbanist text-sm">
+                                <td className="px-6 py-4 text-gray-400 font-urbanist text-sm">
                                     {product.has_variants ? (
                                         <span>{product.inventory_quantity} (Total)</span>
                                     ) : (
                                         <span>{product.inventory_quantity}</span>
                                     )}
                                 </td>
-                                <td className="px-4 md:px-6 py-3 md:py-4">
+                                <td className="px-6 py-4">
                                     {getStatusBadge(product.status)}
                                 </td>
-                                <td className="px-4 md:px-6 py-3 md:py-4">
+                                <td className="px-6 py-4">
                                     <div className="flex items-center justify-end gap-2">
                                         <button
                                             onClick={() => onEdit(product.id)}

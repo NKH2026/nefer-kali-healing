@@ -24,19 +24,19 @@ const Products = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-black via-purple-900/10 to-black p-8">
+        <div className="min-h-screen bg-gradient-to-b from-black via-purple-900/10 to-black p-4 md:p-8">
             <div className="max-w-7xl mx-auto">
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">
                     <div>
-                        <h1 className="text-4xl font-cinzel text-white mb-2">Product Offerings</h1>
-                        <p className="text-gray-400 font-urbanist">Manage your sacred products and offerings</p>
+                        <h1 className="text-2xl md:text-4xl font-cinzel text-white mb-1 md:mb-2">Product Offerings</h1>
+                        <p className="text-gray-400 font-urbanist text-sm md:text-base">Manage your sacred products and offerings</p>
                     </div>
                     <button
                         onClick={() => {
                             setSelectedProductId(undefined);
                             setView('editor');
                         }}
-                        className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-urbanist font-bold rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg"
+                        className="px-5 py-2.5 md:px-6 md:py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-urbanist font-bold rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg text-sm md:text-base w-full sm:w-auto text-center"
                     >
                         + New Product
                     </button>

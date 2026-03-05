@@ -140,14 +140,14 @@ const EventList: React.FC<EventListProps> = ({ onEdit, onNew }) => {
     return (
         <div>
             {/* Header */}
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
                 <div>
-                    <h1 className="text-3xl font-cinzel text-purple-300">Events</h1>
-                    <p className="text-gray-500 mt-1">Manage your community events and workshops</p>
+                    <h1 className="text-2xl md:text-3xl font-cinzel text-purple-300">Events</h1>
+                    <p className="text-gray-500 mt-1 text-sm md:text-base">Manage your community events and workshops</p>
                 </div>
                 <button
                     onClick={onNew}
-                    className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg transition-colors"
+                    className="flex items-center gap-2 px-5 py-2.5 md:px-6 md:py-3 bg-purple-600 hover:bg-purple-500 rounded-lg transition-colors text-sm md:text-base w-full sm:w-auto justify-center"
                 >
                     <Plus size={20} />
                     New Event
@@ -155,14 +155,14 @@ const EventList: React.FC<EventListProps> = ({ onEdit, onNew }) => {
             </div>
 
             {/* Filters */}
-            <div className="flex gap-2 mb-6">
+            <div className="flex flex-wrap gap-2 mb-6">
                 {(['all', 'draft', 'published', 'completed'] as const).map((f) => (
                     <button
                         key={f}
                         onClick={() => setFilter(f)}
-                        className={`px-4 py-2 rounded-lg text-sm capitalize transition-colors ${filter === f
-                                ? 'bg-purple-600 text-white'
-                                : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                        className={`px-3 md:px-4 py-2 rounded-lg text-sm capitalize transition-colors ${filter === f
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-white/5 text-gray-400 hover:bg-white/10'
                             }`}
                     >
                         {f}
@@ -170,7 +170,7 @@ const EventList: React.FC<EventListProps> = ({ onEdit, onNew }) => {
                 ))}
             </div>
 
-            {/* Events Table */}
+            {/* Events */}
             {loading ? (
                 <div className="flex justify-center py-20">
                     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-purple-500"></div>
@@ -188,7 +188,73 @@ const EventList: React.FC<EventListProps> = ({ onEdit, onNew }) => {
                 </div>
             ) : (
                 <div className="bg-white/5 rounded-xl border border-white/10 overflow-hidden">
-                    <table className="w-full">
+                    {/* Mobile Card Layout */}
+                    <div className="md:hidden divide-y divide-white/5">
+                        {events.map((event) => (
+                            <div key={event.id} className="p-4 hover:bg-white/5 transition-colors">
+                                <div className="flex items-start justify-between mb-2">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="font-medium text-white text-sm">{event.title}</div>
+                                        <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                                            {getLocationIcon(event.location_type)} {event.location_type}
+                                            {!event.is_free && ` • $${event.ticket_price}`}
+                                        </div>
+                                    </div>
+                                    <span className={`px-2 py-1 rounded text-xs capitalize ml-2 flex-shrink-0 ${getStatusBadge(event.status)}`}>
+                                        {event.status}
+                                    </span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-3 text-xs mb-3">
+                                    <div>
+                                        <span className="text-gray-500 uppercase tracking-wider block mb-0.5">Date</span>
+                                        <span className="text-gray-300">{formatDate(event.start_date)}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-500 uppercase tracking-wider block mb-0.5">Type</span>
+                                        <span className="text-gray-300">{getEventTypeLabel(event.event_type)}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-500 uppercase tracking-wider block mb-0.5">Reg.</span>
+                                        <span className="text-gray-300 flex items-center gap-1">
+                                            <Users size={12} />
+                                            {event.registration_count || 0}
+                                            {event.max_capacity && <span className="text-gray-600">/ {event.max_capacity}</span>}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-end gap-1 border-t border-white/5 pt-2">
+                                    <button
+                                        onClick={() => toggleStatus(event)}
+                                        className="p-2 hover:bg-white/10 rounded transition-colors"
+                                        title={event.status === 'published' ? 'Unpublish' : 'Publish'}
+                                    >
+                                        {event.status === 'published' ? (
+                                            <EyeOff size={16} className="text-gray-400" />
+                                        ) : (
+                                            <Eye size={16} className="text-green-400" />
+                                        )}
+                                    </button>
+                                    <button
+                                        onClick={() => onEdit(event.id)}
+                                        className="p-2 hover:bg-white/10 rounded transition-colors"
+                                        title="Edit"
+                                    >
+                                        <Edit2 size={16} className="text-purple-400" />
+                                    </button>
+                                    <button
+                                        onClick={() => deleteEvent(event.id)}
+                                        className="p-2 hover:bg-white/10 rounded transition-colors"
+                                        title="Delete"
+                                    >
+                                        <Trash2 size={16} className="text-red-400" />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Desktop Table Layout */}
+                    <table className="w-full hidden md:table">
                         <thead className="bg-black/40">
                             <tr>
                                 <th className="text-left p-4 text-gray-400 font-normal text-sm">Event</th>

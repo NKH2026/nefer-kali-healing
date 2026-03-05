@@ -498,10 +498,10 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-black via-purple-900/10 to-black p-8">
+        <div className="min-h-screen bg-gradient-to-b from-black via-purple-900/10 to-black p-4 md:p-8">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 md:mb-8">
                     <button
                         onClick={onBack}
                         className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors font-urbanist"
@@ -509,7 +509,7 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                         <ArrowLeft size={20} />
                         Back to Products
                     </button>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
                         <select
                             value={status}
                             onChange={(e) => setStatus(e.target.value as any)}
@@ -536,7 +536,7 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Product Name"
-                    className="w-full bg-transparent border-b-2 border-white/20 text-4xl font-cinzel text-white mb-8 pb-4 focus:outline-none focus:border-purple-500/50 placeholder-gray-600"
+                    className="w-full bg-transparent border-b-2 border-white/20 text-2xl md:text-4xl font-cinzel text-white mb-6 md:mb-8 pb-3 md:pb-4 focus:outline-none focus:border-purple-500/50 placeholder-gray-600"
                 />
 
                 <div className="space-y-6">

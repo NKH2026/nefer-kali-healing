@@ -56,6 +56,8 @@ const ProductDetail = () => {
     const [reviewCount, setReviewCount] = useState(0);
     const [prevProduct, setPrevProduct] = useState<{ slug: string; title: string } | null>(null);
     const [nextProduct, setNextProduct] = useState<{ slug: string; title: string } | null>(null);
+    const [productImages, setProductImages] = useState<{ image_url: string; alt_text: string }[]>([]);
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
 
     // State for dropdown selections
@@ -106,6 +108,23 @@ const ProductDetail = () => {
                 if (productError) throw productError;
 
                 setProduct(productData);
+
+                // Fetch all product images
+                const { data: imagesData } = await supabase
+                    .from('product_images')
+                    .select('image_url, alt_text')
+                    .eq('product_id', productData.id)
+                    .order('sort_order', { ascending: true });
+
+                if (!isMounted) return;
+
+                if (imagesData && imagesData.length > 0) {
+                    setProductImages(imagesData);
+                } else if (productData.featured_image_url) {
+                    // Fallback to just the featured image
+                    setProductImages([{ image_url: productData.featured_image_url, alt_text: productData.title }]);
+                }
+                setSelectedImageIndex(0);
 
                 // Fetch all published products to determine prev/next navigation
                 const { data: allProducts } = await supabase
@@ -347,15 +366,58 @@ const ProductDetail = () => {
                     )}
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-                        {/* Product Image */}
+                        {/* Product Image Gallery */}
                         <div className="product-image">
-                            <div className="aspect-square rounded-2xl overflow-hidden bg-[#121212] shadow-2xl">
+                            {/* Main Image */}
+                            <div className="aspect-square rounded-2xl overflow-hidden bg-[#121212] shadow-2xl relative group">
                                 <img
-                                    src={product.featured_image_url || '/assets/blood_bush_tea.png'}
-                                    alt={product.title}
+                                    src={productImages.length > 0 ? productImages[selectedImageIndex]?.image_url : (product.featured_image_url || '/assets/blood_bush_tea.png')}
+                                    alt={productImages.length > 0 ? productImages[selectedImageIndex]?.alt_text || product.title : product.title}
                                     className="w-full h-full object-cover"
                                 />
+                                {/* Arrow Navigation (only if multiple images) */}
+                                {productImages.length > 1 && (
+                                    <>
+                                        <button
+                                            onClick={() => setSelectedImageIndex(prev => prev === 0 ? productImages.length - 1 : prev - 1)}
+                                            className="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
+                                        >
+                                            <ChevronLeft size={20} />
+                                        </button>
+                                        <button
+                                            onClick={() => setSelectedImageIndex(prev => prev === productImages.length - 1 ? 0 : prev + 1)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
+                                        >
+                                            <ChevronRight size={20} />
+                                        </button>
+                                        {/* Image counter */}
+                                        <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white/80 text-xs px-3 py-1 rounded-full font-urbanist">
+                                            {selectedImageIndex + 1} / {productImages.length}
+                                        </div>
+                                    </>
+                                )}
                             </div>
+                            {/* Thumbnail Strip */}
+                            {productImages.length > 1 && (
+                                <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
+                                    {productImages.map((img, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => setSelectedImageIndex(idx)}
+                                            className={`w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${idx === selectedImageIndex
+                                                    ? 'border-[#D4AF37] opacity-100 shadow-lg shadow-[#D4AF37]/20'
+                                                    : 'border-white/10 opacity-50 hover:opacity-80'
+                                                }`}
+                                        >
+                                            <img
+                                                src={img.image_url}
+                                                alt={img.alt_text || `Product image ${idx + 1}`}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         {/* Product Info */}

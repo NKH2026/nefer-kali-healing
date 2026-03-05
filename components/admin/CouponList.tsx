@@ -159,17 +159,17 @@ export const CouponList = ({ onEdit, onNew }: CouponListProps) => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-black via-purple-900/10 to-black p-8">
+        <div className="min-h-screen bg-gradient-to-b from-black via-purple-900/10 to-black p-4 md:p-8">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">
                     <div>
-                        <h1 className="text-4xl font-cinzel text-white mb-2">Coupons</h1>
-                        <p className="text-gray-400 font-urbanist">Manage discount codes and promotions</p>
+                        <h1 className="text-2xl md:text-4xl font-cinzel text-white mb-1 md:mb-2">Coupons</h1>
+                        <p className="text-gray-400 font-urbanist text-sm md:text-base">Manage discount codes and promotions</p>
                     </div>
                     <button
                         onClick={onNew}
-                        className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-urbanist font-bold rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all"
+                        className="flex items-center gap-2 px-5 py-2.5 md:px-6 md:py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-urbanist font-bold rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all text-sm md:text-base w-full sm:w-auto justify-center"
                     >
                         <Plus size={20} />
                         New Coupon
@@ -177,8 +177,8 @@ export const CouponList = ({ onEdit, onNew }: CouponListProps) => {
                 </div>
 
                 {/* Filters */}
-                <div className="bg-white/5 border border-white/10 rounded-lg p-4 mb-6">
-                    <div className="flex gap-4">
+                <div className="bg-white/5 border border-white/10 rounded-lg p-3 md:p-4 mb-6">
+                    <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
                         <div className="flex-1">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={18} />
@@ -191,12 +191,12 @@ export const CouponList = ({ onEdit, onNew }: CouponListProps) => {
                                 />
                             </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                             {['all', 'active', 'inactive', 'expired'].map((status) => (
                                 <button
                                     key={status}
                                     onClick={() => setFilterStatus(status as any)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-urbanist transition-all ${filterStatus === status
+                                    className={`px-3 md:px-4 py-2 rounded-lg text-sm font-urbanist transition-all ${filterStatus === status
                                         ? 'bg-purple-600 text-white'
                                         : 'bg-white/5 text-gray-400 hover:bg-white/10'
                                         }`}
@@ -210,10 +210,10 @@ export const CouponList = ({ onEdit, onNew }: CouponListProps) => {
 
                 {/* Coupon List */}
                 {filteredCoupons.length === 0 ? (
-                    <div className="bg-white/5 border border-white/10 rounded-lg p-12 text-center">
+                    <div className="bg-white/5 border border-white/10 rounded-lg p-8 md:p-12 text-center">
                         <Tag className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                        <h3 className="text-xl text-gray-400 font-urbanist mb-2">No coupons found</h3>
-                        <p className="text-gray-500 font-urbanist mb-6">
+                        <h3 className="text-lg md:text-xl text-gray-400 font-urbanist mb-2">No coupons found</h3>
+                        <p className="text-gray-500 font-urbanist mb-6 text-sm">
                             {searchTerm || filterStatus !== 'all'
                                 ? 'Try adjusting your filters'
                                 : 'Create your first coupon to get started'}
@@ -229,7 +229,85 @@ export const CouponList = ({ onEdit, onNew }: CouponListProps) => {
                     </div>
                 ) : (
                     <div className="bg-white/5 border border-white/10 rounded-lg overflow-hidden">
-                        <div className="overflow-x-auto">
+                        {/* Mobile Card Layout */}
+                        <div className="md:hidden divide-y divide-white/10">
+                            {filteredCoupons.map((coupon) => (
+                                <div key={coupon.id} className="p-4 hover:bg-white/5 transition-colors">
+                                    <div className="flex items-start justify-between mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <Tag className="text-purple-400 flex-shrink-0" size={14} />
+                                            <span className="font-mono text-white font-bold text-sm">{coupon.code}</span>
+                                        </div>
+                                        <div className="flex flex-col items-end gap-1">
+                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-urbanist ${coupon.is_active && !isExpired(coupon)
+                                                ? 'bg-green-500/20 text-green-400'
+                                                : 'bg-gray-500/20 text-gray-400'
+                                                }`}>
+                                                {coupon.is_active && !isExpired(coupon) ? 'Active' : 'Inactive'}
+                                            </span>
+                                            {isExpired(coupon) && (
+                                                <span className="text-xs text-red-400 font-urbanist">Expired</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="text-gray-400 font-urbanist text-xs mb-2">{coupon.name}</div>
+                                    <div className="grid grid-cols-3 gap-3 text-xs mb-3">
+                                        <div>
+                                            <span className="text-gray-500 uppercase tracking-wider block mb-0.5">Discount</span>
+                                            <span className="text-purple-400 font-urbanist font-medium">{getDiscountDisplay(coupon)}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-500 uppercase tracking-wider block mb-0.5">Usage</span>
+                                            <span className="text-gray-300 font-urbanist">
+                                                {coupon.current_usage}{coupon.usage_limit ? ` / ${coupon.usage_limit}` : ''}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-500 uppercase tracking-wider block mb-0.5">Min.</span>
+                                            <span className="text-gray-300 font-urbanist">
+                                                {coupon.minimum_purchase ? `$${coupon.minimum_purchase}` : '—'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-end gap-1 border-t border-white/5 pt-2">
+                                        <button
+                                            onClick={() => toggleActive(coupon.id, coupon.is_active)}
+                                            className={`p-2 rounded-lg transition-colors ${coupon.is_active
+                                                ? 'text-green-400 hover:bg-green-500/20'
+                                                : 'text-gray-500 hover:bg-gray-500/20'
+                                                }`}
+                                            title={coupon.is_active ? 'Deactivate' : 'Activate'}
+                                        >
+                                            {coupon.is_active ? <Power size={16} /> : <PowerOff size={16} />}
+                                        </button>
+                                        <button
+                                            onClick={() => fetchRedemptions(coupon.id)}
+                                            className="p-2 text-gray-400 hover:bg-white/10 rounded-lg transition-colors"
+                                            title="View Redemptions"
+                                        >
+                                            <TrendingUp size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => onEdit(coupon.id)}
+                                            className="p-2 text-purple-400 hover:bg-purple-500/20 rounded-lg transition-colors"
+                                            title="Edit"
+                                        >
+                                            <Edit2 size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => deleteCoupon(coupon.id, coupon.code)}
+                                            className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
+                                            title="Delete"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Desktop Table Layout */}
+                        <div className="hidden md:block overflow-x-auto">
                             <table className="w-full">
                                 <thead className="bg-white/5 border-b border-white/10">
                                     <tr>
