@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { X, Minus, Plus, Trash2, ShoppingBag, RefreshCw, Loader2, Check, Tag } from 'lucide-react';
 import { useCart, CartItem } from './CartContext';
 import { redirectToCheckout, CheckoutItem } from '../../lib/stripe';
+import { useCoupon } from '../../hooks/useCoupon';
 
 const CartDrawer: React.FC = () => {
     const {
@@ -21,7 +22,36 @@ const CartDrawer: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [couponCode, setCouponCode] = useState('');
+    const [customerEmail, setCustomerEmail] = useState('');
     const [termsAccepted, setTermsAccepted] = useState(false);
+
+    const { validateCoupon, validating } = useCoupon();
+
+    const handleApplyCoupon = async () => {
+        if (!couponCode.trim()) {
+            setError('Please enter a coupon code.');
+            return;
+        }
+
+        setError(null);
+
+        // validateCoupon requires code, orderTotal, productIds, customerEmail
+        const productIds = items.map(i => i.productId);
+        const result = await validateCoupon(couponCode, subtotal, productIds, customerEmail || undefined);
+
+        if (result.isValid) {
+            setCoupon({
+                code: couponCode.toUpperCase(),
+                discountType: result.discountType || '',
+                discountValue: result.discountValue || 0,
+                discountAmount: result.discountAmount || 0,
+            });
+            setError(null);
+        } else {
+            setError(result.errorMessage || 'Invalid coupon code');
+            setCoupon(null);
+        }
+    };
 
     // Sync coupon code input with applied coupon
     useEffect(() => {
@@ -31,7 +61,23 @@ const CartDrawer: React.FC = () => {
     }, [appliedCoupon]);
 
     const handleCheckout = async () => {
-        if (items.length === 0) return;
+        if (!termsAccepted) {
+            setError('Please accept the Terms & Conditions.');
+            return;
+        }
+
+        const isCouponActive = appliedCoupon || couponCode.trim() !== '';
+
+        if (isCouponActive && !customerEmail.trim()) {
+            setError('An email address is required when applying a coupon.');
+            return;
+        }
+
+        // Basic email validation
+        if (customerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
+            setError('Please enter a valid email address.');
+            return;
+        }
 
         setIsLoading(true);
         setError(null);
@@ -53,6 +99,7 @@ const CartDrawer: React.FC = () => {
 
             await redirectToCheckout({
                 items: checkoutItems,
+                customerEmail: customerEmail.trim() || undefined,
                 couponCode: appliedCoupon?.code || couponCode.trim() || undefined,
             });
         } catch (err: any) {
@@ -77,6 +124,24 @@ const CartDrawer: React.FC = () => {
         }
         return item.price;
     };
+
+    const calculateTotal = () => {
+        if (!appliedCoupon) return subtotal;
+
+        const dType = (appliedCoupon.discountType || '').toLowerCase().trim();
+
+        if (dType === 'percentage' || dType === 'percent') {
+            return Math.max(0, subtotal * (1 - (appliedCoupon.discountValue || 0) / 100));
+        } else if (dType === 'fixed_amount' || dType === 'fixed') {
+            return Math.max(0, subtotal - (appliedCoupon.discountValue || appliedCoupon.discountAmount || 0));
+        } else if (appliedCoupon.discountAmount && appliedCoupon.discountAmount > 0) {
+            return Math.max(0, subtotal - appliedCoupon.discountAmount);
+        }
+
+        return subtotal;
+    };
+
+    const total = calculateTotal();
 
     return (
         <>
@@ -207,11 +272,11 @@ const CartDrawer: React.FC = () => {
                                 <div className="flex items-center gap-2">
                                     <Check className="text-green-400" size={16} />
                                     <span className="text-green-400 text-sm font-urbanist">
-                                        {appliedCoupon.code} • {appliedCoupon.discountType === 'percentage'
+                                        {appliedCoupon.code} • {(appliedCoupon.discountType || '').toLowerCase().trim() === 'percentage' || (appliedCoupon.discountType || '').toLowerCase().trim() === 'percent'
                                             ? `${appliedCoupon.discountValue}% off`
-                                            : appliedCoupon.discountType === 'free_shipping'
+                                            : (appliedCoupon.discountType || '').toLowerCase().trim() === 'free_shipping'
                                                 ? 'Free Shipping'
-                                                : `$${appliedCoupon.discountAmount.toFixed(2)} off`}
+                                                : `$${(appliedCoupon.discountAmount || appliedCoupon.discountValue || 0).toFixed(2)} off`}
                                     </span>
                                 </div>
                                 <button
@@ -226,25 +291,47 @@ const CartDrawer: React.FC = () => {
                                 <input
                                     type="text"
                                     value={couponCode}
-                                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                    onChange={(e) => {
+                                        setCouponCode(e.target.value.toUpperCase());
+                                        setError(null);
+                                    }}
+                                    onKeyPress={(e) => e.key === 'Enter' && handleApplyCoupon()}
                                     placeholder="Coupon code"
-                                    className="flex-1 px-3 py-2 bg-[#1a1a1a] border border-white/10 rounded-lg text-white text-sm placeholder:text-white/30 focus:border-[#D4AF37] focus:outline-none transition-colors"
+                                    disabled={validating}
+                                    className="flex-1 px-3 py-2 bg-[#1a1a1a] border border-white/10 rounded-lg text-white text-sm placeholder:text-white/30 focus:border-[#D4AF37] focus:outline-none transition-colors disabled:opacity-50"
                                 />
                                 {couponCode && (
                                     <button
-                                        onClick={() => setCouponCode('')}
-                                        className="px-3 py-2 text-white/40 hover:text-white text-xs"
+                                        onClick={handleApplyCoupon}
+                                        disabled={validating}
+                                        className="px-4 py-2 bg-[#D4AF37] text-black font-bold rounded-lg text-xs hover:bg-[#B8961F] transition-colors disabled:opacity-50 flex items-center gap-1"
                                     >
-                                        Clear
+                                        {validating && <Loader2 size={12} className="animate-spin" />}
+                                        Apply
                                     </button>
                                 )}
                             </div>
                         )}
 
+                        {/* DEBUG DATA */}
+                        <div className="bg-red-500/20 border border-red-500 p-2 text-xs text-white mb-2 font-mono whitespace-pre-wrap">
+                            DEBUG:
+                            total: {total.toFixed(2)}
+                            subtotal: {subtotal.toFixed(2)}
+                            discountType: {appliedCoupon?.discountType}
+                            dTypeEval: {(appliedCoupon?.discountType || '').toLowerCase().trim() === 'percentage' ? 'YES' : 'NO'}
+                            discountValue: {appliedCoupon?.discountValue}
+                            calculatedMath: {appliedCoupon ? Math.max(0, subtotal * (1 - (appliedCoupon.discountValue || 0) / 100)).toFixed(2) : 'No Coupon'}
+                        </div>
+
                         {/* Subtotal */}
-                        <div className="flex items-center justify-between mb-4">
-                            <span className="text-white/60 font-urbanist">Subtotal</span>
-                            <span className="text-xl font-medium text-white">${subtotal.toFixed(2)}</span>
+                        <div className="flex flex-col gap-2 mb-4">
+                            <div className="flex items-center justify-between">
+                                <span className="text-white/60 font-urbanist">Subtotal</span>
+                                <span className="text-xl font-medium text-white">
+                                    ${total.toFixed(2)}
+                                </span>
+                            </div>
                         </div>
 
                         <p className="text-white/40 text-xs mb-4 font-urbanist">
@@ -257,6 +344,23 @@ const CartDrawer: React.FC = () => {
                                 {error}
                             </p>
                         )}
+
+                        {/* Customer Email (Required for Coupons) */}
+                        <div className="mb-4">
+                            <label className="block text-white/60 text-xs mb-2 font-urbanist">
+                                Email Address <span className="text-white/30 text-[10px]">(required for coupons)</span>
+                            </label>
+                            <input
+                                type="email"
+                                value={customerEmail}
+                                onChange={(e) => setCustomerEmail(e.target.value)}
+                                placeholder="Enter your email"
+                                className={`w-full px-3 py-2 bg-[#1a1a1a] border ${(appliedCoupon || couponCode) && !customerEmail.trim()
+                                    ? 'border-red-500/50 focus:border-red-500'
+                                    : 'border-white/10 focus:border-[#D4AF37]'
+                                    } rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none transition-colors`}
+                            />
+                        </div>
 
                         {/* Terms Agreement Checkbox */}
                         <div className="flex items-start gap-3 mb-4">

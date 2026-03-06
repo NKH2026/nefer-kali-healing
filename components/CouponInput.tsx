@@ -66,16 +66,18 @@ export const CouponInput = ({
     };
 
     const getDiscountDisplay = () => {
-        if (!appliedCoupon || !appliedCoupon.discountAmount) return '';
+        if (!appliedCoupon || (!appliedCoupon.discountAmount && !appliedCoupon.discountValue)) return '';
 
-        if (appliedCoupon.discountType === 'percentage') {
+        const dType = (appliedCoupon.discountType || '').toLowerCase().trim();
+
+        if (dType === 'percentage' || dType === 'percent') {
             return `${appliedCoupon.discountValue}% off`;
-        } else if (appliedCoupon.discountType === 'fixed_amount') {
-            return `$${appliedCoupon.discountAmount.toFixed(2)} off`;
-        } else if (appliedCoupon.discountType === 'free_shipping') {
+        } else if (dType === 'fixed_amount' || dType === 'fixed') {
+            return `$${(appliedCoupon.discountAmount || appliedCoupon.discountValue || 0).toFixed(2)} off`;
+        } else if (dType === 'free_shipping') {
             return 'Free Shipping';
         }
-        return `$${appliedCoupon.discountAmount.toFixed(2)} off`;
+        return `$${(appliedCoupon.discountAmount || appliedCoupon.discountValue || 0).toFixed(2)} off`;
     };
 
     if (appliedCoupon && appliedCoupon.isValid) {

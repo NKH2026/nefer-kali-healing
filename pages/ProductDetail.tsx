@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Star, ShoppingBag, Check, Minus, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import gsap from 'gsap';
-import CouponInput from '../components/CouponInput';
 import ReviewDisplay from '../components/reviews/ReviewDisplay';
 import { useCart } from '../components/cart';
 import SEOHead from '../components/SEOHead';
@@ -51,7 +50,6 @@ const ProductDetail = () => {
     const [loading, setLoading] = useState(true);
     const [isSubscription, setIsSubscription] = useState(false);
     const [subscriptionFrequency, setSubscriptionFrequency] = useState('monthly');
-    const [couponDiscount, setCouponDiscount] = useState(0);
     const [quantity, setQuantity] = useState(1);
     const [reviewCount, setReviewCount] = useState(0);
     const [prevProduct, setPrevProduct] = useState<{ slug: string; title: string } | null>(null);
@@ -86,7 +84,8 @@ const ProductDetail = () => {
             isSubscription,
             subscriptionFrequency: isSubscription ? subscriptionFrequency : undefined,
             subscriptionDiscount: isSubscription ? product.subscription_discount_percent : undefined,
-            maxQuantity: selectedVariant?.inventory_quantity || 99
+            maxQuantity: selectedVariant?.inventory_quantity || 99,
+            category: product.category,
         });
     };
 
@@ -268,11 +267,6 @@ const ProductDetail = () => {
             basePrice = basePrice - discountAmount;
         }
 
-        // Apply coupon discount
-        if (couponDiscount > 0) {
-            basePrice = Math.max(0, basePrice - couponDiscount);
-        }
-
         return `$${basePrice.toFixed(2)}`;
     };
 
@@ -405,8 +399,8 @@ const ProductDetail = () => {
                                             key={idx}
                                             onClick={() => setSelectedImageIndex(idx)}
                                             className={`w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${idx === selectedImageIndex
-                                                    ? 'border-[#D4AF37] opacity-100 shadow-lg shadow-[#D4AF37]/20'
-                                                    : 'border-white/10 opacity-50 hover:opacity-80'
+                                                ? 'border-[#D4AF37] opacity-100 shadow-lg shadow-[#D4AF37]/20'
+                                                : 'border-white/10 opacity-50 hover:opacity-80'
                                                 }`}
                                         >
                                             <img
@@ -568,15 +562,7 @@ const ProductDetail = () => {
                                 </div>
                             )}
 
-                            {/* Coupon Input */}
-                            <div className="mb-8">
-                                <CouponInput
-                                    orderTotal={product.price || 0}
-                                    productIds={[product.id]}
-                                    onCouponApplied={(discountAmount) => setCouponDiscount(discountAmount)}
-                                    onCouponRemoved={() => setCouponDiscount(0)}
-                                />
-                            </div>
+
 
                             {/* Quantity Selector */}
                             <div className="mb-8">

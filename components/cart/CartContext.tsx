@@ -14,6 +14,7 @@ export interface CartItem {
     subscriptionFrequency?: string;
     subscriptionDiscount?: number;
     maxQuantity?: number;
+    category?: string;
 }
 
 interface AppliedCoupon {

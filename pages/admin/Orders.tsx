@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Package, Eye, Truck, Clock, CheckCircle, XCircle, Search, DollarSign, RotateCcw, X, Loader2, MapPin, Tag } from 'lucide-react';
+import { Package, Eye, Truck, Clock, CheckCircle, XCircle, Search, DollarSign, RotateCcw, X, Loader2, MapPin, Tag, Trash2 } from 'lucide-react';
 
 interface OrderItem {
     id: string;
@@ -77,10 +77,10 @@ const Orders: React.FC = () => {
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
     const [loadingItems, setLoadingItems] = useState(false);
 
-    // Modal states
     const [showShipModal, setShowShipModal] = useState(false);
     const [showRefundModal, setShowRefundModal] = useState(false);
     const [showCancelModal, setShowCancelModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     // Form states
     const [trackingNumber, setTrackingNumber] = useState('');
@@ -315,6 +315,41 @@ const Orders: React.FC = () => {
         }
     };
 
+    const deleteOrder = async () => {
+        if (!selectedOrder) return;
+
+        setActionLoading(true);
+        setActionError(null);
+
+        try {
+            const { error: itemsError } = await supabase
+                .from('order_items')
+                .delete()
+                .eq('order_id', selectedOrder.id);
+
+            if (itemsError) throw itemsError;
+
+            const { error: orderError } = await supabase
+                .from('orders')
+                .delete()
+                .eq('id', selectedOrder.id);
+
+            if (orderError) throw orderError;
+
+            setActionSuccess(`Order ${selectedOrder.order_number} deleted permanently.`);
+            setShowDeleteModal(false);
+            closeDetailModal();
+            await fetchOrders();
+
+            setTimeout(() => setActionSuccess(null), 3000);
+        } catch (error: any) {
+            console.error('Delete error:', error);
+            setActionError(error.message || 'Failed to delete order. It may be locked by a foreign key constraint.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     const saveInternalNotes = async () => {
         if (!selectedOrder) return;
 
@@ -374,6 +409,7 @@ const Orders: React.FC = () => {
         setOrderItems([]);
         setActionError(null);
         setActionSuccess(null);
+        setShowDeleteModal(false);
     };
 
     return (
@@ -644,6 +680,17 @@ const Orders: React.FC = () => {
                                         <DollarSign size={16} /> Issue Refund
                                     </button>
                                 )}
+
+                                <div className="flex-1"></div>
+
+                                <button
+                                    onClick={() => setShowDeleteModal(true)}
+                                    disabled={actionLoading}
+                                    className="flex items-center gap-2 px-4 py-2 bg-red-900/20 text-red-500 rounded-lg hover:bg-red-900/40 transition-colors text-sm font-medium"
+                                    title="Permanently Delete (Test Orders Only)"
+                                >
+                                    <Trash2 size={16} /> Delete Order
+                                </button>
                             </div>
 
                             <div className="grid md:grid-cols-2 gap-6">
@@ -989,6 +1036,40 @@ const Orders: React.FC = () => {
                             >
                                 {actionLoading ? <Loader2 size={18} className="animate-spin" /> : <DollarSign size={18} />}
                                 Process Refund
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Modal */}
+            {showDeleteModal && selectedOrder && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+                    <div className="bg-[#1a1a1a] rounded-2xl max-w-md w-full p-6 border border-red-500/30">
+                        <div className="flex items-center gap-3 text-red-500 mb-4">
+                            <Trash2 size={24} />
+                            <h3 className="text-lg font-bold">Delete Order Completely</h3>
+                        </div>
+                        <p className="text-gray-300 text-sm mb-4">
+                            Are you absolutely sure you want to permanently delete order <span className="font-bold text-white">{selectedOrder.order_number}</span>?
+                        </p>
+                        <p className="text-red-400 text-sm mb-6 bg-red-500/10 px-3 py-2 rounded-lg font-medium">
+                            Warning: This action cannot be undone. It will delete the order and all associated line items from the database forever. Use this strictly for cleaning up test orders!
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowDeleteModal(false)}
+                                className="flex-1 px-4 py-3 border border-white/10 text-white rounded-lg hover:bg-white/5 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={deleteOrder}
+                                disabled={actionLoading}
+                                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 font-medium"
+                            >
+                                {actionLoading ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                                Permanently Delete Yes
                             </button>
                         </div>
                     </div>

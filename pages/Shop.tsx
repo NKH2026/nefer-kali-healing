@@ -172,6 +172,7 @@ const Shop: React.FC = () => {
             image: product.image,
             maxQuantity: product.inventory || 99,
             isSubscription: false,
+            category: product.category,
         });
     };
 

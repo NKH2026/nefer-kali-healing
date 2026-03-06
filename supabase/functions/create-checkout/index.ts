@@ -91,7 +91,7 @@ serve(async (req) => {
             if (couponError) {
                 console.error('Coupon validation error:', couponError);
                 return new Response(
-                    JSON.stringify({ error: 'Error validating coupon' }),
+                    JSON.stringify({ error: `Error validating coupon: ${couponError.message || JSON.stringify(couponError)}` }),
                     { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
                 );
             }
@@ -113,9 +113,6 @@ serve(async (req) => {
             }
         }
 
-        // Calculate final total
-        const finalTotal = Math.max(0, cartTotal - (validatedCoupon?.discount_amount || 0));
-
         // Helper function to ensure image URLs are absolute
         const getAbsoluteImageUrl = (imageUrl: string): string => {
             if (!imageUrl) return '';
@@ -127,102 +124,6 @@ serve(async (req) => {
 
         // Check if any items are subscriptions
         const hasSubscription = items.some((item: CheckoutItem) => item.isSubscription);
-
-        // --- 100% FREE ORDER BYPASS ---
-        // If the order is free because of a coupon, bypass Stripe entirely.
-        // Stripe does not allow $0 checkout sessions.
-        if (finalTotal === 0 && validatedCoupon && validatedCoupon.discount_amount && validatedCoupon.discount_amount > 0) {
-            console.log('Processing 100% free order bypass');
-
-            // 1. Create a mock checkout session ID
-            const sessionId = `FREE_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-            const orderNumber = `NKH-${Date.now().toString().slice(-6)}`;
-
-            // 2. Insert into orders table
-            const { data: order, error: orderError } = await supabase
-                .from('orders')
-                .insert({
-                    order_number: orderNumber,
-                    stripe_checkout_session_id: sessionId,
-                    stripe_payment_intent_id: 'free_order',
-                    stripe_customer_id: 'guest',
-                    status: 'processing',
-                    payment_status: 'paid',
-                    customer_email: customerEmail || 'guest@example.com',
-                    customer_name: 'Guest User',
-                    shipping_address_line1: 'N/A',
-                    shipping_city: 'N/A',
-                    shipping_state: 'N/A',
-                    shipping_postal_code: 'N/A',
-                    shipping_country: 'US',
-                    subtotal: cartTotal,
-                    shipping_cost: 0,
-                    discount_amount: validatedCoupon.discount_amount,
-                    total: 0,
-                    is_subscription_order: hasSubscription,
-                    review_email_send_at: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
-                    review_email_sent: false,
-                })
-                .select()
-                .single();
-
-            if (orderError) {
-                console.error('Error creating free order:', orderError);
-                return new Response(
-                    JSON.stringify({ error: 'Failed to create free order' }),
-                    { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-                );
-            }
-
-            // 3. Setup Order Items
-            // We need to fetch product data to see what's digital
-            const uniqueProductIds = [...new Set(items.map((item: CheckoutItem) => item.productId))];
-            const { data: productData } = await supabase
-                .from('products')
-                .select('id, is_digital, digital_asset_url, digital_asset_url_printable')
-                .in('id', uniqueProductIds);
-
-            const productsMap = new Map(productData?.map((p: any) => [p.id, p]) || []);
-
-            const orderItemsInsert = items.map((item: CheckoutItem) => {
-                const product = productsMap.get(item.productId);
-                return {
-                    order_id: order.id,
-                    product_id: item.productId,
-                    variant_id: item.variantId || null,
-                    product_title: item.title,
-                    variant_title: item.variantTitle || null,
-                    image_url: item.image,
-                    quantity: item.quantity,
-                    unit_price: item.price,
-                    total_price: item.price * item.quantity,
-                    is_subscription: item.isSubscription || false,
-                };
-            });
-
-            // 4. Insert order items
-            await supabase.from('order_items').insert(orderItemsInsert);
-
-            // 5. Record Coupon Redemption
-            await supabase.from('coupon_redemptions').insert({
-                coupon_id: validatedCoupon.coupon_id,
-                customer_email: customerEmail || 'guest@example.com',
-                order_id: order.id,
-                discount_amount: validatedCoupon.discount_amount,
-                order_total: cartTotal,
-                final_total: 0,
-            });
-
-            // 6. Return success URL
-            const finalSuccessUrl = (successUrl || `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`)
-                .replace('{CHECKOUT_SESSION_ID}', sessionId);
-
-            return new Response(
-                JSON.stringify({ url: finalSuccessUrl }),
-                { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-        }
-        // --- END FREE ORDER BYPASS ---
 
         // Build line items for Stripe
         const lineItems = items.map((item: CheckoutItem) => {

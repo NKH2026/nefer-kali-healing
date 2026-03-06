@@ -28,6 +28,7 @@ export interface CheckoutItem {
     image: string;
     isSubscription: boolean;
     subscriptionFrequency?: string;
+    category?: string;
 }
 
 export interface CheckoutRequest {
