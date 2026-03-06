@@ -396,7 +396,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   if (productIds.length > 0) {
     const { data: productsData } = await supabase
       .from('products')
-      .select('id, is_digital, digital_asset_url')
+      .select('id, is_digital, digital_asset_url, digital_asset_url_printable')
       .in('id', productIds);
     productsMap = new Map(productsData?.map((p: any) => [p.id, p]) || []);
   }
@@ -407,6 +407,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       ...item,
       is_digital: product?.is_digital || false,
       digital_asset_url: product?.digital_asset_url || null,
+      digital_asset_url_printable: product?.digital_asset_url_printable || null,
     };
   });
 
@@ -542,6 +543,97 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
 
   // Send confirmation email with non-profit receipt, including digital downloads
   await sendConfirmationEmail(order, enhancedOrderItems);
+
+  // Send digital download emails for any digital products
+  const digitalItems = enhancedOrderItems.filter(item => item.is_digital && item.digital_asset_url);
+  for (const item of digitalItems) {
+    try {
+      const firstName = order.customer_name?.split(' ')[0] || 'Beloved';
+      let downloadButtonsHTML = '';
+
+      if (item.digital_asset_url) {
+        downloadButtonsHTML += `
+          <tr>
+            <td align="center" style="padding: 10px 40px;">
+              <p style="color: #ccc; margin: 0 0 8px; font-size: 14px;">📝 Fillable version: Fill in digitally on your device</p>
+              <a href="${item.digital_asset_url}" style="display: inline-block; background: linear-gradient(135deg, #D4AF37, #8B7322); color: #000; text-decoration: none; padding: 14px 40px; border-radius: 8px; font-weight: bold; font-size: 16px;">Download Fillable PDF</a>
+            </td>
+          </tr>`;
+      }
+      if (item.digital_asset_url_printable) {
+        downloadButtonsHTML += `
+          <tr>
+            <td align="center" style="padding: 10px 40px;">
+              <p style="color: #ccc; margin: 0 0 8px; font-size: 14px;">🖨️ Printable version: Print and write by hand</p>
+              <a href="${item.digital_asset_url_printable}" style="display: inline-block; background: linear-gradient(135deg, #9B59B6, #6C3483); color: #fff; text-decoration: none; padding: 14px 40px; border-radius: 8px; font-weight: bold; font-size: 16px;">Download Printable PDF</a>
+            </td>
+          </tr>`;
+      }
+
+      const digitalEmailHTML = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin: 0; padding: 0; background-color: #0a0a0a; font-family: Arial, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0a0a0a;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #121212; border-radius: 16px; overflow: hidden;">
+          <tr>
+            <td style="background: linear-gradient(135deg, #9B59B6, #6C3483); padding: 40px; text-align: center;">
+              <h1 style="margin: 0; color: #fff; font-size: 28px; font-weight: bold;">NEFER KALI HEALING</h1>
+              <p style="margin: 10px 0 0; color: rgba(255,255,255,0.8); font-size: 14px;">Your Digital Download is Ready!</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 40px;">
+              <h2 style="color: #D4AF37; margin: 0 0 10px; font-size: 24px;">Peace and Blessings, ${firstName}!</h2>
+              <p style="color: #ccc; margin: 0; line-height: 1.6;">Thank you for your purchase! Your digital product <strong style="color: #fff;">${item.product_title}</strong> is ready to download.</p>
+            </td>
+          </tr>
+          ${downloadButtonsHTML}
+          <tr>
+            <td style="padding: 30px 40px;">
+              <p style="color: #999; font-size: 13px; line-height: 1.6;">💡 <strong>Tip:</strong> Save these files to your device for easy access. The fillable version works great with GoodNotes, Notability, and iPad annotation apps.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #0f0f0f; padding: 30px; text-align: center;">
+              <p style="color: #666; margin: 0; font-size: 12px;">Questions? Contact us at <a href="mailto:${NONPROFIT_INFO.email}" style="color: #D4AF37;">${NONPROFIT_INFO.email}</a></p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+      const digitalResponse = await fetch('https://api.emailjs.com/api/v1.6/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          service_id: emailjsServiceId,
+          template_id: emailjsTemplateId,
+          user_id: emailjsPublicKey,
+          accessToken: emailjsPrivateKey,
+          template_params: {
+            to_email: order.customer_email,
+            subject: `Your Download: ${item.product_title} | Nefer Kali Healing`,
+            message_html: digitalEmailHTML,
+          },
+        }),
+      });
+
+      if (digitalResponse.ok) {
+        console.log('Digital download email sent for:', item.product_title);
+      } else {
+        console.error('Digital download email error:', await digitalResponse.text());
+      }
+    } catch (err) {
+      console.error('Digital download email exception:', err);
+    }
+  }
 
   console.log('Checkout processing complete for order:', order.order_number);
 }
