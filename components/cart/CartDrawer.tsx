@@ -313,17 +313,6 @@ const CartDrawer: React.FC = () => {
                             </div>
                         )}
 
-                        {/* DEBUG DATA */}
-                        <div className="bg-red-500/20 border border-red-500 p-2 text-xs text-white mb-2 font-mono whitespace-pre-wrap">
-                            DEBUG:
-                            total: {total.toFixed(2)}
-                            subtotal: {subtotal.toFixed(2)}
-                            discountType: {appliedCoupon?.discountType}
-                            dTypeEval: {(appliedCoupon?.discountType || '').toLowerCase().trim() === 'percentage' ? 'YES' : 'NO'}
-                            discountValue: {appliedCoupon?.discountValue}
-                            calculatedMath: {appliedCoupon ? Math.max(0, subtotal * (1 - (appliedCoupon.discountValue || 0) / 100)).toFixed(2) : 'No Coupon'}
-                        </div>
-
                         {/* Subtotal */}
                         <div className="flex flex-col gap-2 mb-4">
                             <div className="flex items-center justify-between">
