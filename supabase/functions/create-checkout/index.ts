@@ -31,6 +31,7 @@ interface CheckoutItem {
     image: string;
     isSubscription: boolean;
     subscriptionFrequency?: string;
+    category?: string;
 }
 
 // Convert frequency to Stripe interval
@@ -112,6 +113,9 @@ serve(async (req) => {
             }
         }
 
+        // Calculate final total
+        const finalTotal = Math.max(0, cartTotal - (validatedCoupon?.discount_amount || 0));
+
         // Helper function to ensure image URLs are absolute
         const getAbsoluteImageUrl = (imageUrl: string): string => {
             if (!imageUrl) return '';
@@ -123,6 +127,102 @@ serve(async (req) => {
 
         // Check if any items are subscriptions
         const hasSubscription = items.some((item: CheckoutItem) => item.isSubscription);
+
+        // --- 100% FREE ORDER BYPASS ---
+        // If the order is free because of a coupon, bypass Stripe entirely.
+        // Stripe does not allow $0 checkout sessions.
+        if (finalTotal === 0 && validatedCoupon && validatedCoupon.discount_amount && validatedCoupon.discount_amount > 0) {
+            console.log('Processing 100% free order bypass');
+
+            // 1. Create a mock checkout session ID
+            const sessionId = `FREE_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+            const orderNumber = `NKH-${Date.now().toString().slice(-6)}`;
+
+            // 2. Insert into orders table
+            const { data: order, error: orderError } = await supabase
+                .from('orders')
+                .insert({
+                    order_number: orderNumber,
+                    stripe_checkout_session_id: sessionId,
+                    stripe_payment_intent_id: 'free_order',
+                    stripe_customer_id: 'guest',
+                    status: 'processing',
+                    payment_status: 'paid',
+                    customer_email: customerEmail || 'guest@example.com',
+                    customer_name: 'Guest User',
+                    shipping_address_line1: 'N/A',
+                    shipping_city: 'N/A',
+                    shipping_state: 'N/A',
+                    shipping_postal_code: 'N/A',
+                    shipping_country: 'US',
+                    subtotal: cartTotal,
+                    shipping_cost: 0,
+                    discount_amount: validatedCoupon.discount_amount,
+                    total: 0,
+                    is_subscription_order: hasSubscription,
+                    review_email_send_at: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
+                    review_email_sent: false,
+                })
+                .select()
+                .single();
+
+            if (orderError) {
+                console.error('Error creating free order:', orderError);
+                return new Response(
+                    JSON.stringify({ error: 'Failed to create free order' }),
+                    { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                );
+            }
+
+            // 3. Setup Order Items
+            // We need to fetch product data to see what's digital
+            const uniqueProductIds = [...new Set(items.map((item: CheckoutItem) => item.productId))];
+            const { data: productData } = await supabase
+                .from('products')
+                .select('id, is_digital, digital_asset_url, digital_asset_url_printable')
+                .in('id', uniqueProductIds);
+
+            const productsMap = new Map(productData?.map((p: any) => [p.id, p]) || []);
+
+            const orderItemsInsert = items.map((item: CheckoutItem) => {
+                const product = productsMap.get(item.productId);
+                return {
+                    order_id: order.id,
+                    product_id: item.productId,
+                    variant_id: item.variantId || null,
+                    product_title: item.title,
+                    variant_title: item.variantTitle || null,
+                    image_url: item.image,
+                    quantity: item.quantity,
+                    unit_price: item.price,
+                    total_price: item.price * item.quantity,
+                    is_subscription: item.isSubscription || false,
+                };
+            });
+
+            // 4. Insert order items
+            await supabase.from('order_items').insert(orderItemsInsert);
+
+            // 5. Record Coupon Redemption
+            await supabase.from('coupon_redemptions').insert({
+                coupon_id: validatedCoupon.coupon_id,
+                customer_email: customerEmail || 'guest@example.com',
+                order_id: order.id,
+                discount_amount: validatedCoupon.discount_amount,
+                order_total: cartTotal,
+                final_total: 0,
+            });
+
+            // 6. Return success URL
+            const finalSuccessUrl = (successUrl || `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`)
+                .replace('{CHECKOUT_SESSION_ID}', sessionId);
+
+            return new Response(
+                JSON.stringify({ url: finalSuccessUrl }),
+                { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+        }
+        // --- END FREE ORDER BYPASS ---
 
         // Build line items for Stripe
         const lineItems = items.map((item: CheckoutItem) => {
@@ -192,73 +292,176 @@ serve(async (req) => {
         // For one-time payments, add shipping options
         if (!hasSubscription) {
             const FREE_SHIPPING_THRESHOLD = 75.00;
+            const SEA_MOSS_WEIGHT_THRESHOLD_OZ = 40;
+            const SEA_MOSS_FLAT_SHIPPING_CENTS = 2300; // $23.00
             const isTestCoupon = couponCode && couponCode.toUpperCase() === 'FREESHIPTEST';
             const isFreeShippingCoupon = validatedCoupon?.discount_type === 'free_shipping';
 
-            if (isTestCoupon || isFreeShippingCoupon || cartTotal >= FREE_SHIPPING_THRESHOLD) {
-                // FREE SHIPPING
-                sessionParams.shipping_options = [
-                    {
-                        shipping_rate_data: {
-                            type: 'fixed_amount',
-                            fixed_amount: { amount: 0, currency: 'usd' },
-                            display_name: 'Free Shipping (USPS Ground Advantage)',
-                            delivery_estimate: {
-                                minimum: { unit: 'business_day', value: 6 },
-                                maximum: { unit: 'business_day', value: 10 },
-                            },
-                        },
-                    },
-                    {
-                        shipping_rate_data: {
-                            type: 'fixed_amount',
-                            fixed_amount: { amount: 0, currency: 'usd' },
-                            display_name: 'Free Priority Mail',
-                            delivery_estimate: {
-                                minimum: { unit: 'business_day', value: 1 },
-                                maximum: { unit: 'business_day', value: 3 },
-                            },
-                        },
-                    },
-                ];
+            // --- Sea Moss heavy-order detection ---
+            // Look up product categories from the database (don't rely on frontend passing category)
+            // Then calculate total weight from variant titles or option1.
+            let totalSeaMossWeightOz = 0;
+
+            // Fetch categories and digital flags for all products in the order
+            const uniqueProductIds = [...new Set(items.map((item: CheckoutItem) => item.productId))];
+            const { data: productData } = await supabase
+                .from('products')
+                .select('id, category, is_digital')
+                .in('id', uniqueProductIds);
+
+            const digitalProductIds = new Set(
+                (productData || [])
+                    .filter((p: any) => p.is_digital === true)
+                    .map((p: any) => p.id)
+            );
+
+            const hasPhysicalItems = items.some((item: CheckoutItem) => !digitalProductIds.has(item.productId));
+
+            if (!hasPhysicalItems) {
+                // Order is purely digital, remove shipping requirements
+                delete sessionParams.shipping_address_collection;
             } else {
-                // Standard shipping rates
-                sessionParams.shipping_options = [
-                    {
-                        shipping_rate_data: {
-                            type: 'fixed_amount',
-                            fixed_amount: { amount: 530, currency: 'usd' },
-                            display_name: 'USPS Ground Advantage',
-                            delivery_estimate: {
-                                minimum: { unit: 'business_day', value: 6 },
-                                maximum: { unit: 'business_day', value: 10 },
+
+                const seaMossProductIds = new Set(
+                    (productData || [])
+                        .filter((p: any) => p.category?.toLowerCase() === 'sea moss')
+                        .map((p: any) => p.id)
+                );
+
+                const seaMossItems = items.filter((item: CheckoutItem) =>
+                    seaMossProductIds.has(item.productId)
+                );
+
+                if (seaMossItems.length > 0) {
+                    // Helper: parse oz from a string like "8 oz", "16 oz", "16oz", "1 lb"
+                    const parseWeightOz = (text: string): number => {
+                        if (!text) return 0;
+                        const lower = text.toLowerCase().trim();
+                        const ozMatch = lower.match(/(\d+(?:\.\d+)?)\s*oz/);
+                        if (ozMatch) return parseFloat(ozMatch[1]);
+                        const lbMatch = lower.match(/(\d+(?:\.\d+)?)\s*lb/);
+                        if (lbMatch) return parseFloat(lbMatch[1]) * 16;
+                        return 0;
+                    };
+
+                    for (const item of seaMossItems) {
+                        let weightOz = 0;
+
+                        // Try variant title first (e.g. "16oz" or "8 oz")
+                        if (item.variantTitle) {
+                            weightOz = parseWeightOz(item.variantTitle);
+                        }
+
+                        // Try the item title itself (e.g. "Purple Sea Moss - 16oz")
+                        if (weightOz === 0 && item.title) {
+                            weightOz = parseWeightOz(item.title);
+                        }
+
+                        // Fall back to looking up variant option1 from DB
+                        if (weightOz === 0 && item.variantId) {
+                            const { data: variantData } = await supabase
+                                .from('product_variants')
+                                .select('option1')
+                                .eq('id', item.variantId)
+                                .single();
+                            if (variantData?.option1) {
+                                weightOz = parseWeightOz(variantData.option1);
+                            }
+                        }
+
+                        // Default: if still no weight, assume 8 oz per unit
+                        if (weightOz === 0) {
+                            weightOz = 8;
+                        }
+
+                        totalSeaMossWeightOz += weightOz * item.quantity;
+                    }
+
+                    console.log(`Sea Moss total weight: ${totalSeaMossWeightOz} oz (threshold: ${SEA_MOSS_WEIGHT_THRESHOLD_OZ} oz)`);
+                }
+
+                const isHeavySeaMossOrder = totalSeaMossWeightOz > SEA_MOSS_WEIGHT_THRESHOLD_OZ;
+
+                if (isHeavySeaMossOrder) {
+                    // Heavy sea moss order: flat $23 shipping regardless of cart total
+                    sessionParams.shipping_options = [
+                        {
+                            shipping_rate_data: {
+                                type: 'fixed_amount',
+                                fixed_amount: { amount: SEA_MOSS_FLAT_SHIPPING_CENTS, currency: 'usd' },
+                                display_name: 'Flat Rate Shipping (Heavy Order)',
+                                delivery_estimate: {
+                                    minimum: { unit: 'business_day', value: 5 },
+                                    maximum: { unit: 'business_day', value: 10 },
+                                },
                             },
                         },
-                    },
-                    {
-                        shipping_rate_data: {
-                            type: 'fixed_amount',
-                            fixed_amount: { amount: 985, currency: 'usd' },
-                            display_name: 'Priority Mail',
-                            delivery_estimate: {
-                                minimum: { unit: 'business_day', value: 1 },
-                                maximum: { unit: 'business_day', value: 3 },
+                    ];
+                } else if (isTestCoupon || isFreeShippingCoupon || cartTotal >= FREE_SHIPPING_THRESHOLD) {
+                    // FREE SHIPPING
+                    sessionParams.shipping_options = [
+                        {
+                            shipping_rate_data: {
+                                type: 'fixed_amount',
+                                fixed_amount: { amount: 0, currency: 'usd' },
+                                display_name: 'Free Shipping (USPS Ground Advantage)',
+                                delivery_estimate: {
+                                    minimum: { unit: 'business_day', value: 6 },
+                                    maximum: { unit: 'business_day', value: 10 },
+                                },
                             },
                         },
-                    },
-                    {
-                        shipping_rate_data: {
-                            type: 'fixed_amount',
-                            fixed_amount: { amount: 3075, currency: 'usd' },
-                            display_name: 'Priority Mail Express',
-                            delivery_estimate: {
-                                minimum: { unit: 'business_day', value: 1 },
-                                maximum: { unit: 'business_day', value: 2 },
+                        {
+                            shipping_rate_data: {
+                                type: 'fixed_amount',
+                                fixed_amount: { amount: 0, currency: 'usd' },
+                                display_name: 'Free Priority Mail',
+                                delivery_estimate: {
+                                    minimum: { unit: 'business_day', value: 1 },
+                                    maximum: { unit: 'business_day', value: 3 },
+                                },
                             },
                         },
-                    },
-                ];
-            }
+                    ];
+                } else {
+                    // Standard shipping rates
+                    sessionParams.shipping_options = [
+                        {
+                            shipping_rate_data: {
+                                type: 'fixed_amount',
+                                fixed_amount: { amount: 530, currency: 'usd' },
+                                display_name: 'USPS Ground Advantage',
+                                delivery_estimate: {
+                                    minimum: { unit: 'business_day', value: 6 },
+                                    maximum: { unit: 'business_day', value: 10 },
+                                },
+                            },
+                        },
+                        {
+                            shipping_rate_data: {
+                                type: 'fixed_amount',
+                                fixed_amount: { amount: 985, currency: 'usd' },
+                                display_name: 'Priority Mail',
+                                delivery_estimate: {
+                                    minimum: { unit: 'business_day', value: 1 },
+                                    maximum: { unit: 'business_day', value: 3 },
+                                },
+                            },
+                        },
+                        {
+                            shipping_rate_data: {
+                                type: 'fixed_amount',
+                                fixed_amount: { amount: 3075, currency: 'usd' },
+                                display_name: 'Priority Mail Express',
+                                delivery_estimate: {
+                                    minimum: { unit: 'business_day', value: 1 },
+                                    maximum: { unit: 'business_day', value: 2 },
+                                },
+                            },
+                        },
+                    ];
+                }
+            } // End of hasPhysicalItems else block
         }
 
         const session = await stripe.checkout.sessions.create(sessionParams);
