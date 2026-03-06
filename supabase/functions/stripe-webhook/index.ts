@@ -16,7 +16,10 @@ const supabase = createClient(
 );
 
 const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
-const resendApiKey = Deno.env.get('RESEND_API_KEY');
+const emailjsServiceId = Deno.env.get('EMAILJS_SERVICE_ID') || 'service_m6pyrkn';
+const emailjsTemplateId = Deno.env.get('EMAILJS_TEMPLATE_ID') || 'template_nkh_email';
+const emailjsPublicKey = Deno.env.get('EMAILJS_PUBLIC_KEY') || 'LrDHp_MQUp_c5ssQo';
+const emailjsPrivateKey = Deno.env.get('EMAILJS_PRIVATE_KEY') || 'kzv9g0fcvUgkHobzO5obU';
 const shippoApiKey = Deno.env.get('SHIPPO_API_KEY');
 
 // Business ship-from address
@@ -38,12 +41,8 @@ const NONPROFIT_INFO = {
   email: 'asasa@neferkalihealing.org',
 };
 
-// Send confirmation email via Resend
+// Send confirmation email via EmailJS
 async function sendConfirmationEmail(order: any, orderItems: any[]) {
-  if (!resendApiKey) {
-    console.log('RESEND_API_KEY not set, skipping email');
-    return;
-  }
 
   const itemsHTML = orderItems.map(item => `
         <tr>
@@ -141,17 +140,21 @@ async function sendConfirmationEmail(order: any, orderItems: any[]) {
 </html>`;
 
   try {
-    const response = await fetch('https://api.resend.com/emails', {
+    const response = await fetch('https://api.emailjs.com/api/v1.6/email', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Nefer Kali Healing <info@neferkalihealing.org>',
-        to: order.customer_email,
-        subject: `Order Confirmed: ${order.order_number} | Nefer Kali Healing`,
-        html: emailHTML,
+        service_id: emailjsServiceId,
+        template_id: emailjsTemplateId,
+        user_id: emailjsPublicKey,
+        accessToken: emailjsPrivateKey,
+        template_params: {
+          to_email: order.customer_email,
+          subject: `Order Confirmed: ${order.order_number} | Nefer Kali Healing`,
+          message_html: emailHTML,
+        },
       }),
     });
 
@@ -430,6 +433,9 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       discount_amount: (session.total_details?.amount_discount || 0) / 100,
       total: (session.amount_total || 0) / 100,
       is_subscription_order: session.mode === 'subscription',
+      // Schedule review request email for 21 days from now
+      review_email_send_at: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
+      review_email_sent: false,
     })
     .select()
     .single();

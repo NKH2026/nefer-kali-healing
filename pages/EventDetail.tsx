@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { sendTicketEmail } from '../lib/resend';
+import { sendTicketEmail } from '../lib/emailjs';
 import { ArrowLeft, Calendar, Clock, MapPin, Users, Check, Loader2 } from 'lucide-react';
 
 interface Event {
@@ -123,6 +123,8 @@ const EventDetail: React.FC = () => {
                     eventDate: eventDate,
                     eventTime: eventTime,
                     eventLocation: getLocationLabel(event.location_type) + (event.location_details ? ` - ${event.location_details}` : ''),
+                    locationType: event.location_type,
+                    zoomLink: event.location_type === 'virtual' ? (event.location_details || undefined) : undefined,
                     ticketCode: data.ticket_code,
                     isFree: event.is_free
                 }).then(result => {

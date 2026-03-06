@@ -1,46 +1,46 @@
 // Non-Profit Donation Receipt Email Template
-// For use with Resend or any email provider
+// For use with EmailJS email provider
 // This template is IRS-compliant for 501(c)(3) organizations
 
 // Business Info
 export const NONPROFIT_INFO = {
-    name: 'Nefer Kali Healing',
-    ein: '99-3021724',
-    address: 'PO Box 322, McCordsville, IN 46055',
-    email: 'asasa@neferkalihealing.org',
-    website: 'https://neferkalihealing.org',
+  name: 'Nefer Kali Healing',
+  ein: '99-3021724',
+  address: 'PO Box 322, McCordsville, IN 46055',
+  email: 'asasa@neferkalihealing.org',
+  website: 'https://neferkalihealing.org',
 };
 
 export interface OrderReceiptData {
-    orderNumber: string;
-    orderDate: string;
-    customerName: string;
-    customerEmail: string;
-    items: Array<{
-        title: string;
-        quantity: number;
-        price: number;
-    }>;
-    subtotal: number;
-    shippingCost: number;
-    total: number;
-    shippingAddress: {
-        line1: string;
-        line2?: string;
-        city: string;
-        state: string;
-        postalCode: string;
-    };
-    isSubscription?: boolean;
+  orderNumber: string;
+  orderDate: string;
+  customerName: string;
+  customerEmail: string;
+  items: Array<{
+    title: string;
+    quantity: number;
+    price: number;
+  }>;
+  subtotal: number;
+  shippingCost: number;
+  total: number;
+  shippingAddress: {
+    line1: string;
+    line2?: string;
+    city: string;
+    state: string;
+    postalCode: string;
+  };
+  isSubscription?: boolean;
 }
 
 // Generate plain text email
 export function generateReceiptPlainText(data: OrderReceiptData): string {
-    const itemsList = data.items
-        .map(item => `  ${item.title} x${item.quantity} - $${item.price.toFixed(2)}`)
-        .join('\n');
+  const itemsList = data.items
+    .map(item => `  ${item.title} x${item.quantity} - $${item.price.toFixed(2)}`)
+    .join('\n');
 
-    return `
+  return `
 NEFER KALI HEALING
 Order Confirmation & Tax Receipt
 ================================
@@ -97,17 +97,17 @@ Thank you for supporting Nefer Kali Healing!
 
 // Generate HTML email
 export function generateReceiptHTML(data: OrderReceiptData): string {
-    const itemsHTML = data.items
-        .map(item => `
+  const itemsHTML = data.items
+    .map(item => `
       <tr>
         <td style="padding: 12px; border-bottom: 1px solid #333;">${item.title}</td>
         <td style="padding: 12px; border-bottom: 1px solid #333; text-align: center;">${item.quantity}</td>
         <td style="padding: 12px; border-bottom: 1px solid #333; text-align: right;">$${item.price.toFixed(2)}</td>
       </tr>
     `)
-        .join('');
+    .join('');
 
-    return `
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -256,40 +256,41 @@ export function generateReceiptHTML(data: OrderReceiptData): string {
 `;
 }
 
-// Export for use with Resend
+// Export for use with EmailJS
 export async function sendOrderConfirmationEmail(
-    data: OrderReceiptData,
-    resendApiKey?: string
+  data: OrderReceiptData
 ): Promise<{ success: boolean; error?: string }> {
-    const apiKey = resendApiKey || process.env.RESEND_API_KEY;
+  const EMAILJS_SERVICE_ID = 'service_m6pyrkn';
+  const EMAILJS_TEMPLATE_ID = 'template_nkh_email';
+  const EMAILJS_PUBLIC_KEY = 'LrDHp_MQUp_c5ssQo';
+  const EMAILJS_PRIVATE_KEY = 'kzv9g0fcvUgkHobzO5obU';
 
-    if (!apiKey) {
-        return { success: false, error: 'RESEND_API_KEY not configured' };
+  try {
+    const response = await fetch('https://api.emailjs.com/api/v1.6/email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        service_id: EMAILJS_SERVICE_ID,
+        template_id: EMAILJS_TEMPLATE_ID,
+        user_id: EMAILJS_PUBLIC_KEY,
+        accessToken: EMAILJS_PRIVATE_KEY,
+        template_params: {
+          to_email: data.customerEmail,
+          subject: `Order Confirmed: ${data.orderNumber} | Nefer Kali Healing`,
+          message_html: generateReceiptHTML(data),
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      return { success: false, error: errorText };
     }
 
-    try {
-        const response = await fetch('https://api.resend.com/emails', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                from: `${NONPROFIT_INFO.name} <orders@neferkalihealing.org>`,
-                to: data.customerEmail,
-                subject: `Order Confirmed: ${data.orderNumber} | Nefer Kali Healing`,
-                html: generateReceiptHTML(data),
-                text: generateReceiptPlainText(data),
-            }),
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            return { success: false, error: error.message };
-        }
-
-        return { success: true };
-    } catch (error: any) {
-        return { success: false, error: error.message };
-    }
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
 }
