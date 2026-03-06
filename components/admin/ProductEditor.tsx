@@ -659,10 +659,8 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                                 <button type="button" onClick={() => setDigitalAssetUrl('')} className="text-red-400 hover:text-red-300 transition-colors"><X size={16} /></button>
                                             </div>
                                         ) : (
-                                            <label className="flex items-center justify-center gap-2 border-2 border-dashed border-purple-500/30 rounded-lg px-4 py-4 cursor-pointer hover:border-purple-500/50 hover:bg-purple-900/10 transition-all">
-                                                <Upload size={18} className="text-purple-400" />
-                                                <span className="text-sm text-purple-400 font-urbanist">Upload Fillable PDF</span>
-                                                <input type="file" accept=".pdf" className="hidden" onChange={async (e) => {
+                                            <div>
+                                                <input id="fillable-pdf-input" type="file" accept=".pdf" style={{ display: 'none' }} onChange={async (e) => {
                                                     const file = e.target.files?.[0];
                                                     if (!file) return;
                                                     try {
@@ -673,7 +671,11 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                                         setDigitalAssetUrl(data.publicUrl);
                                                     } catch (err: any) { alert('Upload failed: ' + err.message); }
                                                 }} />
-                                            </label>
+                                                <button type="button" onClick={() => document.getElementById('fillable-pdf-input')?.click()} className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-purple-500/30 rounded-lg px-4 py-4 cursor-pointer hover:border-purple-500/50 hover:bg-purple-900/10 transition-all">
+                                                    <Upload size={18} className="text-purple-400" />
+                                                    <span className="text-sm text-purple-400 font-urbanist">Upload Fillable PDF</span>
+                                                </button>
+                                            </div>
                                         )}
                                     </div>
                                     <div>
@@ -684,10 +686,8 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                                 <button type="button" onClick={() => setDigitalAssetUrlPrintable('')} className="text-red-400 hover:text-red-300 transition-colors"><X size={16} /></button>
                                             </div>
                                         ) : (
-                                            <label className="flex items-center justify-center gap-2 border-2 border-dashed border-purple-500/30 rounded-lg px-4 py-4 cursor-pointer hover:border-purple-500/50 hover:bg-purple-900/10 transition-all">
-                                                <Upload size={18} className="text-purple-400" />
-                                                <span className="text-sm text-purple-400 font-urbanist">Upload Printable PDF</span>
-                                                <input type="file" accept=".pdf" className="hidden" onChange={async (e) => {
+                                            <div>
+                                                <input id="printable-pdf-input" type="file" accept=".pdf" style={{ display: 'none' }} onChange={async (e) => {
                                                     const file = e.target.files?.[0];
                                                     if (!file) return;
                                                     try {
@@ -698,7 +698,11 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                                         setDigitalAssetUrlPrintable(data.publicUrl);
                                                     } catch (err: any) { alert('Upload failed: ' + err.message); }
                                                 }} />
-                                            </label>
+                                                <button type="button" onClick={() => document.getElementById('printable-pdf-input')?.click()} className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-purple-500/30 rounded-lg px-4 py-4 cursor-pointer hover:border-purple-500/50 hover:bg-purple-900/10 transition-all">
+                                                    <Upload size={18} className="text-purple-400" />
+                                                    <span className="text-sm text-purple-400 font-urbanist">Upload Printable PDF</span>
+                                                </button>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
