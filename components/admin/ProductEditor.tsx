@@ -652,24 +652,54 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                             {isDigital && (
                                 <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300 space-y-4">
                                     <div>
-                                        <label className="block text-xs text-purple-400 uppercase tracking-wider mb-2 font-urbanist">📝 Fillable PDF URL</label>
-                                        <input
-                                            type="text"
-                                            value={digitalAssetUrl}
-                                            onChange={(e) => setDigitalAssetUrl(e.target.value)}
-                                            placeholder="Paste fillable PDF URL from Supabase Storage..."
-                                            className="w-full bg-purple-900/10 border border-purple-500/30 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500 focus:outline-none placeholder-gray-500 font-urbanist"
-                                        />
+                                        <label className="block text-xs text-purple-400 uppercase tracking-wider mb-2 font-urbanist">📝 Fillable PDF</label>
+                                        {digitalAssetUrl ? (
+                                            <div className="flex items-center gap-3 bg-purple-900/20 border border-purple-500/30 rounded-lg px-4 py-3">
+                                                <span className="text-purple-300 text-sm flex-1 truncate font-urbanist">✅ {digitalAssetUrl.split('/').pop()}</span>
+                                                <button type="button" onClick={() => setDigitalAssetUrl('')} className="text-red-400 hover:text-red-300 transition-colors"><X size={16} /></button>
+                                            </div>
+                                        ) : (
+                                            <label className="flex items-center justify-center gap-2 border-2 border-dashed border-purple-500/30 rounded-lg px-4 py-4 cursor-pointer hover:border-purple-500/50 hover:bg-purple-900/10 transition-all">
+                                                <Upload size={18} className="text-purple-400" />
+                                                <span className="text-sm text-purple-400 font-urbanist">Upload Fillable PDF</span>
+                                                <input type="file" accept=".pdf" className="hidden" onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (!file) return;
+                                                    try {
+                                                        const fileName = `fillable-${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
+                                                        const { error } = await supabase.storage.from('digital-products').upload(fileName, file);
+                                                        if (error) throw error;
+                                                        const { data } = supabase.storage.from('digital-products').getPublicUrl(fileName);
+                                                        setDigitalAssetUrl(data.publicUrl);
+                                                    } catch (err: any) { alert('Upload failed: ' + err.message); }
+                                                }} />
+                                            </label>
+                                        )}
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-purple-400 uppercase tracking-wider mb-2 font-urbanist">🖨️ Printable PDF URL</label>
-                                        <input
-                                            type="text"
-                                            value={digitalAssetUrlPrintable}
-                                            onChange={(e) => setDigitalAssetUrlPrintable(e.target.value)}
-                                            placeholder="Paste printable PDF URL from Supabase Storage..."
-                                            className="w-full bg-purple-900/10 border border-purple-500/30 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500 focus:outline-none placeholder-gray-500 font-urbanist"
-                                        />
+                                        <label className="block text-xs text-purple-400 uppercase tracking-wider mb-2 font-urbanist">🖨️ Printable PDF</label>
+                                        {digitalAssetUrlPrintable ? (
+                                            <div className="flex items-center gap-3 bg-purple-900/20 border border-purple-500/30 rounded-lg px-4 py-3">
+                                                <span className="text-purple-300 text-sm flex-1 truncate font-urbanist">✅ {digitalAssetUrlPrintable.split('/').pop()}</span>
+                                                <button type="button" onClick={() => setDigitalAssetUrlPrintable('')} className="text-red-400 hover:text-red-300 transition-colors"><X size={16} /></button>
+                                            </div>
+                                        ) : (
+                                            <label className="flex items-center justify-center gap-2 border-2 border-dashed border-purple-500/30 rounded-lg px-4 py-4 cursor-pointer hover:border-purple-500/50 hover:bg-purple-900/10 transition-all">
+                                                <Upload size={18} className="text-purple-400" />
+                                                <span className="text-sm text-purple-400 font-urbanist">Upload Printable PDF</span>
+                                                <input type="file" accept=".pdf" className="hidden" onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (!file) return;
+                                                    try {
+                                                        const fileName = `printable-${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
+                                                        const { error } = await supabase.storage.from('digital-products').upload(fileName, file);
+                                                        if (error) throw error;
+                                                        const { data } = supabase.storage.from('digital-products').getPublicUrl(fileName);
+                                                        setDigitalAssetUrlPrintable(data.publicUrl);
+                                                    } catch (err: any) { alert('Upload failed: ' + err.message); }
+                                                }} />
+                                            </label>
+                                        )}
                                     </div>
                                 </div>
                             )}
