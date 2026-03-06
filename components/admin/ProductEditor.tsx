@@ -32,6 +32,7 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
     const [status, setStatus] = useState<'draft' | 'active' | 'archived'>('draft');
     const [isDigital, setIsDigital] = useState(false);
     const [digitalAssetUrl, setDigitalAssetUrl] = useState('');
+    const [digitalAssetUrlPrintable, setDigitalAssetUrlPrintable] = useState('');
 
     // Pricing
     const [price, setPrice] = useState('');
@@ -143,6 +144,7 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                 setStatus(data.status);
                 setIsDigital(data.is_digital || false);
                 setDigitalAssetUrl(data.digital_asset_url || '');
+                setDigitalAssetUrlPrintable(data.digital_asset_url_printable || '');
                 setPrice(data.price?.toString() || '');
                 setOnSale(data.on_sale || false);
                 setCompareAtPrice(data.compare_at_price?.toString() || '');
@@ -202,14 +204,19 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                 shippingInfoEditor?.commands.setContent(data.shipping_info || '');
 
                 // Fetch images
-                const { data: imageData } = await supabase
+                const { data: imageData, error: imageError } = await supabase
                     .from('product_images')
                     .select('*')
                     .eq('product_id', productId)
                     .order('sort_order');
 
-                if (imageData) {
+                if (imageError) {
+                    console.error('Error fetching product images:', imageError);
+                } else if (imageData && imageData.length > 0) {
                     setImages(imageData.map(img => ({ url: img.image_url, alt: img.alt_text || '', id: img.id })));
+                } else if (data.featured_image_url) {
+                    // Fallback: if no product_images rows exist but there is a featured image
+                    setImages([{ url: data.featured_image_url, alt: data.title || '' }]);
                 }
             }
         } catch (error) {
@@ -273,6 +280,7 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                 status,
                 is_digital: isDigital,
                 digital_asset_url: digitalAssetUrl,
+                digital_asset_url_printable: digitalAssetUrlPrintable,
                 price: price ? parseFloat(price) : null,
                 on_sale: onSale,
                 compare_at_price: compareAtPrice ? parseFloat(compareAtPrice) : null,
@@ -323,23 +331,33 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
             }
 
             // Save images
-            if (savedProductId && images.length > 0) {
+            if (savedProductId) {
                 // Delete existing images
-                await supabase
+                const { error: imgDeleteError } = await supabase
                     .from('product_images')
                     .delete()
                     .eq('product_id', savedProductId);
 
-                // Insert new images
-                const imageData = images.map((img, idx) => ({
-                    product_id: savedProductId,
-                    image_url: img.url,
-                    alt_text: img.alt,
-                    sort_order: idx,
-                    is_featured: idx === 0
-                }));
+                if (imgDeleteError) {
+                    console.error('Error deleting existing images:', imgDeleteError);
+                }
 
-                await supabase.from('product_images').insert(imageData);
+                // Insert new images (if any)
+                if (images.length > 0) {
+                    const imageData = images.map((img, idx) => ({
+                        product_id: savedProductId,
+                        image_url: img.url,
+                        alt_text: img.alt,
+                        sort_order: idx,
+                        is_featured: idx === 0
+                    }));
+
+                    const { error: imgInsertError } = await supabase.from('product_images').insert(imageData);
+                    if (imgInsertError) {
+                        console.error('Error saving product images:', imgInsertError);
+                        alert(`Warning: Product saved but images may not have been saved properly: ${imgInsertError.message}`);
+                    }
+                }
             }
 
             // Save variants
@@ -632,15 +650,27 @@ export const ProductEditor = ({ productId, onBack }: ProductEditorProps) => {
                                 This is a Digital Product (e.g. PDF Download, eBook)
                             </label>
                             {isDigital && (
-                                <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                                    <label className="block text-xs text-purple-400 uppercase tracking-wider mb-2 font-urbanist">Digital Asset File URL</label>
-                                    <input
-                                        type="text"
-                                        value={digitalAssetUrl}
-                                        onChange={(e) => setDigitalAssetUrl(e.target.value)}
-                                        placeholder="Enter secure Google Drive link or direct PDF URL..."
-                                        className="w-full bg-purple-900/10 border border-purple-500/30 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500 focus:outline-none placeholder-gray-500 font-urbanist"
-                                    />
+                                <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300 space-y-4">
+                                    <div>
+                                        <label className="block text-xs text-purple-400 uppercase tracking-wider mb-2 font-urbanist">📝 Fillable PDF URL</label>
+                                        <input
+                                            type="text"
+                                            value={digitalAssetUrl}
+                                            onChange={(e) => setDigitalAssetUrl(e.target.value)}
+                                            placeholder="Paste fillable PDF URL from Supabase Storage..."
+                                            className="w-full bg-purple-900/10 border border-purple-500/30 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500 focus:outline-none placeholder-gray-500 font-urbanist"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-purple-400 uppercase tracking-wider mb-2 font-urbanist">🖨️ Printable PDF URL</label>
+                                        <input
+                                            type="text"
+                                            value={digitalAssetUrlPrintable}
+                                            onChange={(e) => setDigitalAssetUrlPrintable(e.target.value)}
+                                            placeholder="Paste printable PDF URL from Supabase Storage..."
+                                            className="w-full bg-purple-900/10 border border-purple-500/30 rounded-lg px-3 py-3 text-sm text-gray-300 focus:border-purple-500 focus:outline-none placeholder-gray-500 font-urbanist"
+                                        />
+                                    </div>
                                 </div>
                             )}
                         </div>
