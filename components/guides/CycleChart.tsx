@@ -33,7 +33,7 @@ const CycleChart: React.FC<CycleChartProps> = ({ className = '', productName = '
     return (
         <div className={`${className}`}>
             {/* Mobile-friendly container */}
-            <div className="relative w-full max-w-md mx-auto px-2">
+            <div className="relative w-full max-w-md lg:max-w-2xl mx-auto px-2">
                 {/* MENSTRUATION - Top */}
                 <div className="text-center mb-3 lg:mb-4">
                     <span className="text-pink-400 font-bold text-lg lg:text-2xl tracking-wide">MENSTRUATION</span>
@@ -44,7 +44,7 @@ const CycleChart: React.FC<CycleChartProps> = ({ className = '', productName = '
                 <div className="relative flex items-center justify-center">
 
                     {/* LUTEAL - Positioned left on desktop */}
-                    <div className="hidden lg:block absolute left-0 text-center">
+                    <div className="hidden lg:flex flex-col items-center justify-center w-32 flex-shrink-0">
                         <span className="text-amber-300 font-bold text-xl tracking-wide">LUTEAL</span>
                         <span className="block text-amber-200/70 text-sm">Days 16-28</span>
                     </div>
@@ -106,7 +106,7 @@ const CycleChart: React.FC<CycleChartProps> = ({ className = '', productName = '
                     </div>
 
                     {/* FOLLICULAR - Positioned right on desktop */}
-                    <div className="hidden lg:block absolute right-0 text-center">
+                    <div className="hidden lg:flex flex-col items-center justify-center w-32 flex-shrink-0">
                         <span className="text-pink-200 font-bold text-xl tracking-wide">FOLLICULAR</span>
                         <span className="block text-pink-100/70 text-sm">Days 6-13</span>
                     </div>
