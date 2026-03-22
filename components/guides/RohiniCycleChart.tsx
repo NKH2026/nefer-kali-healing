@@ -32,24 +32,24 @@ const RohiniCycleChart: React.FC<RohiniCycleChartProps> = ({ className = '' }) =
     return (
         <div className={`${className}`}>
             {/* Mobile-friendly container */}
-            <div className="relative w-full max-w-md mx-auto px-2">
+            <div className="relative w-full max-w-md lg:max-w-2xl mx-auto px-2">
                 {/* MENSTRUATION - Top */}
                 <div className="text-center mb-3 lg:mb-4">
                     <span className="text-pink-400 font-bold text-lg lg:text-2xl tracking-wide">MENSTRUATION</span>
                     <span className="block text-pink-300/70 text-xs lg:text-sm">Days 1-5</span>
                 </div>
 
-                {/* Mobile/Tablet: Stack vertically, Desktop: Side by side */}
-                <div className="flex flex-col lg:flex-row items-center justify-center lg:justify-between gap-2 lg:gap-4">
+                {/* Chart with side labels - centered layout */}
+                <div className="relative flex items-center justify-center">
 
-                    {/* LUTEAL - Shows on left for desktop only (1024px+) */}
-                    <div className="hidden lg:block text-left w-24 xl:w-28 flex-shrink-0">
-                        <span className="text-amber-200 font-bold text-lg xl:text-xl tracking-wide">LUTEAL</span>
-                        <span className="block text-amber-100/70 text-xs xl:text-sm">Days 16-28</span>
+                    {/* LUTEAL - Positioned left on desktop */}
+                    <div className="hidden lg:flex flex-col items-center justify-center w-32 flex-shrink-0">
+                        <span className="text-amber-200 font-bold text-xl tracking-wide">LUTEAL</span>
+                        <span className="block text-amber-100/70 text-sm">Days 16-28</span>
                     </div>
 
                     {/* The Cycle Circle - Responsive sizing */}
-                    <div className="w-full max-w-[280px] lg:max-w-[256px] aspect-square flex-shrink-0 mx-auto">
+                    <div className="w-full max-w-[280px] lg:max-w-[256px] aspect-square flex-shrink-0">
                         <svg viewBox="0 0 200 200" className="w-full h-full">
                             {/* Center circle */}
                             <circle cx="100" cy="100" r="35" fill="#1e1b2e" stroke="#f9a8d4" strokeWidth="1" opacity="0.9" />
@@ -104,10 +104,10 @@ const RohiniCycleChart: React.FC<RohiniCycleChartProps> = ({ className = '' }) =
                         </svg>
                     </div>
 
-                    {/* FOLLICULAR - Shows on right for desktop only (1024px+) */}
-                    <div className="hidden lg:block text-right w-24 xl:w-28 flex-shrink-0">
-                        <span className="text-pink-200 font-bold text-lg xl:text-xl tracking-wide">FOLLICULAR</span>
-                        <span className="block text-pink-100/70 text-xs xl:text-sm">Days 6-13</span>
+                    {/* FOLLICULAR - Positioned right on desktop */}
+                    <div className="hidden lg:flex flex-col items-center justify-center w-32 flex-shrink-0">
+                        <span className="text-pink-200 font-bold text-xl tracking-wide">FOLLICULAR</span>
+                        <span className="block text-pink-100/70 text-sm">Days 6-13</span>
                     </div>
                 </div>
 
