@@ -180,7 +180,7 @@ export default function HetHerWombTinctureGuide() {
                             </p>
                             <p className="text-rose-100/90 text-lg leading-relaxed text-center">
                                 This divine and most gentle tincture, <span className="text-red-300 font-semibold">Het-Her Womb</span>,
-                                comes from my admiration and devotion to the heavenly body Venus, the planet that represents women.
+                                is inspired by the mighty Orisha <span className="text-red-300 font-semibold">Ọya</span>, who brings the winds of transformation, and by <span className="text-amber-300 font-semibold">Het Heru</span>, who governs the womb space and divine creation. Through this sacred herb, their power clears, renews, and transforms the womb.
                             </p>
                             <p className="text-red-200/80 text-center mt-4">
                                 Het Her Womb is made using <span className="text-red-400 font-semibold">St John's Bush</span> (Blood Root),
