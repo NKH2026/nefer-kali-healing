@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Droplets, Leaf, Shield, Wind, Heart, Sparkles, Zap } from 'lucide-react';
+import { ArrowLeft, Droplets, Leaf, Shield, Wind, Heart, Sparkles, Zap, ShoppingBag } from 'lucide-react';
 import SEOHead from '../../components/SEOHead';
 import { getArticleSchema, getFAQSchema, getBreadcrumbSchema } from '../../lib/schema';
 
@@ -97,13 +97,20 @@ export default function GullyRootGuide() {
                             </p>
                         </div>
 
-                        {/* View PDF Button */}
-                        <div className="flex justify-center mb-12">
+                        {/* CTA Buttons */}
+                        <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+                            <Link
+                                to="/offerings/gully-root-extract-amanu-guinea-hen-weed"
+                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#D4AF37] hover:bg-[#b5952f] text-black rounded-xl font-bold uppercase tracking-widest transition-all duration-300 shadow-lg shadow-yellow-900/20 hover:scale-105"
+                            >
+                                <ShoppingBag className="w-5 h-5" />
+                                Shop Gully Root
+                            </Link>
                             <a
                                 href="/guides/gully-root.pdf"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-700 to-green-600 hover:from-emerald-600 hover:to-green-500 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-emerald-900/50"
+                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-700 to-green-600 hover:from-emerald-600 hover:to-green-500 border border-emerald-500/30 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-emerald-900/50"
                             >
                                 <Droplets className="w-5 h-5" />
                                 View PDF Guide

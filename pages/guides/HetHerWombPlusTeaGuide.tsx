@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Sparkles, Heart, Droplets, Flower2, Sun } from 'lucide-react';
+import { ArrowLeft, Sparkles, Heart, Droplets, Flower2, Sun, ShoppingBag } from 'lucide-react';
 import CycleChart from '../../components/guides/CycleChart';
 import SEOHead from '../../components/SEOHead';
 import { getArticleSchema, getFAQSchema, getBreadcrumbSchema } from '../../lib/schema';
@@ -134,15 +134,22 @@ export default function HetHerWombPlusTeaGuide() {
                             </p>
                         </div>
 
-                        {/* View PDF Button */}
-                        <div className="flex justify-center mb-8 md:mb-12">
+                        {/* CTA Buttons */}
+                        <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8 md:mb-12">
+                            <Link
+                                to="/offerings/het-her-womb-plus-tea-fibroid-hormone-support-16oz"
+                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#D4AF37] hover:bg-[#b5952f] text-black rounded-xl font-bold uppercase tracking-widest transition-all duration-300 shadow-lg shadow-yellow-900/20 hover:scale-105"
+                            >
+                                <ShoppingBag className="w-5 h-5" />
+                                Shop Het Her Womb Tea
+                            </Link>
                             <a
                                 href="https://www.neferkalihealing.org/_files/ugd/7a4df9_eaf6e8fe6b2a4bc88d16d01e4acaa194.pdf"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-5 md:px-6 py-2.5 md:py-3 bg-gradient-to-r from-amber-600 to-pink-600 hover:from-amber-500 hover:to-pink-500 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-amber-900/50 text-sm md:text-base"
+                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-amber-600 to-pink-600 hover:from-amber-500 hover:to-pink-500 border border-amber-500/30 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-amber-900/50"
                             >
-                                <Flower2 className="w-4 h-4 md:w-5 md:h-5" />
+                                <Flower2 className="w-5 h-5" />
                                 View PDF Guide
                             </a>
                         </div>

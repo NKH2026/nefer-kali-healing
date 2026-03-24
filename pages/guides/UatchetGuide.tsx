@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Droplets, Shield, Moon, Heart, Sparkles, Brain, Zap } from 'lucide-react';
+import { ArrowLeft, Droplets, Shield, Moon, Heart, Sparkles, Brain, Zap, ShoppingBag } from 'lucide-react';
 import SEOHead from '../../components/SEOHead';
 import { getArticleSchema, getFAQSchema, getBreadcrumbSchema } from '../../lib/schema';
 
@@ -102,13 +102,20 @@ export default function UatchetGuide() {
                             </p>
                         </div>
 
-                        {/* View PDF Button */}
-                        <div className="flex justify-center mb-12">
+                        {/* CTA Buttons */}
+                        <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+                            <Link
+                                to="/offerings/uatchet-blue-vervain-black-reishi-mushroom-extract"
+                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#D4AF37] hover:bg-[#b5952f] text-black rounded-xl font-bold uppercase tracking-widest transition-all duration-300 shadow-lg shadow-yellow-900/20 hover:scale-105"
+                            >
+                                <ShoppingBag className="w-5 h-5" />
+                                Shop Uatchet Tincture
+                            </Link>
                             <a
                                 href="/guides/uatchet-tincture.pdf"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-gray-700 to-slate-600 hover:from-gray-600 hover:to-slate-500 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-gray-900/50"
+                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-gray-700 to-slate-600 hover:from-gray-600 hover:to-slate-500 border border-gray-500/30 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-gray-900/50"
                             >
                                 <Droplets className="w-5 h-5" />
                                 View PDF Guide

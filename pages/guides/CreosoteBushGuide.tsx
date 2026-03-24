@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Droplets, Leaf, Heart, Sparkles, Shield, Wind } from 'lucide-react';
+import { ArrowLeft, Droplets, Leaf, Heart, Sparkles, Shield, Wind, ShoppingBag } from 'lucide-react';
 import SEOHead from '../../components/SEOHead';
 import { getArticleSchema, getFAQSchema, getBreadcrumbSchema } from '../../lib/schema';
 
@@ -97,13 +97,20 @@ export default function CreosoteBushGuide() {
                             </p>
                         </div>
 
-                        {/* View PDF Button */}
-                        <div className="flex justify-center mb-12">
+                        {/* CTA Buttons */}
+                        <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+                            <Link
+                                to="/offerings/chaparral-creosote-bush-herbal-tincture-antioxidant-in-a-bottle-1oz"
+                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#D4AF37] hover:bg-[#b5952f] text-black rounded-xl font-bold uppercase tracking-widest transition-all duration-300 shadow-lg shadow-yellow-900/20 hover:scale-105"
+                            >
+                                <ShoppingBag className="w-5 h-5" />
+                                Shop Creosote Bush
+                            </Link>
                             <a
                                 href="/guides/creosote-bush.pdf"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-800 to-yellow-700 hover:from-amber-700 hover:to-yellow-600 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-amber-900/50"
+                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-amber-800 to-yellow-700 hover:from-amber-700 hover:to-yellow-600 border border-amber-500/30 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-amber-900/50"
                             >
                                 <Droplets className="w-5 h-5" />
                                 View PDF Guide

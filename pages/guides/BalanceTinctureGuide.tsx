@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Droplets, Scale, Heart, Sparkles, Leaf, Feather } from 'lucide-react';
+import { ArrowLeft, Droplets, Scale, Heart, Sparkles, Leaf, Feather, ShoppingBag } from 'lucide-react';
 import CycleChart from '../../components/guides/CycleChart';
 import SEOHead from '../../components/SEOHead';
 import { getArticleSchema, getFAQSchema, getBreadcrumbSchema } from '../../lib/schema';
@@ -155,13 +155,20 @@ export default function BalanceTinctureGuide() {
                             </p>
                         </div>
 
-                        {/* View PDF Button */}
-                        <div className="flex justify-center mb-12">
+                        {/* CTA Buttons */}
+                        <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+                            <Link
+                                to="/offerings/sacred-cycle-alchemy-holistic-uterine-care-kit-for-womb-healing"
+                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#D4AF37] hover:bg-[#b5952f] text-black rounded-xl font-bold uppercase tracking-widest transition-all duration-300 shadow-lg shadow-yellow-900/20 hover:scale-105"
+                            >
+                                <ShoppingBag className="w-5 h-5" />
+                                Shop Sacred Cycle Kit
+                            </Link>
                             <a
                                 href="/guides/balance-tincture.pdf"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 via-yellow-500 to-amber-500 hover:from-blue-500 hover:via-yellow-400 hover:to-amber-400 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-blue-900/50"
+                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 via-yellow-500 to-amber-500 hover:from-blue-500 hover:via-yellow-400 hover:to-amber-400 border border-blue-500/30 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-blue-900/50"
                             >
                                 <Droplets className="w-5 h-5" />
                                 View PDF Guide

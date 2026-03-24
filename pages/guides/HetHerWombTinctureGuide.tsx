@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Droplets, Wind, Heart, Sparkles, Leaf, Flame } from 'lucide-react';
+import { ArrowLeft, Droplets, Wind, Heart, Sparkles, Leaf, Flame, ShoppingBag } from 'lucide-react';
 import CycleChart from '../../components/guides/CycleChart';
 import SEOHead from '../../components/SEOHead';
 import { getArticleSchema, getFAQSchema, getBreadcrumbSchema } from '../../lib/schema';
@@ -147,13 +147,20 @@ export default function HetHerWombTinctureGuide() {
                             </p>
                         </div>
 
-                        {/* TWO PDF Buttons - Glycerin & Spirits */}
-                        <div className="flex flex-wrap justify-center gap-4 mb-12">
+                        {/* CTA Buttons */}
+                        <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 mb-12">
+                            <Link
+                                to="/offerings/womb-care-21-day-detox-plus-tincture-fibroid-hormone-support-pms-relief-1oz"
+                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#D4AF37] hover:bg-[#b5952f] text-black rounded-xl font-bold uppercase tracking-widest transition-all duration-300 shadow-lg shadow-yellow-900/20 hover:scale-105"
+                            >
+                                <ShoppingBag className="w-5 h-5" />
+                                Shop Het Her Womb
+                            </Link>
                             <a
                                 href="/guides/het-her-womb-glycerin.pdf"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-700 to-green-600 hover:from-emerald-600 hover:to-green-500 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-emerald-900/50"
+                                className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-emerald-700 to-green-600 hover:from-emerald-600 hover:to-green-500 border border-emerald-500/30 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-emerald-900/50"
                             >
                                 <Leaf className="w-5 h-5" />
                                 Glycerin PDF Guide
@@ -162,7 +169,7 @@ export default function HetHerWombTinctureGuide() {
                                 href="/guides/het-her-womb-spirits.pdf"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-700 to-rose-700 hover:from-red-600 hover:to-rose-600 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-red-900/50"
+                                className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-red-700 to-rose-700 hover:from-red-600 hover:to-rose-600 border border-red-500/30 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-red-900/50"
                             >
                                 <Flame className="w-5 h-5" />
                                 Spirits PDF Guide

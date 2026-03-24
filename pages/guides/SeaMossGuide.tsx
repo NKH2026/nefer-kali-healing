@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Download, ArrowLeft, Sparkles, Leaf, Droplets, Heart, Zap, Waves, HelpCircle } from 'lucide-react';
+import { Download, ArrowLeft, Sparkles, Leaf, Droplets, Heart, Zap, Waves, HelpCircle, ShoppingBag } from 'lucide-react';
 import SEOHead from '../../components/SEOHead';
 import { getArticleSchema, getFAQSchema, getBreadcrumbSchema } from '../../lib/schema';
 
@@ -142,13 +142,20 @@ export default function SeaMossGuide() {
                             </p>
                         </div>
 
-                        {/* Download Button */}
-                        <div className="flex justify-center mb-12">
+                        {/* CTA Buttons */}
+                        <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+                            <Link
+                                to="/offerings/sea-moss-full-spectrum-trio-pack-golden-green-purple"
+                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#D4AF37] hover:bg-[#b5952f] text-black rounded-xl font-bold uppercase tracking-widest transition-all duration-300 shadow-lg shadow-yellow-900/20 hover:scale-105"
+                            >
+                                <ShoppingBag className="w-5 h-5" />
+                                Shop Sea Moss Trio
+                            </Link>
                             <a
                                 href="/guides/sea-moss-guide.pdf"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-cyan-900/50"
+                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 border border-cyan-500/30 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-cyan-900/50"
                             >
                                 <Download className="w-5 h-5" />
                                 View PDF Guide

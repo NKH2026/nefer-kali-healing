@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Droplets, Sun, Heart, Sparkles, Leaf } from 'lucide-react';
+import { ArrowLeft, Droplets, Sun, Heart, Sparkles, Leaf, ShoppingBag } from 'lucide-react';
 import CycleChart from '../../components/guides/CycleChart';
 import SEOHead from '../../components/SEOHead';
 import { getArticleSchema, getFAQSchema, getBreadcrumbSchema } from '../../lib/schema';
@@ -150,13 +150,20 @@ export default function HetHerWombPlusExtractGuide() {
                             </p>
                         </div>
 
-                        {/* View PDF Button */}
-                        <div className="flex justify-center mb-12">
+                        {/* CTA Buttons */}
+                        <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+                            <Link
+                                to="/offerings/sacred-cycle-alchemy-holistic-uterine-care-kit-for-womb-healing"
+                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#D4AF37] hover:bg-[#b5952f] text-black rounded-xl font-bold uppercase tracking-widest transition-all duration-300 shadow-lg shadow-yellow-900/20 hover:scale-105"
+                            >
+                                <ShoppingBag className="w-5 h-5" />
+                                Shop Sacred Cycle Kit
+                            </Link>
                             <a
                                 href="/guides/het-her-womb-plus-extract.pdf"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 via-amber-600 to-pink-600 hover:from-emerald-500 hover:via-amber-500 hover:to-pink-500 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-amber-900/50"
+                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-600 via-amber-600 to-pink-600 hover:from-emerald-500 hover:via-amber-500 hover:to-pink-500 border border-emerald-500/30 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-amber-900/50"
                             >
                                 <Droplets className="w-5 h-5" />
                                 View PDF Guide
