@@ -150,7 +150,7 @@ export default function HetHerWombTinctureGuide() {
                         {/* CTA Buttons */}
                         <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 mb-12">
                             <Link
-                                to="/offerings/womb-care-21-day-detox-plus-tincture-fibroid-hormone-support-pms-relief-1oz"
+                                to="/offerings/blood-bush-extract-het-her-womb-st-john-s-bush-extract"
                                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#D4AF37] hover:bg-[#b5952f] text-black rounded-xl font-bold uppercase tracking-widest transition-all duration-300 shadow-lg shadow-yellow-900/20 hover:scale-105"
                             >
                                 <ShoppingBag className="w-5 h-5" />
