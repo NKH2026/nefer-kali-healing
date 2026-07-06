@@ -1,7 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
 
-const supabaseUrl = 'https://rwvdvobopcfzalfausxg.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ3dmR2b2JvcGNmemFsZmF1c3hnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3ODI5NTAsImV4cCI6MjA4NDM1ODk1MH0.hRnzu2eNXouRIclI153HbjEdF7qAarwe9iDkTt2w9hI';
+dotenv.config({ path: '.env.local' });
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY in .env.local');
+  process.exit(1);
+}
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const contentHtml = `
@@ -42,7 +51,7 @@ async function main() {
         content: contentHtml,
         cover_image_url: "/guides/st-johns-bush-tea-product.jpg",
         category: "Womb Health",
-        author: "Y'Marii Shango Bunmi Balewa",
+        author: "Y'Marii Shango BunMi Balewa",
         published: true,
     };
 

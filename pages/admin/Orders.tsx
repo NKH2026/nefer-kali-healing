@@ -99,8 +99,8 @@ const Orders: React.FC = () => {
     // Helper: Send order email notification
     const sendOrderEmail = async (orderId: string, emailType: 'shipping' | 'refund' | 'cancellation', extraData?: Record<string, any>) => {
         try {
-            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://rwvdvobopcfzalfausxg.supabase.co';
-            const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+            const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
             await fetch(`${supabaseUrl}/functions/v1/send-order-email`, {
                 method: 'POST',
@@ -258,8 +258,8 @@ const Orders: React.FC = () => {
         setActionError(null);
 
         try {
-            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://rwvdvobopcfzalfausxg.supabase.co';
-            const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+            const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
             const response = await fetch(`${supabaseUrl}/functions/v1/refund-order`, {
                 method: 'POST',

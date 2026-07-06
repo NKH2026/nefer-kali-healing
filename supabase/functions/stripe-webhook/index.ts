@@ -16,10 +16,10 @@ const supabase = createClient(
 );
 
 const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
-const emailjsServiceId = Deno.env.get('EMAILJS_SERVICE_ID') || 'service_m6pyrkn';
-const emailjsTemplateId = Deno.env.get('EMAILJS_TEMPLATE_ID') || 'template_nkh_email';
-const emailjsPublicKey = Deno.env.get('EMAILJS_PUBLIC_KEY') || 'LrDHp_MQUp_c5ssQo';
-const emailjsPrivateKey = Deno.env.get('EMAILJS_PRIVATE_KEY') || 'kzv9g0fcvUgkHobzO5obU';
+const emailjsServiceId = Deno.env.get('EMAILJS_SERVICE_ID')!;
+const emailjsTemplateId = Deno.env.get('EMAILJS_TEMPLATE_ID')!;
+const emailjsPublicKey = Deno.env.get('EMAILJS_PUBLIC_KEY')!;
+const emailjsPrivateKey = Deno.env.get('EMAILJS_PRIVATE_KEY')!;
 const shippoApiKey = Deno.env.get('SHIPPO_API_KEY');
 
 // Business ship-from address

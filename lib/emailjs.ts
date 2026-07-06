@@ -1,11 +1,12 @@
 // EmailJS Email Service
 // Replaces Resend for all email sending
 // Uses EmailJS REST API — works with Gmail connected service
+// NOTE: The private key is exposed to the browser. For better security, move email sending to a Supabase Edge Function.
 
-const EMAILJS_SERVICE_ID = 'service_m6pyrkn';
-const EMAILJS_PUBLIC_KEY = 'LrDHp_MQUp_c5ssQo';
-const EMAILJS_PRIVATE_KEY = 'kzv9g0fcvUgkHobzO5obU';
-const EMAILJS_TEMPLATE_ID = 'template_nkh_email'; // Generic HTML passthrough template
+const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || '';
+const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '';
+const EMAILJS_PRIVATE_KEY = import.meta.env.VITE_EMAILJS_PRIVATE_KEY || '';
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || ''; // Generic HTML passthrough template
 
 interface EmailJSResponse {
     success: boolean;

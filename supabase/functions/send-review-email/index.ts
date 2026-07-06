@@ -14,10 +14,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-const emailjsServiceId = Deno.env.get('EMAILJS_SERVICE_ID') || 'service_m6pyrkn';
-const emailjsTemplateId = Deno.env.get('EMAILJS_TEMPLATE_ID') || 'template_nkh_email';
-const emailjsPublicKey = Deno.env.get('EMAILJS_PUBLIC_KEY') || 'LrDHp_MQUp_c5ssQo';
-const emailjsPrivateKey = Deno.env.get('EMAILJS_PRIVATE_KEY') || 'kzv9g0fcvUgkHobzO5obU';
+const emailjsServiceId = Deno.env.get('EMAILJS_SERVICE_ID')!;
+const emailjsTemplateId = Deno.env.get('EMAILJS_TEMPLATE_ID')!;
+const emailjsPublicKey = Deno.env.get('EMAILJS_PUBLIC_KEY')!;
+const emailjsPrivateKey = Deno.env.get('EMAILJS_PRIVATE_KEY')!;
 
 const SITE_URL = 'https://www.neferkalihealing.org';
 

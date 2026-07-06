@@ -1,7 +1,7 @@
-// Resend Email Service for Ticket Confirmations
-// API Key is stored here - in production, use environment variables
+// Resend Email Service
+// API Key is loaded from environment variables. In production, never expose this to the browser.
 
-const RESEND_API_KEY = 're_Xnug3PZW_JSq9ted9K4yiddKwD1WZCGXa';
+const RESEND_API_KEY = import.meta.env.VITE_RESEND_API_KEY;
 
 interface TicketEmailData {
     to: string;
@@ -16,6 +16,11 @@ interface TicketEmailData {
 
 export async function sendTicketEmail(data: TicketEmailData): Promise<{ success: boolean; error?: string }> {
     const { to, firstName, eventTitle, eventDate, eventTime, eventLocation, ticketCode, isFree } = data;
+
+    if (!RESEND_API_KEY) {
+        console.error('Missing VITE_RESEND_API_KEY environment variable');
+        return { success: false, error: 'Resend API key is not configured' };
+    }
 
     const greeting = firstName ? `Dear ${firstName}` : 'Dear Sacred Soul';
 
@@ -49,73 +54,41 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<{ success:
             letter-spacing: 3px;
         }
         .content {
-            padding: 40px 0;
-        }
-        h1 {
-            color: #D4AF37;
-            font-size: 24px;
-            margin-bottom: 20px;
+            padding: 30px 0;
         }
         .ticket-box {
-            background: linear-gradient(135deg, rgba(27, 94, 32, 0.3), rgba(13, 26, 16, 0.8));
+            background: rgba(212, 175, 55, 0.1);
             border: 1px solid rgba(212, 175, 55, 0.3);
-            border-radius: 16px;
-            padding: 30px;
-            margin: 30px 0;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
         }
         .ticket-code {
             text-align: center;
             padding: 20px;
-            background: rgba(0,0,0,0.4);
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 8px;
             margin-top: 20px;
         }
         .ticket-code-label {
             font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 3px;
-            color: rgba(255,255,255,0.5);
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.5);
             margin-bottom: 8px;
         }
         .ticket-code-value {
-            font-size: 28px;
+            font-size: 24px;
             font-family: monospace;
             color: #D4AF37;
             letter-spacing: 2px;
         }
-        .event-detail {
-            display: flex;
-            margin-bottom: 15px;
-        }
-        .event-label {
-            color: rgba(255,255,255,0.5);
-            width: 100px;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .event-value {
-            color: #fff;
-        }
         .footer {
             text-align: center;
             padding-top: 30px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.4);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.4);
             font-size: 12px;
-        }
-        .cta-button {
-            display: inline-block;
-            background: #D4AF37;
-            color: #000;
-            padding: 15px 30px;
-            text-decoration: none;
-            border-radius: 30px;
-            font-weight: bold;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-top: 20px;
         }
     </style>
 </head>
@@ -124,54 +97,22 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<{ success:
         <div class="header">
             <div class="logo">NEFER KALI HEALING</div>
         </div>
-        
         <div class="content">
-            <h1>✨ You're Registered!</h1>
-            
             <p>${greeting},</p>
-            
-            <p>Thank you for joining us. Your registration for <strong>${eventTitle}</strong> has been confirmed.</p>
-            
+            <p>Thank you for registering for <strong>${eventTitle}</strong>.</p>
             <div class="ticket-box">
-                <div class="event-detail">
-                    <span class="event-label">Event</span>
-                    <span class="event-value">${eventTitle}</span>
-                </div>
-                <div class="event-detail">
-                    <span class="event-label">Date</span>
-                    <span class="event-value">${eventDate}</span>
-                </div>
-                <div class="event-detail">
-                    <span class="event-label">Time</span>
-                    <span class="event-value">${eventTime}</span>
-                </div>
-                <div class="event-detail">
-                    <span class="event-label">Location</span>
-                    <span class="event-value">${eventLocation}</span>
-                </div>
-                <div class="event-detail">
-                    <span class="event-label">Admission</span>
-                    <span class="event-value">${isFree ? 'Free' : 'Paid'}</span>
-                </div>
-                
+                <p><strong>Date:</strong> ${eventDate}</p>
+                <p><strong>Time:</strong> ${eventTime}</p>
+                <p><strong>Location:</strong> ${eventLocation}</p>
+                <p><strong>Admission:</strong> ${isFree ? 'Free' : 'Paid'}</p>
                 <div class="ticket-code">
                     <div class="ticket-code-label">Your Ticket Code</div>
                     <div class="ticket-code-value">${ticketCode}</div>
                 </div>
             </div>
-            
-            <p>Please save this email and present your ticket code at the event.</p>
-            
-            <p style="color: rgba(255,255,255,0.6); font-style: italic;">
-                We look forward to sharing this sacred space with you.
-            </p>
-            
-            <p>With love and light,<br><strong>Nefer Kali Healing</strong></p>
         </div>
-        
         <div class="footer">
             <p>Nefer Kali Healing • 501(c)(3) Nonprofit</p>
-            <p>Questions? Contact us at info@neferkalihealing.org</p>
         </div>
     </div>
 </body>
@@ -182,26 +123,25 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<{ success:
         const response = await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${RESEND_API_KEY}`,
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${RESEND_API_KEY}`,
             },
             body: JSON.stringify({
-                from: 'Nefer Kali Healing <onboarding@resend.dev>', // Change to your domain after verification
-                to: [to],
-                subject: `🎫 Your Ticket for ${eventTitle}`,
+                from: 'info@neferkalihealing.org',
+                to,
+                subject: `Your ticket for ${eventTitle}`,
                 html: htmlContent,
             }),
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            console.error('Resend API error:', errorData);
-            return { success: false, error: errorData.message || 'Failed to send email' };
+            const errorText = await response.text();
+            throw new Error(errorText || 'Failed to send email');
         }
 
         return { success: true };
-    } catch (error) {
-        console.error('Email sending error:', error);
-        return { success: false, error: 'Network error sending email' };
+    } catch (error: any) {
+        console.error('Resend email error:', error);
+        return { success: false, error: error.message };
     }
 }

@@ -2,10 +2,10 @@ import { loadStripe } from '@stripe/stripe-js';
 
 // Initialize Stripe with your publishable key
 // This is safe to expose on the client side
-// @ts-ignore - Vite injects import.meta.env
-const stripePromise = loadStripe((import.meta as any).env?.VITE_STRIPE_PUBLISHABLE_KEY || '');
+console.log('Stripe key:', import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 
-export { stripePromise };
+export const stripePromise = loadStripe(publishableKey || '');
 
 // Stripe interval mapping for subscriptions
 export const getStripeInterval = (frequency: string): { interval: 'day' | 'week' | 'month' | 'year'; interval_count: number } => {
@@ -42,9 +42,12 @@ export interface CheckoutRequest {
 // Create checkout session via Supabase Edge Function
 export async function createCheckoutSession(request: CheckoutRequest): Promise<{ url: string } | { error: string }> {
     try {
-        // Supabase Edge Function URL and anon key
-        const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL || 'https://rwvdvobopcfzalfausxg.supabase.co';
-        const supabaseAnonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+        if (!supabaseUrl || !supabaseAnonKey) {
+            return { error: 'Missing Supabase environment variables.' };
+        }
 
         const response = await fetch(`${supabaseUrl}/functions/v1/create-checkout`, {
             method: 'POST',

@@ -1,7 +1,7 @@
 // Kit (ConvertKit) Newsletter Integration Service
 
-const KIT_API_KEY = 'cjByPKVBoE9GXVdVi8V6tw';
-const KIT_FORM_ID = '8900379';
+const KIT_API_KEY = import.meta.env.VITE_KIT_API_KEY || '';
+const KIT_FORM_ID = import.meta.env.VITE_KIT_FORM_ID || '8900379';
 
 interface SubscribeOptions {
     email: string;
