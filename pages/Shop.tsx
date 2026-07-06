@@ -7,7 +7,6 @@ import { Star, Filter, ChevronDown, ShoppingBag, Plus } from 'lucide-react';
 import Testimonials from '../components/Testimonials';
 import ReviewForm from '../components/ReviewForm';
 import { useCart } from '../components/cart';
-import VacationBanner from '../components/VacationBanner';
 
 
 const Shop: React.FC = () => {
@@ -178,7 +177,6 @@ const Shop: React.FC = () => {
 
     return (
         <>
-            <VacationBanner />
             <div ref={containerRef} className="min-h-screen bg-[#0a0a0a] pt-32">
                 {/* Shop Header */}
                 <div className="max-w-7xl mx-auto mb-16 shop-header px-8 relative z-50">

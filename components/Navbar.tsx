@@ -55,13 +55,18 @@ const Navbar: React.FC = () => {
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex gap-8 pointer-events-auto items-center">
-          {navItems.map((item) => (
-            item.path ? (
+        <div className="hidden md:flex gap-2 pointer-events-auto items-center">
+          {navItems.map((item) => {
+            const isActive = pathname === item.path;
+            const baseClasses = "px-4 py-2 text-xs uppercase tracking-widest rounded-full border transition-all duration-300";
+            const activeClasses = isActive
+              ? "text-[#D4AF37] border-[#D4AF37]/40 bg-[#D4AF37]/10"
+              : "text-white/70 border-transparent hover:text-[#D4AF37] hover:border-[#D4AF37]/30 hover:bg-[#D4AF37]/5";
+            return item.path ? (
               <Link
                 key={item.id}
                 to={item.path}
-                className={`text-[10px] uppercase tracking-widest transition-colors ${pathname === item.path ? 'text-[#D4AF37]' : 'text-white/60 hover:text-[#D4AF37]'}`}
+                className={`${baseClasses} ${activeClasses}`}
               >
                 {item.label}
               </Link>
@@ -69,12 +74,12 @@ const Navbar: React.FC = () => {
               <a
                 key={item.id}
                 href={isHome ? `#${item.id}` : `/#${item.id}`}
-                className="text-[10px] uppercase tracking-widest text-white/60 hover:text-[#D4AF37] transition-colors"
+                className={`${baseClasses} ${activeClasses}`}
               >
                 {item.label}
               </a>
-            )
-          ))}
+            );
+          })}
           <CartIcon />
         </div>
 

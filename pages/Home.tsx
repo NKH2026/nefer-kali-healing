@@ -5,7 +5,6 @@ import Hero from '../components/Hero';
 import Section from '../components/Section';
 import WombOfOfferings from '../components/WombOfOfferings';
 import CosmicFeed from '../components/CosmicFeed';
-import VacationBanner from '../components/VacationBanner';
 import SEOHead from '../components/SEOHead';
 import { getOrganizationSchema, getWebsiteSchema } from '../lib/schema';
 import { DESTINY_PATHS } from '../constants';
@@ -30,7 +29,6 @@ const Home: React.FC = () => {
                 url="/"
                 schema={[getOrganizationSchema(), getWebsiteSchema()]}
             />
-            <VacationBanner />
             <div ref={mainRef}>
                 <Hero />
 
