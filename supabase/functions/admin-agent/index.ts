@@ -2032,8 +2032,6 @@ const CONTENT_WRITE_TOOLS: Record<string, ToolImpl> = {
       }
     },
   },
-})
-
 }
 
 // The single tool registry. Declared LAST, after every tool object, because a

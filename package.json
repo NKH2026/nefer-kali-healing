@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check:functions": "node scripts/check-edge-functions.mjs",
+    "deploy:agent": "node scripts/check-edge-functions.mjs && supabase functions deploy admin-agent",
+    "sync:theme": "node scripts/sync-theme-tokens.mjs"
   },
   "dependencies": {
     "@stripe/stripe-js": "^8.6.3",

@@ -1,27 +1,23 @@
-﻿Add web research and content drafting
+﻿Fix stray brace that broke the Edge Function bundle
 
-Research
-- research_web runs a SEPARATE, ISOLATED agent loop with only two tools, both
-  web-facing: web_search and fetch_page. It has no database access and no
-  proposal tools, so injected instructions inside a fetched page cannot reach
-  anything that writes. Web pages are attacker-controlled text, and an agent that
-  can both read an arbitrary page and write to the store is the dangerous
-  combination this design has avoided throughout.
-- _shared/web.ts does the retrieval: plain GET with a timeout, a 500 kB response
-  cap, markup stripped to text, and every result explicitly labelled untrusted.
-- Search uses DuckDuckGo's HTML endpoint, so no API key and no vendor lock-in.
-  Failures are reported as clear messages rather than an empty list, which would
-  otherwise look like "nothing exists".
+My earlier line surgery, moving a misplaced block out of performUndo, left a
+duplicate closer behind: }) followed by a stray } at the end of the
+CONTENT_WRITE_TOOLS declaration. Deno's type checker accepted the file, but the
+Supabase bundler rejected it, so the deploy failed with:
 
-Content drafting
-- propose_blog_post creates or updates a Wisdom Vault article. New posts default
-  to unpublished drafts; publishing requires an explicit request. Slug collisions
-  are refused with the conflicting title.
-- propose_marketing_content saves newsletter, social and partner-outreach copy to
-  marketing_drafts (new migration). The agent never sends anything: a message that
-  leaves the building cannot be recalled, so sending stays a human action.
-- Undo deletes created rows and restores updated ones.
+  The module's source code could not be parsed: Expression expected at
+  .../index.ts:2037:1
 
-Also fixes the registry declaration order, which had drifted again: the tool
-registry is now declared once, after every tool object, with a comment explaining
-why it must stay last.
+Removed the stray brace and confirmed all four function modules check cleanly.
+
+Add scripts/check-edge-functions.mjs, wired to 
+pm run deploy:agent, so this
+class of failure cannot reach a deploy again. It:
+  - locates Deno automatically, including the WinGet package directory, since
+    deno is not reliably on PATH in a fresh shell
+  - checks every module the function bundles, not just index.ts
+  - prints only the diagnostics, and refuses to deploy on any error
+  - warns and continues when Deno is absent, so it never blocks a deploy for
+    someone who lacks it
+
+Also adds npm run sync:theme for the theme token sync.
