@@ -34,6 +34,15 @@
 // dependency is not installed. It is unnecessary for the globals used below.
 
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2'
+import {
+  DEFAULT_TOKENS,
+  TOKEN_KEYS,
+  TOKEN_SPEC,
+  VIBE_PRESETS,
+  clampTokens,
+  normaliseTokens,
+  type ThemeTokens,
+} from './_shared/themeTokens.ts'
 
 // ---------------------------------------------------------------------------
 // Config
@@ -271,6 +280,17 @@ soften a refusal into mysticism, and never let charm imply a change happened whe
 
 You can READ anything using the read tools. You can also PROPOSE changes using the tools whose
 names begin with "propose_", but you cannot carry a change out yourself.
+
+You CAN change the look of the site. The site's colours, glow, motion and depth are stored as
+theme tokens, not baked into code, and you can propose changes to them with
+propose_theme_change. This affects the public storefront AND the admin panel together, including
+your own panel's styling. Call get_theme first to see the current values and the named vibe
+presets. This is how to answer requests like "make it more psychedelic", "warmer", "calmer" or
+"more purple" -- it is a real capability, not something to refuse.
+
+You CANNOT change page layout, add new sections, edit body copy on individual pages, or alter
+code. If asked for those, say plainly that it needs the source-editing capability, which is not
+built yet, and offer what the theme tokens can do instead.
 
 How changes work -- this is important:
 - A propose tool does not change anything. It creates a proposal the owner sees as a card with
@@ -1174,7 +1194,179 @@ const WRITE_TOOLS: Record<string, ToolImpl> = {
 // Read tools and write tools merged into one registry. A spread is used rather
 // than Object.assign because the latter provides no contextual typing, which
 // silently turned every `propose(args, ctx)` parameter into an implicit any.
-const tools: Record<string, ToolImpl> = { ...READ_TOOLS, ...WRITE_TOOLS }
+//
+// NOTE: this must come AFTER every Object.assign that extends READ_TOOLS or
+// WRITE_TOOLS, or the added tools never reach the registry.
+
+// ---------------------------------------------------------------------------
+// Theme tools
+//
+// The site's palette, glow and motion live in a `theme_settings` row rather than
+// in CSS, so a visual change can be proposed, previewed and applied with no
+// build and no deploy. The token vocabulary and its safe ranges are shared with
+// the browser (see _shared/themeTokens.ts, generated from lib/theme.ts), so the
+// agent can only ever move numbers the UI also understands.
+// ---------------------------------------------------------------------------
+
+/** Per-token before/after rows for the confirmation card. */
+function describeTokenDelta(before: ThemeTokens, after: ThemeTokens): PreviewField[] {
+  return TOKEN_KEYS.filter((k) => before[k] !== after[k]).map((k) => ({
+    field: k,
+    label: `${TOKEN_SPEC[k].label}${TOKEN_SPEC[k].unit ? ` (${TOKEN_SPEC[k].unit})` : ''}`,
+    before: before[k],
+    after: after[k],
+  }))
+}
+
+// Typed as Record<string, ToolImpl> so the parameters are contextually typed.
+// Passing an object literal directly to Object.assign would leave them as
+// implicit `any`, which is exactly the mistake this codebase already made once.
+const THEME_READ_TOOLS: Record<string, ToolImpl> = {
+  get_theme: {
+    def: {
+      type: 'function',
+      function: {
+        name: 'get_theme',
+        description:
+          "Read the site's current visual theme tokens: accent hues, vividness, glow, motion speed, canvas depth, hue cycling, contrast and grain. Also lists the named vibe presets. Call this before proposing any visual change.",
+        parameters: { type: 'object', properties: {}, required: [], additionalProperties: false },
+      },
+    },
+    async run(_args, { db }) {
+      const { data, error } = await db
+        .from('theme_settings')
+        .select('key,value,updated_at')
+        .eq('key', 'tokens')
+        .maybeSingle()
+      if (error) rethrowSchemaDrift(error)
+
+      return {
+        current: normaliseTokens(data?.value),
+        token_reference: TOKEN_KEYS.map((k) => ({
+          token: k,
+          label: TOKEN_SPEC[k].label,
+          range: `${TOKEN_SPEC[k].min}-${TOKEN_SPEC[k].max}`,
+          hint: TOKEN_SPEC[k].hint,
+        })),
+        vibe_presets: Object.entries(VIBE_PRESETS).map(([key, p]) => ({
+          preset: key,
+          label: p.label,
+          description: p.description,
+        })),
+        note:
+          'This theme drives the public storefront AND the admin panel together. It changes no data.',
+      }
+    },
+  },
+}
+
+const THEME_WRITE_TOOLS: Record<string, ToolImpl> = {
+  propose_theme_change: {
+    def: {
+      type: 'function',
+      function: {
+        name: 'propose_theme_change',
+        description:
+          "Propose a change to the site's visual theme -- colours, glow, motion and depth -- across the public storefront and the admin panel together. Provide only the tokens you want to change; everything else stays as it is. Call get_theme first to see current values. Creates a proposal for approval; changes nothing by itself.",
+        parameters: {
+          type: 'object',
+          properties: {
+            tokens: {
+              type: 'object',
+              description: 'Only the tokens to change, as whole numbers.',
+              properties: Object.fromEntries(
+                TOKEN_KEYS.map((k) => [
+                  k,
+                  {
+                    type: 'integer',
+                    minimum: TOKEN_SPEC[k].min,
+                    maximum: TOKEN_SPEC[k].max,
+                    description: `${TOKEN_SPEC[k].label}. ${TOKEN_SPEC[k].hint}`,
+                  },
+                ]),
+              ),
+              required: [],
+              additionalProperties: false,
+            },
+            preset: {
+              type: 'string',
+              enum: Object.keys(VIBE_PRESETS),
+              description:
+                'Apply a whole named vibe instead of individual tokens. Anything in `tokens` overrides the preset.',
+            },
+            reason: { type: 'string', description: 'Short reason, in your own voice.' },
+          },
+          required: [],
+          additionalProperties: false,
+        },
+      },
+    },
+    async propose(args, { db }) {
+      const { data, error } = await db
+        .from('theme_settings')
+        .select('value')
+        .eq('key', 'tokens')
+        .maybeSingle()
+      if (error) rethrowSchemaDrift(error)
+
+      const before = normaliseTokens(data?.value)
+
+      const presetKey = str(args.preset)
+      if (presetKey && !VIBE_PRESETS[presetKey]) {
+        throw new Error(
+          `Unknown preset "${presetKey}". Available: ${Object.keys(VIBE_PRESETS).join(', ')}.`,
+        )
+      }
+
+      const requested =
+        args.tokens && typeof args.tokens === 'object' && !Array.isArray(args.tokens)
+          ? (args.tokens as Record<string, unknown>)
+          : {}
+
+      const unknown = Object.keys(requested).filter(
+        (k) => !TOKEN_KEYS.includes(k as keyof ThemeTokens),
+      )
+      if (unknown.length) {
+        throw new Error(
+          `Unknown theme token(s): ${unknown.join(', ')}. Valid tokens: ${TOKEN_KEYS.join(', ')}.`,
+        )
+      }
+
+      const presetTokens = presetKey ? VIBE_PRESETS[presetKey].tokens : {}
+      const after = normaliseTokens({ ...before, ...presetTokens, ...clampTokens(requested) })
+
+      const preview = describeTokenDelta(before, after)
+      if (preview.length === 0) {
+        throw new Error('That would not change anything -- the theme already has those values.')
+      }
+
+      const reason = str(args.reason)
+      const label = preview.length === 1 ? preview[0].label : `${preview.length} theme tokens`
+
+      return {
+        summary:
+          `Change the site theme: ${label}` +
+          (presetKey ? ` (applying the "${VIBE_PRESETS[presetKey].label}" vibe)` : '') +
+          (reason ? ` — ${reason}` : ''),
+        target_table: 'theme_settings',
+        target_id: null,
+        before: { key: 'tokens', value: before },
+        after: { key: 'tokens', value: after },
+        preview,
+        // Affects every page for every visitor, but is trivially reversible.
+        risk: 'medium' as const,
+        reversible: true,
+      }
+    },
+  },
+}
+
+const tools: Record<string, ToolImpl> = {
+  ...READ_TOOLS,
+  ...WRITE_TOOLS,
+  ...THEME_READ_TOOLS,
+  ...THEME_WRITE_TOOLS,
+}
 
 const TOOL_DEFS: ToolDef[] = Object.values(tools).map((t) => t.def)
 
@@ -1684,6 +1876,36 @@ async function performWrite(
     }
   }
 
+  if (row.tool_name === 'propose_theme_change') {
+    const key = String(after.key ?? 'tokens')
+    const value = after.value
+    if (!value || typeof value !== 'object') {
+      return { ok: false, error: 'missing theme value in the approved payload' }
+    }
+    // Re-clamp at execution time. The proposal was already clamped when it was
+    // created, but this guarantees nothing out of range can reach the site even
+    // if the stored row were altered.
+    const safe = normaliseTokens(value)
+    const { data, error } = await db
+      .from('theme_settings')
+      .upsert(
+        { key, value: safe, updated_at: new Date().toISOString() },
+        { onConflict: 'key' },
+      )
+      .select('key,value')
+      .maybeSingle()
+    if (error) return { ok: false, error: error.message }
+    return {
+      ok: true,
+      result: data,
+      restore: {
+        table: 'theme_settings',
+        key,
+        value: normaliseTokens(before.value),
+      },
+    }
+  }
+
   return { ok: false, error: `no executor for tool "${row.tool_name}"` }
 }
 
@@ -1721,15 +1943,16 @@ async function performUndo(
     return { ok: true, result: { reverted: 'reviews', count: Object.keys(statuses).length } }
   }
 
-  if (table === 'site_settings') {
+  if (table === 'site_settings' || table === 'theme_settings') {
+    const value = table === 'theme_settings' ? normaliseTokens(restore.value) : restore.value
     const { error } = await db
-      .from('site_settings')
+      .from(table)
       .upsert(
-        { key: String(restore.key), value: restore.value, updated_at: new Date().toISOString() },
+        { key: String(restore.key), value, updated_at: new Date().toISOString() },
         { onConflict: 'key' },
       )
     if (error) return { ok: false, error: error.message }
-    return { ok: true, result: { reverted: 'site_settings', key: restore.key } }
+    return { ok: true, result: { reverted: table, key: restore.key } }
   }
 
   return { ok: false, error: `cannot undo table "${table}"` }

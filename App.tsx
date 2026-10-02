@@ -63,6 +63,7 @@ const ScrollToTop = () => {
 };
 
 import { supabase } from './lib/supabase';
+import { ThemeProvider } from './lib/ThemeProvider';
 
 const App: React.FC = () => {
   console.log('--- App component rendering ---');
@@ -83,10 +84,11 @@ const App: React.FC = () => {
     checkConnection();
   }, []);
   return (
-    <CartProvider>
-      <Router>
-        <ScrollToTop />
-        <div className="relative bg-[#0a0a0a] text-white overflow-x-hidden">
+    <ThemeProvider>
+      <CartProvider>
+        <Router>
+          <ScrollToTop />
+          <div className="relative text-white overflow-x-hidden">
           <Navbar />
           <CartDrawer />
 
@@ -145,7 +147,8 @@ const App: React.FC = () => {
           <Footer />
         </div>
       </Router>
-    </CartProvider>
+      </CartProvider>
+    </ThemeProvider>
   );
 };
 

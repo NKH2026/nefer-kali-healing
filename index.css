@@ -71,6 +71,112 @@
     scrollbar-color: rgba(168, 85, 247, 0.45) transparent;
 }
 
+/* ==========================================================================
+   Theme tokens
+   ==========================================================================
+   The values below are set at runtime by lib/theme.ts from the
+   `theme_settings` row, so the whole site's palette, glow and motion can be
+   changed from the admin assistant without a rebuild. Everything here is
+   additive and opt-in via [data-tb-theme="on"], so if the theme fails to load
+   the site keeps exactly its original appearance.
+   ========================================================================== */
+
+:root {
+    /* Fallbacks, matching the hard-coded design. */
+    --tb-hue-1: 265;
+    --tb-hue-2: 325;
+    --tb-hue-3: 172;
+    --tb-sat: 70%;
+    --tb-accent: hsl(265 70% 62%);
+    --tb-accent-dim: hsl(265 52% 46%);
+    --tb-accent-2: hsl(325 70% 64%);
+    --tb-accent-3: hsl(172 70% 58%);
+    --tb-bg: hsl(265 22% 1%);
+    --tb-bg-soft: hsl(265 20% 5%);
+    --tb-glow: 0.4;
+    --tb-glow-px: 24px;
+    --tb-speed: 1;
+    --tb-contrast: 100%;
+    --tb-grain: 0.12;
+    --tb-hue-rotate: 0deg;
+}
+
+/* Ambient hue cycling. This is the "psychedelic" control: it rotates the whole
+   palette continuously. Disabled entirely at 0deg, which is the default. */
+@keyframes tb-hue-drift {
+    from { filter: hue-rotate(0deg); }
+    to   { filter: hue-rotate(360deg); }
+}
+
+/* Slow breathing bloom, for the accent wash. */
+@keyframes tb-breathe {
+    0%, 100% { opacity: calc(var(--tb-glow) * 0.55); }
+    50%      { opacity: calc(var(--tb-glow) * 0.95); }
+}
+
+/* Fixed colour wash behind all content. Pointer-events none so it can never
+   intercept a click, and z-index -1 so it never covers content. */
+[data-tb-theme='on']::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 80% 55% at 12% -5%, hsl(var(--tb-hue-1) var(--tb-sat) 55% / calc(var(--tb-glow) * 0.5)), transparent 62%),
+        radial-gradient(ellipse 70% 50% at 92% 8%, hsl(var(--tb-hue-2) var(--tb-sat) 55% / calc(var(--tb-glow) * 0.4)), transparent 60%),
+        radial-gradient(ellipse 90% 60% at 50% 108%, hsl(var(--tb-hue-3) var(--tb-sat) 50% / calc(var(--tb-glow) * 0.35)), transparent 65%),
+        var(--tb-bg);
+    animation: tb-breathe calc(14s * var(--tb-speed)) ease-in-out infinite;
+}
+
+/* Grain: an optional texture layer, off at 0. Uses a tiny inline SVG noise so
+   there is no image request. */
+[data-tb-theme='on']::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: var(--tb-grain);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+/* Hue drift wrapper. Applied only when the agent has set a non-zero rotation. */
+[data-tb-theme='on'][data-tb-hue-cycling='on'] {
+    animation: tb-hue-drift calc(60s * var(--tb-speed)) linear infinite;
+}
+
+/* Themed surfaces. Used by the assistant panel and available to any component
+   that opts in, so a theme change moves the admin chrome as well as the shop. */
+.tb-surface {
+    background-color: var(--tb-bg-soft);
+    border-color: color-mix(in srgb, var(--tb-accent) 30%, transparent);
+}
+
+.tb-accent-text {
+    color: var(--tb-accent);
+}
+
+.tb-accent-glow {
+    box-shadow: 0 0 var(--tb-glow-px) color-mix(in srgb, var(--tb-accent) 45%, transparent);
+}
+
+/* Accent gradient used on primary buttons; falls back to the original
+   purple/fuchsia pairing if custom properties are unavailable. */
+.tb-accent-gradient {
+    background-image: linear-gradient(
+        90deg,
+        var(--tb-accent-dim),
+        var(--tb-accent-2)
+    );
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [data-tb-theme='on']::before { animation: none; }
+    [data-tb-theme='on'][data-tb-hue-cycling='on'] { animation: none; }
+}
+
 /* Tiptap Editor Styles */
 .ProseMirror {
     outline: none;

@@ -100,6 +100,28 @@ const AuraBackdrop: React.FC = () => (
     </div>
 );
 
+/** Theme proposals carry hue numbers, and "Primary hue 265 to 310" tells you
+ *  nothing about what you are about to approve. Render the actual colour. */
+const HUE_FIELDS = new Set(['hue1', 'hue2', 'hue3']);
+
+const FieldValue: React.FC<{ field: string; value: unknown; muted?: boolean }> = ({ field, value, muted }) => {
+    const swatch = HUE_FIELDS.has(field) && typeof value === 'number' ? `hsl(${value} 75% 60%)` : null;
+    return (
+        <span className="inline-flex items-center gap-1.5 min-w-0">
+            {swatch && (
+                <span
+                    className="w-3 h-3 rounded-full flex-shrink-0 ring-1 ring-white/20"
+                    style={{ backgroundColor: swatch }}
+                    aria-hidden="true"
+                />
+            )}
+            <span className={muted ? 'text-gray-400 line-through truncate' : 'text-white font-medium truncate'}>
+                {renderValue(value)}
+            </span>
+        </span>
+    );
+};
+
 const ProposalCard: React.FC<{
     turnId: string;
     proposal: Proposal;
@@ -135,12 +157,12 @@ const ProposalCard: React.FC<{
                     >
                         <div className="min-w-0">
                             <div className="text-gray-500 text-[9px] uppercase tracking-wide truncate">{f.label}</div>
-                            <div className="text-gray-400 line-through truncate">{renderValue(f.before)}</div>
+                            <FieldValue field={f.field} value={f.before} muted />
                         </div>
                         <ArrowRight size={12} className="text-fuchsia-400 flex-shrink-0" />
                         <div className="min-w-0">
                             <div className="text-gray-500 text-[9px] uppercase tracking-wide">becomes</div>
-                            <div className="text-white font-medium truncate">{renderValue(f.after)}</div>
+                            <FieldValue field={f.field} value={f.after} />
                         </div>
                     </div>
                 ))}
@@ -222,7 +244,6 @@ const AssistantPanel: React.FC<Props> = ({ mode, className = '' }) => {
     const voiceRef = useRef<VoiceSession | null>(null);
 
     const compact = mode === 'widget';
-
     useEffect(() => {
         scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
     }, [turns, busy]);
