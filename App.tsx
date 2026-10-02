@@ -46,6 +46,7 @@ import Reviews from './pages/admin/Reviews';
 import Orders from './pages/admin/Orders';
 import AdminSubscriptions from './pages/admin/Subscriptions';
 import AdminSettings from './pages/admin/Settings';
+import AdminAssistant from './pages/admin/Assistant';
 import AdminLayout from './components/admin/AdminLayout';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 
@@ -136,6 +137,7 @@ const App: React.FC = () => {
                 <Route path="orders" element={<Orders />} />
                 <Route path="subscriptions" element={<AdminSubscriptions />} />
                 <Route path="settings" element={<AdminSettings />} />
+                <Route path="assistant" element={<AdminAssistant />} />
               </Route>
             </Routes>
           </main>

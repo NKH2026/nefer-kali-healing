@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { LayoutDashboard, FileText, ShoppingBag, MessageSquare, LogOut, Home, Tag, Calendar, Package, RefreshCw, Settings, Menu, X } from 'lucide-react';
+import { LayoutDashboard, FileText, ShoppingBag, MessageSquare, LogOut, Home, Tag, Calendar, Package, RefreshCw, Settings, Menu, X, Sparkles } from 'lucide-react';
+import { AssistantProvider } from './useAssistant';
+import AssistantWidget from './AssistantWidget';
 
 const AdminLayout = () => {
     const navigate = useNavigate();
@@ -23,6 +25,7 @@ const AdminLayout = () => {
         { path: '/admin/coupons', icon: Tag, label: 'Coupons' },
         { path: '/admin/reviews', icon: MessageSquare, label: 'Reviews' },
         { path: '/admin/settings', icon: Settings, label: 'Settings' },
+        { path: '/admin/assistant', icon: Sparkles, label: 'Assistant' },
     ];
 
     // Close sidebar when navigating on mobile
@@ -31,6 +34,7 @@ const AdminLayout = () => {
     }, [location.pathname]);
 
     return (
+        <AssistantProvider>
         <div className="min-h-screen bg-[#0a0a0a] text-white flex relative">
             {/* Mobile Header */}
             <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-black/90 backdrop-blur-md border-b border-white/10 p-4 flex items-center justify-between">
@@ -105,10 +109,17 @@ const AdminLayout = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 w-full lg:ml-64 p-4 lg:p-8 pt-20 lg:pt-8 min-h-screen">
+            <main className="flex-1 w-full lg:ml-64 p-4 lg:p-8 pt-20 lg:pt-8 min-h-screen pb-28">
                 <Outlet />
             </main>
+
+            {/* Tuu Beetuu: floating on every admin page, sharing one conversation
+                with the full /admin/assistant view. Suppressed on that route --
+                the page already shows the character, and rendering the widget's
+                preview there would create a second WebGL context. */}
+            {!location.pathname.startsWith('/admin/assistant') && <AssistantWidget />}
         </div>
+        </AssistantProvider>
     );
 };
 

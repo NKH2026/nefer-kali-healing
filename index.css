@@ -44,6 +44,33 @@
     border-radius: 10px;
 }
 
+/* Scoped override for the Tuu Beetuu panel. The global gold thumb is a strong
+   block of colour that reads as a stray stripe inside a narrow scrolling
+   widget. Uses the widget's own accent instead, and only inside it. */
+.tb-scroll-dark ::-webkit-scrollbar {
+    width: 5px;
+    background: transparent;
+}
+
+.tb-scroll-dark ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.tb-scroll-dark ::-webkit-scrollbar-thumb {
+    background: rgba(168, 85, 247, 0.45);
+    border-radius: 10px;
+}
+
+.tb-scroll-dark ::-webkit-scrollbar-thumb:hover {
+    background: rgba(168, 85, 247, 0.7);
+}
+
+/* Firefox */
+.tb-scroll-dark {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(168, 85, 247, 0.45) transparent;
+}
+
 /* Tiptap Editor Styles */
 .ProseMirror {
     outline: none;
