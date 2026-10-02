@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { LayoutDashboard, FileText, ShoppingBag, MessageSquare, LogOut, Home, Tag, Calendar, Package, RefreshCw, Settings, Menu, X, Sparkles } from 'lucide-react';
+import { LayoutDashboard, FileText, ShoppingBag, MessageSquare, LogOut, Home, Tag, Calendar, Package, RefreshCw, Settings, Menu, X, Sparkles, Send } from 'lucide-react';
 import { AssistantProvider } from './useAssistant';
 import AssistantWidget from './AssistantWidget';
 import { ThemeProvider } from '../../lib/ThemeProvider';
@@ -26,6 +26,7 @@ const AdminLayout = () => {
         { path: '/admin/coupons', icon: Tag, label: 'Coupons' },
         { path: '/admin/reviews', icon: MessageSquare, label: 'Reviews' },
         { path: '/admin/settings', icon: Settings, label: 'Settings' },
+        { path: '/admin/drafts', icon: Send, label: 'Drafts' },
         { path: '/admin/assistant', icon: Sparkles, label: 'Assistant' },
     ];
 

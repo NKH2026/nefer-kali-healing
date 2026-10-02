@@ -64,6 +64,7 @@ import {
   type RepoRef,
 } from './_shared/github.ts'
 import { fetchPage, searchWebGrounded } from './_shared/web.ts'
+import { selectPublisher, UNSUPPORTED_CHANNELS } from './_shared/publishing.ts'
 
 // ---------------------------------------------------------------------------
 // Config
@@ -90,6 +91,19 @@ const RESEARCH_MODEL = Deno.env.get('RESEARCH_MODEL') ?? 'gpt-5.6-luna'
 // OpenAI-compatible content blocks, and the site-assets bucket is publicly
 // served, so an image can be passed as a URL with no base64 encoding.
 const VISION_MODEL = Deno.env.get('VISION_MODEL') ?? 'deepseek-flash'
+
+// Publishing (Tier 3). Both optional: without them, drafts can still be written
+// and the send action reports clearly what is missing rather than failing opaquely.
+const KIT_API_KEY = Deno.env.get('KIT_API_KEY') ?? ''
+const PUBLISH_WEBHOOK_URL = Deno.env.get('PUBLISH_WEBHOOK_URL') ?? ''
+const PUBLISH_WEBHOOK_SECRET = Deno.env.get('PUBLISH_WEBHOOK_SECRET') ?? ''
+/**
+ * How long a send claim may be held before it is considered abandoned. Kept
+ * short: a stuck claim blocks a legitimate retry, and the failure mode of a
+ * stale claim (nothing sent) is far safer than the failure mode of an
+ * over-eager one (sent twice).
+ */
+const STALE_CLAIM_MS = 3 * 60 * 1000
 
 // Source editing. Optional: without these the read tools still work and the
 // source tools report that the capability is not configured.
@@ -368,8 +382,15 @@ You CAN draft content:
 - propose_blog_post creates or updates a Wisdom Vault article. New posts are DRAFTS by default --
   set publish true only when the owner explicitly asked for it to go live.
 - propose_marketing_content saves newsletter, social or partner-outreach copy as a draft for the
-  owner to review and send themselves. You cannot send anything, so say that plainly: a message
-  that leaves the building cannot be recalled, and sending stays a human action.
+  owner to review and send themselves.
+- propose_marketing_draft_edit revises an existing draft. list_marketing_drafts and
+  get_marketing_draft let you find and read one first.
+
+You CANNOT send, schedule or publish anything, and there is no tool that does. Sending is the
+owner's action on the Drafts page, and it requires them to type a confirmation. Say this plainly
+when relevant: a message that has left the building cannot be recalled, so sending stays with a
+human on purpose. Never imply you have posted, emailed or scheduled something -- you cannot know
+that, and the owner may believe you.
 
 When drafting marketing copy, write in the shop's voice: warm, grounded, honouring the plant and
 spiritual traditions behind the products. Never make a health claim the shop could not substantiate,
@@ -2328,6 +2349,170 @@ const VISION_TOOLS: Record<string, ToolImpl> = {
 }
 
 // ---------------------------------------------------------------------------
+// Publishing tools (Tier 3)
+//
+// Note what is NOT here: no tool can send, schedule or publish anything. The
+// model can look drafts up and propose revisions; dispatching them is a
+// deliberate human action in the admin UI, because it cannot be undone.
+// ---------------------------------------------------------------------------
+const PUBLISH_TOOLS: Record<string, ToolImpl> = {
+  list_marketing_drafts: {
+    def: {
+      type: 'function',
+      function: {
+        name: 'list_marketing_drafts',
+        description:
+          'List marketing drafts and their send status. Use this to find a draft the owner is referring to, or to check whether something has already gone out. You cannot send a draft — only the owner can do that.',
+        parameters: {
+          type: 'object',
+          properties: {
+            status: {
+              type: 'string',
+              enum: ['draft', 'approved', 'sending', 'sent', 'failed', 'discarded'],
+            },
+            channel: { type: 'string' },
+            limit: { type: 'integer', minimum: 1, maximum: 50 },
+          },
+          required: [],
+          additionalProperties: false,
+        },
+      },
+    },
+    async run(args, { db }) {
+      const limit = num(args.limit, 20, 50)
+      let q = db
+        .from('marketing_drafts')
+        .select('id,channel,subject,body,status,created_at,published_at,publish_error')
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      const status = str(args.status)
+      if (status) q = q.eq('status', status)
+      const channel = str(args.channel)
+      if (channel) q = q.eq('channel', channel)
+
+      const { data, error } = await q
+      if (error) rethrowSchemaDrift(error)
+
+      return {
+        count: data?.length ?? 0,
+        drafts: (data ?? []).map((d) => ({
+          id: d.id,
+          channel: d.channel,
+          subject: d.subject,
+          status: d.status,
+          created_at: d.created_at,
+          published_at: d.published_at,
+          publish_error: d.publish_error,
+          // Truncated: a draft list is for finding things, not for reading them.
+          preview: String(d.body ?? '').slice(0, 160),
+        })),
+        note:
+          'You cannot send these. Sending is a deliberate action the owner performs on the ' +
+          'Drafts page, because it cannot be undone.',
+      }
+    },
+  },
+
+  get_marketing_draft: {
+    def: {
+      type: 'function',
+      function: {
+        name: 'get_marketing_draft',
+        description: 'Read one marketing draft in full.',
+        parameters: {
+          type: 'object',
+          properties: { draft_id: { type: 'string' } },
+          required: ['draft_id'],
+          additionalProperties: false,
+        },
+      },
+    },
+    async run(args, { db }) {
+      const draftId = str(args.draft_id)
+      if (!draftId) throw new Error('draft_id is required.')
+      const { data, error } = await db
+        .from('marketing_drafts')
+        .select('*')
+        .eq('id', draftId)
+        .maybeSingle()
+      if (error) rethrowSchemaDrift(error)
+      if (!data) return { found: false }
+      return { found: true, draft: data }
+    },
+  },
+
+  propose_marketing_draft_edit: {
+    def: {
+      type: 'function',
+      function: {
+        name: 'propose_marketing_draft_edit',
+        description:
+          'Propose a revision to an existing marketing draft, using its id from list_marketing_drafts. Use this to tighten wording or fix a draft written earlier. Creates a proposal for approval; changes nothing by itself.',
+        parameters: {
+          type: 'object',
+          properties: {
+            draft_id: { type: 'string' },
+            body: { type: 'string', description: 'The complete new body text.' },
+            subject: { type: 'string', description: 'Optional new subject line.' },
+            reason: { type: 'string' },
+          },
+          required: ['draft_id', 'body'],
+          additionalProperties: false,
+        },
+      },
+    },
+    async propose(args, { db }) {
+      const draftId = str(args.draft_id)
+      const body = typeof args.body === 'string' ? args.body.trim() : ''
+      if (!draftId || !body) throw new Error('draft_id and body are required.')
+
+      const { data: draft, error } = await db
+        .from('marketing_drafts')
+        .select('id,channel,subject,body,status')
+        .eq('id', draftId)
+        .maybeSingle()
+      if (error) rethrowSchemaDrift(error)
+      if (!draft) throw new Error(`No draft with id ${draftId}.`)
+
+      if (draft.status === 'sent') {
+        throw new Error('That draft has already been sent and cannot be revised.')
+      }
+      if (draft.status === 'sending') {
+        throw new Error('That draft is being sent right now and cannot be revised.')
+      }
+
+      const subject = str(args.subject) ?? draft.subject
+      if (draft.body === body && subject === draft.subject) {
+        throw new Error('That would not change anything.')
+      }
+
+      return {
+        summary:
+          `Revise the ${draft.channel} draft` +
+          (subject ? ` — "${subject}"` : '') +
+          ` (${String(args.reason ?? 'wording').slice(0, 80)})`,
+        target_table: 'marketing_drafts',
+        target_id: draft.id,
+        before: { body: draft.body, subject: draft.subject, status: draft.status },
+        after: { body, subject },
+        preview: [
+          { field: 'subject', label: 'Subject', before: draft.subject ?? '—', after: subject ?? '—' },
+          {
+            field: 'body',
+            label: 'Length (characters)',
+            before: (draft.body ?? '').length,
+            after: body.length,
+          },
+        ],
+        risk: 'low' as const,
+        reversible: true,
+      }
+    },
+  },
+}
+
+// ---------------------------------------------------------------------------
 // The single tool registry.
 //
 // Declared LAST, after every tool object has been defined. A tool added after
@@ -2344,6 +2529,7 @@ const tools: Record<string, ToolImpl> = {
   ...SOURCE_WRITE_TOOLS,
   ...CONTENT_WRITE_TOOLS,
   ...VISION_TOOLS,
+  ...PUBLISH_TOOLS,
 }
 
 const TOOL_DEFS: ToolDef[] = Object.values(tools).map((t) => t.def)
@@ -3535,6 +3721,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     message?: unknown
     session_id?: unknown
     action_id?: unknown
+    draft_id?: unknown
     sdp?: unknown
   }
   try {
@@ -3580,6 +3767,173 @@ Deno.serve(async (req: Request): Promise<Response> => {
       const detail = err instanceof Error ? err.message : String(err)
       console.error('live session failed:', detail)
       return json({ error: 'live_session_failed', detail: detail.slice(0, 400) }, 502, headers)
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Publishing -- Tier 3.
+  //
+  // The only action in this system that reaches outside it. There is no agent
+  // tool for this: the model cannot call it and no turn offers it. It is
+  // triggered solely by a named confirmation in the admin UI, on a draft the
+  // owner has already read in full.
+  // -------------------------------------------------------------------------
+  if (action === 'publish') {
+    const draftId = typeof payload.draft_id === 'string' ? payload.draft_id : ''
+    if (!draftId) return json({ error: 'draft_id_required' }, 400, headers)
+
+    const { data: draft, error: loadErr } = await db
+      .from('marketing_drafts')
+      .select('*')
+      .eq('id', draftId)
+      .maybeSingle()
+    if (loadErr) return json({ error: 'draft_load_failed', detail: loadErr.message }, 500, headers)
+    if (!draft) return json({ error: 'draft_not_found' }, 404, headers)
+
+    const channel = String(draft.channel ?? '')
+
+    // Channels with no send path get an honest refusal naming the reason,
+    // rather than a vague failure.
+    const unsupported = UNSUPPORTED_CHANNELS[channel]
+    if (unsupported && !PUBLISH_WEBHOOK_URL) {
+      return json({ error: 'channel_not_supported', detail: unsupported }, 400, headers)
+    }
+
+    const publisher = selectPublisher(channel, {
+      kitKey: KIT_API_KEY,
+      webhookUrl: PUBLISH_WEBHOOK_URL,
+      webhookSecret: PUBLISH_WEBHOOK_SECRET,
+    })
+    if (!publisher) {
+      return json(
+        {
+          error: 'no_publisher_configured',
+          detail:
+            'No publisher is set up. Add the KIT_API_KEY secret for newsletters, or ' +
+            'PUBLISH_WEBHOOK_URL to route through a scheduler.',
+        },
+        503,
+        headers,
+      )
+    }
+
+    // --- claim ------------------------------------------------------------
+    // Must be approved first, and must not already be claimed.
+    if (draft.status === 'sent') {
+      return json(
+        { error: 'already_sent', detail: `This was already sent on ${draft.published_at}.` },
+        409,
+        headers,
+      )
+    }
+    if (draft.status === 'sending') {
+      const claimedAt = draft.updated_at ? new Date(draft.updated_at).getTime() : 0
+      if (Date.now() - claimedAt < STALE_CLAIM_MS) {
+        return json(
+          {
+            error: 'send_in_progress',
+            detail: 'A send is already in progress. Wait a moment before trying again.',
+          },
+          409,
+          headers,
+        )
+      }
+      // Stale claim. Do NOT auto-retry: the earlier attempt may have succeeded
+      // and only failed to report back. Surface it for a human decision.
+      return json(
+        {
+          error: 'stale_claim',
+          detail:
+            'A previous send attempt did not report back, so it is unknown whether it was ' +
+            'delivered. Check the destination before sending again — this will not retry itself.',
+        },
+        409,
+        headers,
+      )
+    }
+    if (draft.status !== 'approved' && draft.status !== 'failed') {
+      return json(
+        {
+          error: 'not_approved',
+          detail: `Only an approved draft can be sent. This one is "${draft.status}".`,
+        },
+        409,
+        headers,
+      )
+    }
+
+    const snapshot = {
+      channel,
+      subject: draft.subject ?? null,
+      body: draft.body,
+      captured_at: new Date().toISOString(),
+    }
+
+    // Claim first, so a second concurrent request loses the race.
+    const { data: claimed, error: claimErr } = await db
+      .from('marketing_drafts')
+      .update({ status: 'sending', publish_error: null, publisher: publisher.name })
+      .eq('id', draftId)
+      .in('status', ['approved', 'failed'])
+      .select('id')
+      .maybeSingle()
+
+    if (claimErr) return json({ error: 'claim_failed', detail: claimErr.message }, 500, headers)
+    if (!claimed) {
+      return json(
+        { error: 'claim_lost', detail: 'Another send claimed this draft first.' },
+        409,
+        headers,
+      )
+    }
+
+    // --- dispatch ---------------------------------------------------------
+    try {
+      const result = await publisher.send({
+        channel,
+        subject: draft.subject ?? null,
+        body: draft.body,
+      })
+
+      await db
+        .from('marketing_drafts')
+        .update({
+          status: 'sent',
+          published_at: new Date().toISOString(),
+          publish_ref: result.ref,
+          publish_error: null,
+          sent_snapshot: snapshot,
+          approved_by: auth.userId,
+        })
+        .eq('id', draftId)
+
+      return json(
+        {
+          ok: true,
+          status: 'sent',
+          draft_id: draftId,
+          publisher: publisher.name,
+          reference: result.ref,
+          detail: result.detail,
+          sent: snapshot,
+          note:
+            'Reported as sent. This cannot be undone — check the destination to confirm it arrived.',
+        },
+        200,
+        headers,
+      )
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+
+      // Mark failed and release the claim, keeping the snapshot so it is clear
+      // what was attempted. The owner can retry deliberately.
+      await db
+        .from('marketing_drafts')
+        .update({ status: 'failed', publish_error: message, sent_snapshot: snapshot })
+        .eq('id', draftId)
+
+      console.error('[publish] failed:', message)
+      return json({ error: 'publish_failed', detail: message }, 502, headers)
     }
   }
 
