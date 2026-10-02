@@ -47,6 +47,22 @@ import {
   type ThemeSurface,
   type ThemeTokens,
 } from './_shared/themeTokens.ts'
+import {
+  GitHubToolError,
+  MAX_EDITABLE_BYTES,
+  ALLOWED_PATTERNS,
+  assertEditable,
+  closePullRequest,
+  commitFiles,
+  createBranch,
+  deleteBranch,
+  getDefaultBranchSha,
+  getFile,
+  listSourceFiles,
+  mergePullRequest,
+  openPullRequest,
+  type RepoRef,
+} from './_shared/github.ts'
 
 // ---------------------------------------------------------------------------
 // Config
@@ -65,6 +81,33 @@ const DEEPSEEK_API_KEY = Deno.env.get('DEEPSEEK_API_KEY') ?? ''
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY') ?? ''
 const OPENAI_BASE_URL = Deno.env.get('OPENAI_BASE_URL') ?? 'https://api.openai.com'
 const LIVE_MODEL = Deno.env.get('LIVE_MODEL') ?? 'gpt-live-1'
+
+// Source editing. Optional: without these the read tools still work and the
+// source tools report that the capability is not configured.
+const GITHUB_TOKEN = Deno.env.get('GITHUB_TOKEN') ?? ''
+const GITHUB_OWNER = Deno.env.get('GITHUB_OWNER') ?? 'NKH2026'
+const GITHUB_REPO = Deno.env.get('GITHUB_REPO') ?? 'nefer-kali-healing'
+const GITHUB_BRANCH = Deno.env.get('GITHUB_BRANCH') ?? 'main'
+const VERCEL_TOKEN = Deno.env.get('VERCEL_TOKEN') ?? ''
+const VERCEL_PROJECT = Deno.env.get('VERCEL_PROJECT') ?? ''
+
+const REPO: RepoRef = {
+  owner: GITHUB_OWNER,
+  repo: GITHUB_REPO,
+  token: GITHUB_TOKEN,
+  defaultBranch: GITHUB_BRANCH,
+}
+
+const sourceEditingConfigured = (): boolean => Boolean(GITHUB_TOKEN)
+
+function requireRepo(): RepoRef {
+  if (!sourceEditingConfigured()) {
+    throw new GitHubToolError(
+      'Source editing is not configured. Add the GITHUB_TOKEN secret to enable it.',
+    )
+  }
+  return REPO
+}
 
 const DEEPSEEK_BASE_URL = Deno.env.get('DEEPSEEK_BASE_URL') ?? 'https://api.deepseek.com'
 const MODEL = Deno.env.get('AGENT_MODEL') ?? 'deepseek-flash'
@@ -285,21 +328,37 @@ soften a refusal into mysticism, and never let charm imply a change happened whe
 You can READ anything using the read tools. You can also PROPOSE changes using the tools whose
 names begin with "propose_", but you cannot carry a change out yourself.
 
-You CAN change the look of the site, and you can do it PER SURFACE. The site's colours, glow,
-motion and depth are stored as theme tokens rather than baked into code, and you change them with
+You CAN edit the website's source code. Use search_site_code to find which page or component holds
+the text you want to change, get_site_file to read it, then propose_page_edit with the exact text
+to replace and what it becomes. This covers wording, new sections, layout tweaks, styling, and new
+content on existing pages.
+
+A source edit works differently from a data change, and you must describe it accurately:
+- Approving it builds a PREVIEW link. Nothing becomes public.
+- The owner reviews that preview, then chooses to publish it.
+- So after proposing, say a preview will be built and that nothing goes live until they publish it.
+
+You may only edit .tsx files under pages/ or components/, plus index.css. Configuration, build
+files, dependencies and secrets are deliberately off-limits and the system will refuse them.
+
+You CAN change the look of the site, and you can do it PER SURFACE. Colours, glow, motion and depth
+are stored as theme tokens rather than baked into code, and you change them with
 propose_theme_change. Target the public storefront, the admin panel, or both independently -- so
 "make the admin trippy" does NOT have to drag the customer-facing shop along with it. Call
-get_theme first to see current values and any existing per-surface overrides. Always choose the
+get_theme first to see current values and any existing per-surface overrides, and choose the
 narrowest surface that satisfies the request.
+
+For a quick visual change, prefer theme tokens: they apply instantly. Use source editing for
+structure, copy, and anything the tokens cannot express, remembering it costs a build and a
+preview.
 
 When a request is something you can actually do, PROPOSE IT. Do not ask permission in prose first.
 The proposal card IS the confirmation step -- the owner reviews the exact before/after values
 there and decides. Asking "want me to send that through?" and stopping wastes a turn and leaves
 them with nothing to look at. Make the call, then let the card do its job.
 
-You CANNOT change page layout, add new sections, edit body copy on individual pages, or alter
-code. If asked for those, say plainly that it needs the source-editing capability, which is not
-built yet, and offer what the theme tokens can do instead.
+You CANNOT create entirely new pages or routes, change the navigation structure, or alter the
+database schema. If asked, say so plainly and offer the closest thing you can do.
 
 How changes work -- this is important:
 - A propose tool does not change anything. It creates a proposal the owner sees as a card with
@@ -1400,11 +1459,283 @@ const THEME_WRITE_TOOLS: Record<string, ToolImpl> = {
   },
 }
 
+// ---------------------------------------------------------------------------
+// Source editing
+//
+// The agent can edit page and component source, but never directly: a change
+// becomes a branch, a pull request and a Vercel preview deployment. Nothing
+// reaches production until the admin has looked at the preview and approved the
+// merge.
+//
+// The path restrictions live in _shared/github.ts, not here, so there is one
+// place that decides what may be touched.
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolves the Vercel preview URL for a branch.
+ *
+ * Prefers the Vercel API over guessing the URL, because the generated hostname
+ * depends on the project's naming settings and a wrong guess would send the
+ * admin to a 404 instead of their preview.
+ */
+async function resolvePreviewUrl(branch: string): Promise<string | null> {
+  if (!VERCEL_TOKEN || !VERCEL_PROJECT) return null
+  try {
+    const url = new URL('https://api.vercel.com/v6/deployments')
+    url.searchParams.set('projectId', VERCEL_PROJECT)
+    url.searchParams.set('limit', '20')
+    url.searchParams.set('target', 'preview')
+
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${VERCEL_TOKEN}` },
+    })
+    if (!res.ok) {
+      console.warn('[vercel] deployment lookup failed:', res.status)
+      return null
+    }
+
+    const body = (await res.json()) as {
+      deployments?: { url?: string; meta?: Record<string, string>; state?: string }[]
+    }
+
+    // The newest deployment whose git branch matches, ready or still building.
+    const match = (body.deployments ?? []).find(
+      (d) => d.meta?.githubCommitRef === branch || d.meta?.gitBranch === branch,
+    )
+    if (!match?.url) return null
+    // The API returns a bare hostname.
+    return `https://${match.url}`
+  } catch (err) {
+    console.warn('[vercel] preview lookup threw:', err instanceof Error ? err.message : err)
+    return null
+  }
+}
+
+const SOURCE_READ_TOOLS: Record<string, ToolImpl> = {
+  search_site_code: {
+    def: {
+      type: 'function',
+      function: {
+        name: 'search_site_code',
+        description:
+          'Search the website source code for a word or phrase. Use this to find which page or component contains the text you want to change. Returns matching file paths with a short excerpt.',
+        parameters: {
+          type: 'object',
+          properties: {
+            query: { type: 'string', description: 'Word or phrase to search for.' },
+            limit: { type: 'integer', minimum: 1, maximum: 25 },
+          },
+          required: ['query'],
+          additionalProperties: false,
+        },
+      },
+    },
+    async run(args) {
+      const repo = requireRepo()
+      const query = str(args.query)
+      if (!query) throw new Error('A search query is required.')
+      const limit = num(args.limit, 10, 25)
+
+      const url = new URL('https://api.github.com/search/code')
+      url.searchParams.set('q', `${query} repo:${repo.owner}/${repo.repo}`)
+      url.searchParams.set('per_page', String(limit))
+
+      const res = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${repo.token}`,
+          Accept: 'application/vnd.github.text-match+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+          'User-Agent': 'nkh-admin-agent',
+        },
+      })
+
+      if (res.status === 403 || res.status === 422) {
+        // Code search needs a moment to index a fresh repo, and is rate limited
+        // more tightly than the rest of the API.
+        throw new Error(
+          'GitHub code search is unavailable right now (rate limited or still indexing). ' +
+            'Use list_site_files and get_site_file instead.',
+        )
+      }
+      if (!res.ok) throw new Error(`GitHub search failed (${res.status}).`)
+
+      const body = (await res.json()) as {
+        items?: { path: string; text_matches?: { fragment?: string }[] }[]
+      }
+
+      const results = (body.items ?? [])
+        .filter((i) => ALLOWED_PATTERNS.some((re: RegExp) => re.test(i.path)))
+        .map((i) => ({
+          path: i.path,
+          excerpt: (i.text_matches?.[0]?.fragment ?? '').replace(/\s+/g, ' ').slice(0, 200),
+        }))
+
+      return {
+        count: results.length,
+        results,
+        note: results.length === 0 ? 'No match. Try a shorter or different phrase.' : undefined,
+      }
+    },
+  },
+
+  list_site_files: {
+    def: {
+      type: 'function',
+      function: {
+        name: 'list_site_files',
+        description:
+          'List every page and component file that can be edited, with its size. Use this to see what exists before searching or reading.',
+        parameters: { type: 'object', properties: {}, required: [], additionalProperties: false },
+      },
+    },
+    async run() {
+      const repo = requireRepo()
+      const files = await listSourceFiles(repo)
+      return { count: files.length, files }
+    },
+  },
+
+  get_site_file: {
+    def: {
+      type: 'function',
+      function: {
+        name: 'get_site_file',
+        description:
+          'Read the full current contents of one editable source file. Always read a file before proposing a change to it, so the edit is based on what is actually there.',
+        parameters: {
+          type: 'object',
+          properties: { path: { type: 'string', description: 'e.g. "pages/About.tsx".' } },
+          required: ['path'],
+          additionalProperties: false,
+        },
+      },
+    },
+    async run(args) {
+      const repo = requireRepo()
+      const path = str(args.path)
+      if (!path) throw new Error('A file path is required.')
+      const file = await getFile(repo, path)
+      return {
+        path: file.path,
+        bytes: file.content.length,
+        content: file.content,
+      }
+    },
+  },
+}
+
+const SOURCE_WRITE_TOOLS: Record<string, ToolImpl> = {
+  propose_page_edit: {    def: {
+      type: 'function',
+      function: {
+        name: 'propose_page_edit',
+        description:
+          "Propose an edit to one website source file, such as changing wording, adding a section, or adjusting styling. Read the file with get_site_file first, then give the exact existing text to replace and what it becomes. This creates a proposal for approval and changes nothing by itself. After the owner approves, a preview link is built so they can see the result before it goes live.",
+        parameters: {
+          type: 'object',
+          properties: {
+            path: { type: 'string', description: 'File to edit, e.g. "pages/About.tsx".' },
+            find: {
+              type: 'string',
+              description:
+                'Exact existing text to replace, copied verbatim from the file, including whitespace and indentation. Must appear exactly once in the file.',
+            },
+            replace: { type: 'string', description: 'The text to put in its place.' },
+            reason: { type: 'string', description: 'Short description of the change.' },
+          },
+          required: ['path', 'find', 'replace'],
+          additionalProperties: false,
+        },
+      },
+    },
+    async propose(args) {
+      const repo = requireRepo()
+      const path = str(args.path)
+      const find = typeof args.find === 'string' ? args.find : null
+      const replace = typeof args.replace === 'string' ? args.replace : null
+      if (!path || find === null || replace === null) {
+        throw new Error('path, find and replace are all required.')
+      }
+      if (find === replace) throw new Error('find and replace are identical, so nothing would change.')
+
+      const file = await getFile(repo, path)
+
+      const occurrences = file.content.split(find).length - 1
+      if (occurrences === 0) {
+        throw new Error(
+          `That text was not found in ${path}. Copy it exactly from the file, including indentation.`,
+        )
+      }
+      if (occurrences > 1) {
+        throw new Error(
+          `That text appears ${occurrences} times in ${path}, so the change is ambiguous. ` +
+            `Include more surrounding text so it matches exactly once.`,
+        )
+      }
+
+      const updated = file.content.replace(find, replace)
+      const added = updated.split('\n').length - file.content.split('\n').length
+
+      return {
+        summary:
+          `Edit ${path}: ${(str(args.reason) ?? 'content change').slice(0, 120)}` +
+          ` (${added >= 0 ? '+' : ''}${added} lines)`,
+        target_table: 'source',
+        target_id: path,
+        // For source edits the before/after ARE the diff, so carry them through
+        // the proposal and into the commit.
+        before: { path, content: file.content, base_sha: file.sha },
+        after: { path, content: updated, find, replace },
+        preview: [
+          { field: 'path', label: 'File', before: path, after: path },
+          { field: 'lines', label: 'Line count change', before: 0, after: added },
+        ],
+        // Visible only on a preview URL until merged.
+        risk: 'medium' as const,
+        reversible: true,
+      }
+    },
+  },
+
+  /**
+   * Publishes a source edit by merging its pull request.
+   *
+   * Intentionally has neither `run` nor a usable `propose`, so it is unreachable
+   * from the agent loop: the model cannot call it and no turn offers it. It
+   * exists so the action executor can recognise the tool name, and is triggered
+   * only by the merge button, which sends the `merge` action on an approved
+   * proposal.
+   */
+  merge_page_edit: {
+    def: {
+      type: 'function',
+      function: {
+        name: 'merge_page_edit',
+        description: 'Internal: publish an approved source edit by merging its pull request.',
+        parameters: {
+          type: 'object',
+          properties: { action_id: { type: 'string' } },
+          required: ['action_id'],
+          additionalProperties: false,
+        },
+      },
+    },
+    async propose() {
+      throw new Error('merge_page_edit is not callable during a conversation.')
+    },
+  },
+}
+
+// The single tool registry. Declared LAST, after every tool object, because a
+// tool added after this point would never reach the registry or the schema the
+// model sees. This has already been a bug once in this file.
 const tools: Record<string, ToolImpl> = {
   ...READ_TOOLS,
   ...WRITE_TOOLS,
   ...THEME_READ_TOOLS,
   ...THEME_WRITE_TOOLS,
+  ...SOURCE_READ_TOOLS,
+  ...SOURCE_WRITE_TOOLS,
 }
 
 const TOOL_DEFS: ToolDef[] = Object.values(tools).map((t) => t.def)
@@ -1945,6 +2276,130 @@ async function performWrite(
     }
   }
 
+  // -------------------------------------------------------------------------
+  // Source edits.
+  //
+  // "Applying" a source edit does not change the live site. It creates a branch
+  // from the current default branch, commits the edit, opens a pull request, and
+  // resolves the Vercel preview URL. The site changes only when the admin
+  // approves the merge, which is a separate action.
+  // -------------------------------------------------------------------------
+  if (row.tool_name === 'propose_page_edit') {
+    const path = String(after.path ?? '')
+    const content = after.content
+    if (!path || typeof content !== 'string') {
+      return { ok: false, error: 'missing path or content in the approved payload' }
+    }
+
+    let repo: RepoRef
+    try {
+      repo = REPO
+      assertEditable(path)
+    } catch (err) {
+      return { ok: false, error: err instanceof Error ? err.message : String(err) }
+    }
+
+    // Short, unique, and obviously machine-made.
+    const branch = `agent/${row.id.slice(0, 8)}-${path.split('/').pop()?.replace(/\W+/g, '-') ?? 'edit'}`
+      .slice(0, 60)
+
+    try {
+      const baseSha = await getDefaultBranchSha(repo)
+      await createBranch(repo, branch, baseSha)
+
+      const commit = await commitFiles(
+        repo,
+        branch,
+        [{ path, content }],
+        `Agent edit: ${row.summary}\n\nProposed by Tuu Beetuu and approved by the site owner.\nAction: ${row.id}`,
+      )
+
+      const pr = await openPullRequest(
+        repo,
+        branch,
+        `Tuu Beetuu edit: ${row.summary}`.slice(0, 120),
+        [
+          '## Proposed change',
+          '',
+          row.summary,
+          '',
+          `**File:** \`${path}\``,
+          '',
+          'This pull request was created by the admin assistant and approved by the site owner.',
+          'Merging it publishes the change to production.',
+          '',
+          `Action record: \`${row.id}\``,
+        ].join('\n'),
+      )
+
+      // The preview deployment is not ready instantly; the URL is reported now
+      // and resolves once Vercel has built the branch.
+      const previewUrl = await resolvePreviewUrl(branch)
+
+      return {
+        ok: true,
+        result: {
+          stage: 'preview_ready',
+          path,
+          branch,
+          commit_sha: commit.sha,
+          commit_url: commit.url,
+          pr_number: pr.number,
+          pr_url: pr.url,
+          preview_url: previewUrl,
+          preview_note: previewUrl
+            ? 'Preview builds take a minute or two. If the page is not up yet, reload shortly.'
+            : 'Preview URL unavailable (VERCEL_TOKEN / VERCEL_PROJECT not set). Open the pull request to review.',
+        },
+        restore: {
+          table: 'source',
+          action: 'close_pr',
+          branch,
+          pr_number: pr.number,
+          path,
+        },
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      // Best effort: do not leave a stray branch behind on failure.
+      await deleteBranch(repo, branch)
+      return { ok: false, error: message }
+    }
+  }
+
+  // Approving a source edit means merging its pull request. This is the step
+  // that actually publishes, so it is deliberately a separate admin click.
+  if (row.tool_name === 'merge_page_edit') {
+    const ref = row.restore_state ?? {}
+    const prNumber = Number(ref.pr_number)
+    const branch = String(ref.branch ?? '')
+    if (!Number.isFinite(prNumber) || prNumber <= 0) {
+      return { ok: false, error: 'no pull request recorded for this action' }
+    }
+
+    try {
+      const merged = await mergePullRequest(REPO, prNumber, `Tuu Beetuu: ${row.summary}`.slice(0, 100))
+      if (!merged.merged) {
+        return { ok: false, error: 'GitHub declined the merge. The branch may conflict with newer commits.' }
+      }
+      if (branch) await deleteBranch(REPO, branch)
+
+      return {
+        ok: true,
+        result: {
+          stage: 'published',
+          pr_number: prNumber,
+          merge_sha: merged.sha,
+          note: 'Merged. Vercel is deploying to production now — allow a couple of minutes.',
+        },
+        // Merging cannot be undone by replaying; the revert is a new commit.
+        restore: { table: 'source', action: 'reverted_by_new_commit', merge_sha: merged.sha },
+      }
+    } catch (err) {
+      return { ok: false, error: err instanceof Error ? err.message : String(err) }
+    }
+  }
+
   return { ok: false, error: `no executor for tool "${row.tool_name}"` }
 }
 
@@ -1992,6 +2447,27 @@ async function performUndo(
       )
     if (error) return { ok: false, error: error.message }
     return { ok: true, result: { reverted: table, key: restore.key } }
+  }
+
+  // A source edit is "undone" by closing its pull request and deleting the
+  // branch. Nothing was ever published, so there is nothing to revert.
+  if (table === 'source') {
+    const prNumber = Number(restore.pr_number)
+    const branch = String(restore.branch ?? '')
+    try {
+      if (Number.isFinite(prNumber) && prNumber > 0) await closePullRequest(REPO, prNumber)
+      if (branch) await deleteBranch(REPO, branch)
+    } catch (err) {
+      return { ok: false, error: err instanceof Error ? err.message : String(err) }
+    }
+    return {
+      ok: true,
+      result: {
+        closed_pr: prNumber || null,
+        deleted_branch: branch || null,
+        note: 'Pull request closed and branch removed. Nothing was ever published.',
+      },
+    }
   }
 
   return { ok: false, error: `cannot undo table "${table}"` }
@@ -2200,7 +2676,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   //
   // These never run model code. They act on a row the human was shown.
   // -------------------------------------------------------------------------
-  if (action === 'apply' || action === 'undo') {
+  if (action === 'apply' || action === 'undo' || action === 'merge') {
     const actionId = typeof payload.action_id === 'string' ? payload.action_id : ''
     if (!actionId) return json({ error: 'action_id_required' }, 400, headers)
 
@@ -2246,6 +2722,51 @@ Deno.serve(async (req: Request): Promise<Response> => {
       await agentDb.from('agent_action_log').insert({ action_id: actionId, event: 'undone', detail: undone.result })
 
       return json({ ok: true, status: 'undone', action_id: actionId, result: undone.result }, 200, headers)
+    }
+
+    // ---- merge: publish an approved source edit ------------------------
+    //
+    // Deliberately separate from `apply`. Applying a source edit only builds a
+    // preview; merging is what reaches customers, so it needs its own click on
+    // an action that has already been applied and previewed.
+    if (action === 'merge') {
+      if (record.status !== 'applied') {
+        return json(
+          {
+            error: 'not_applied',
+            detail: `Build a preview first. This action is "${record.status}".`,
+          },
+          409,
+          headers,
+        )
+      }
+      const ref = record.restore_state ?? {}
+      if (String(ref.table) !== 'source') {
+        return json(
+          { error: 'not_a_source_edit', detail: 'Only source edits are published by merging.' },
+          409,
+          headers,
+        )
+      }
+
+      const merged = await performWrite(db, { ...record, tool_name: 'merge_page_edit' })
+      if (!merged.ok) {
+        await agentDb.from('agent_actions').update({ error: merged.error }).eq('id', actionId)
+        await agentDb
+          .from('agent_action_log')
+          .insert({ action_id: actionId, event: 'failed', detail: { phase: 'merge', error: merged.error } })
+        return json({ error: 'merge_failed', detail: merged.error }, 500, headers)
+      }
+
+      await agentDb
+        .from('agent_actions')
+        .update({ status: 'applied', result: merged.result, restore_state: merged.restore })
+        .eq('id', actionId)
+      await agentDb
+        .from('agent_action_log')
+        .insert({ action_id: actionId, event: 'applied', detail: { phase: 'merge', result: merged.result } })
+
+      return json({ ok: true, status: 'published', action_id: actionId, result: merged.result }, 200, headers)
     }
 
     // ---- apply ----------------------------------------------------------

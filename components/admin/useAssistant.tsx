@@ -48,8 +48,18 @@ export interface ChatTurn {
     error?: string | null;
     proposal?: Proposal | null;
     /** Set once the admin has acted on the card, so it stops being interactive. */
-    proposalState?: 'pending' | 'applied' | 'undone' | 'discarded' | 'failed';
+    proposalState?: 'pending' | 'applied' | 'undone' | 'discarded' | 'failed' | 'published';
     proposalNote?: string;
+    /**
+     * For source edits: where the preview lives and whether it has been merged.
+     * Present after Apply, and used to offer the publish step.
+     */
+    sourcePreview?: {
+        previewUrl: string | null;
+        prUrl: string | null;
+        branch: string;
+        note: string;
+    };
 }
 
 export const SUGGESTIONS = [
@@ -121,6 +131,8 @@ export interface AssistantController {
      */
     sendForVoice: (text: string) => Promise<VoiceReply>;
     actOnProposal: (turnId: string, proposal: Proposal, action: 'apply' | 'undo') => Promise<void>;
+    /** Publish an already-previewed source edit. Separate from Apply on purpose. */
+    publishPageEdit: (turnId: string, proposal: Proposal) => Promise<void>;
     discardProposal: (turnId: string) => void;
     /** True before the first message of a session. */
     isEmpty: boolean;
@@ -278,14 +290,30 @@ function useAssistantController(): AssistantController {
                 setMood(applied ? 'happy' : 'idle');
                 setTimeout(() => setMood('idle'), 2200);
 
+                // A source edit "applies" to a preview, not to the live site.
+                // Surface the branch and preview link so it can be reviewed and
+                // then published with a second, deliberate click.
+                const isSource =
+                    applied && data?.result?.stage === 'preview_ready' && data?.result?.branch;
+
                 setTurns((prev) =>
                     prev.map((t) =>
                         t.id === turnId
                             ? {
                                 ...t,
                                 proposalState: applied ? 'applied' : 'undone',
+                                sourcePreview: isSource
+                                    ? {
+                                        previewUrl: data.result.preview_url ?? null,
+                                        prUrl: data.result.pr_url ?? null,
+                                        branch: String(data.result.branch),
+                                        note: String(data.result.preview_note ?? ''),
+                                    }
+                                    : t.sourcePreview,
                                 proposalNote: applied
-                                    ? `Applied. ${data?.reversible ? 'You can undo this.' : 'This cannot be undone.'}`
+                                    ? isSource
+                                        ? 'Preview built. Nothing is live until you publish it.'
+                                        : `Applied. ${data?.reversible ? 'You can undo this.' : 'This cannot be undone.'}`
                                     : 'Undone — the previous values were restored.',
                             }
                             : t,
@@ -306,8 +334,54 @@ function useAssistantController(): AssistantController {
         [],
     );
 
-    const discardProposal = useCallback((turnId: string) => {
-        // Purely local: a proposal that is never applied simply expires. Not
+    /**
+     * Publishes a previewed source edit. This is the only path that makes a
+     * source change reach customers, so it is a separate, explicit click rather
+     * than something folded into Apply.
+     */
+    const publishPageEdit = useCallback(
+        async (turnId: string, proposal: Proposal) => {
+            setTurns((prev) =>
+                prev.map((t) => (t.id === turnId ? { ...t, proposalNote: 'Publishing…' } : t)),
+            );
+            try {
+                const { data, error } = await supabase.functions.invoke('admin-agent', {
+                    body: { action: 'merge', action_id: proposal.id },
+                });
+                if (error) throw new Error(await describeFunctionError(error));
+                if (data?.error) throw new Error(data.detail || data.error);
+
+                setMood('happy');
+                setTimeout(() => setMood('idle'), 2200);
+                setTurns((prev) =>
+                    prev.map((t) =>
+                        t.id === turnId
+                            ? {
+                                ...t,
+                                proposalState: 'published',
+                                proposalNote:
+                                    data?.result?.note ??
+                                    'Published. Vercel is deploying to production now.',
+                            }
+                            : t,
+                    ),
+                );
+            } catch (err: any) {
+                setMood('alarmed');
+                setTimeout(() => setMood('idle'), 2600);
+                setTurns((prev) =>
+                    prev.map((t) =>
+                        t.id === turnId
+                            ? { ...t, proposalState: 'failed', proposalNote: err?.message || 'Publish failed.' }
+                            : t,
+                    ),
+                );
+            }
+        },
+        [],
+    );
+
+    const discardProposal = useCallback((turnId: string) => {        // Purely local: a proposal that is never applied simply expires. Not
         // calling the server keeps "Discard" from being able to do anything.
         setTurns((prev) =>
             prev.map((t) =>
@@ -327,6 +401,7 @@ function useAssistantController(): AssistantController {
         send,
         sendForVoice,
         actOnProposal,
+        publishPageEdit,
         discardProposal,
         isEmpty: turns.length === 0,
     };

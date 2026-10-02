@@ -17,6 +17,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     Send, Loader2, Sparkles, AlertTriangle, Wrench, User as UserIcon,
     ShieldAlert, Check, ArrowRight, Undo2, Mic, MicOff,
+    ExternalLink, GitPullRequest, UploadCloud,
 } from 'lucide-react';
 import {
     useAssistant, SUGGESTIONS, THINKING_LINES, prettyTool, riskStyles, renderValue,
@@ -127,16 +128,23 @@ const ProposalCard: React.FC<{
     proposal: Proposal;
     state?: string;
     note?: string;
+    sourcePreview?: {
+        previewUrl: string | null;
+        prUrl: string | null;
+        branch: string;
+        note: string;
+    };
     onAct: (turnId: string, proposal: Proposal, action: 'apply' | 'undo') => void;
+    onPublish: (turnId: string, proposal: Proposal) => void;
     onDiscard: (turnId: string) => void;
     compact: boolean;
-}> = ({ turnId, proposal, state, note, onAct, onDiscard, compact }) => (
+}> = ({ turnId, proposal, state, note, sourcePreview, onAct, onPublish, onDiscard, compact }) => (
     <div className="rounded-xl border border-purple-500/30 bg-purple-950/25 overflow-hidden backdrop-blur-sm">
         <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-purple-500/20 bg-gradient-to-r from-purple-900/40 to-fuchsia-900/20">
             <div className="flex items-center gap-2 min-w-0">
                 <ShieldAlert size={13} className="text-fuchsia-300 flex-shrink-0" />
                 <span className="text-[10px] font-urbanist font-semibold text-purple-100 uppercase tracking-wider">
-                    Proposed change
+                    {sourcePreview ? 'Preview built' : 'Proposed change'}
                 </span>
             </div>
             <span
@@ -175,7 +183,7 @@ const ProposalCard: React.FC<{
                         className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white text-xs font-urbanist font-semibold transition-all shadow-lg shadow-purple-900/40"
                     >
                         <Check size={13} />
-                        Apply this change
+                        {proposal.tool_name === 'propose_page_edit' ? 'Build preview' : 'Apply this change'}
                     </button>
                     <button
                         onClick={() => onDiscard(turnId)}
@@ -189,7 +197,68 @@ const ProposalCard: React.FC<{
                 </div>
             )}
 
-            {state === 'applied' && (
+            {/* Source edits: the preview link, then a separate publish step. */}
+            {sourcePreview && state === 'applied' && (
+                <div className="space-y-2 pt-0.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                        {sourcePreview.previewUrl ? (
+                            <a
+                                href={sourcePreview.previewUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-xs font-urbanist font-semibold hover:bg-white/20 transition-colors"
+                            >
+                                <ExternalLink size={12} />
+                                Open preview
+                            </a>
+                        ) : (
+                            <span className="text-[11px] font-urbanist text-amber-300/90">
+                                No preview URL — check the pull request instead.
+                            </span>
+                        )}
+                        {sourcePreview.prUrl && (
+                            <a
+                                href={sourcePreview.prUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/15 text-gray-300 hover:text-white text-[11px] font-urbanist transition-colors"
+                            >
+                                <GitPullRequest size={11} />
+                                Pull request
+                            </a>
+                        )}
+                    </div>
+
+                    {sourcePreview.note && (
+                        <p className="text-[11px] font-urbanist text-gray-500">{sourcePreview.note}</p>
+                    )}
+
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                            onClick={() => onPublish(turnId, proposal)}
+                            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-urbanist font-semibold transition-colors"
+                        >
+                            <UploadCloud size={13} />
+                            Publish to the live site
+                        </button>
+                        <button
+                            onClick={() => onAct(turnId, proposal, 'undo')}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/15 text-gray-300 hover:text-white text-[11px] font-urbanist transition-colors"
+                        >
+                            <Undo2 size={11} /> Discard preview
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {state === 'published' && (
+                <div className="flex items-center gap-1.5 text-xs font-urbanist text-emerald-300 pt-0.5">
+                    <Check size={13} /> Published to the live site
+                </div>
+            )}
+
+            {/* Non-source changes keep the simple applied/undo pair. */}
+            {state === 'applied' && !sourcePreview && (
                 <div className="flex items-center gap-2 flex-wrap pt-0.5">
                     <span className="inline-flex items-center gap-1.5 text-xs font-urbanist text-emerald-300">
                         <Check size={13} /> Applied
@@ -230,7 +299,7 @@ const ProposalCard: React.FC<{
 
 const AssistantPanel: React.FC<Props> = ({ mode, className = '' }) => {
     const { controller } = useAssistant();
-    const { turns, busy, mood, thinkingLine, send, sendForVoice, actOnProposal, discardProposal, isEmpty } = controller;
+    const { turns, busy, mood, thinkingLine, send, sendForVoice, actOnProposal, publishPageEdit, discardProposal, isEmpty } = controller;
 
     const [input, setInput] = React.useState('');
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -435,7 +504,9 @@ const AssistantPanel: React.FC<Props> = ({ mode, className = '' }) => {
                                         proposal={turn.proposal}
                                         state={turn.proposalState}
                                         note={turn.proposalNote}
+                                        sourcePreview={turn.sourcePreview}
                                         onAct={actOnProposal}
+                                        onPublish={publishPageEdit}
                                         onDiscard={discardProposal}
                                         compact={compact}
                                     />

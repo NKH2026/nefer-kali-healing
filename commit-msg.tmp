@@ -1,22 +1,34 @@
-﻿Scope theme tokens per surface; make the agent propose instead of asking
+﻿Add source editing: GitHub tools, preview links, and publish-by-merge
 
-Two problems with the first cut of the theme system:
+The agent can now edit page and component source, but never directly. An edit
+becomes a branch, a pull request and a Vercel preview deployment; nothing reaches
+production until the admin has opened the preview and separately chosen to
+publish it.
 
-1. One token set drove the storefront and admin panel together, so making the
-   admin trippy unavoidably hit the customer-facing shop. Tokens are now a base
-   layer (key tokens) plus sparse per-surface overrides (tokens:site,
-   tokens:admin), merged at load. A proposal targets the narrowest surface that
-   satisfies the request, and the confirmation card names that surface.
+Tools
+- search_site_code, list_site_files, get_site_file (read)
+- propose_page_edit (write): exact find/replace against the file's current
+  contents, refused if the text is absent or ambiguous
+- merge_page_edit: an internal tool with no run and no usable propose, so it is
+  unreachable from the agent loop. Publishing is a separate admin click, sent as
+  the merge action on an already-applied proposal.
 
-2. The agent asked for permission instead of proposing. The proposal card IS the
-   confirmation step, so asking in prose wastes a turn and leaves the owner with
-   nothing to review. The prompt now requires it to make the call.
+Restrictions live in _shared/github.ts, in one place, rather than being spread
+across tools:
+- a path denylist covering package.json, lockfiles, vite/tsconfig/vercel/tailwind
+  config, index.html, lib/, supabase/, scripts/ and .env
+- an extension allowlist: .tsx under pages/ or components/, plus index.css
+- one branch per change, never a commit to the default branch
+- a size cap, so an oversized file is readable but not rewritable
 
-- ThemeProvider takes a surface prop and is mounted twice: once at the app root
-  for the site, once in the admin layout. It applies CSS variables to its own
-  element rather than documentElement, so the two surfaces cannot clobber each
-  other, and the admin surface paints its own opaque canvas over the site's.
-- propose_theme_change takes a required surface argument.
-- get_theme returns base, both effective surfaces, and the raw overrides.
-- resolveTokens() merges base over sparse override.
-- Migration seeds the two empty overrides; re-running changes nothing.
+Commits use the low-level git data API rather than the Contents API, so a
+multi-file change lands atomically.
+
+Preview URL resolution uses the Vercel API rather than guessing the generated
+hostname, which depends on project naming settings; a wrong guess would send the
+owner to a 404 instead of their preview. Without VERCEL_TOKEN the card falls back
+to linking the pull request.
+
+The card shows the preview link and a Publish button, and only then merges.
+Undo on a source edit closes the pull request and deletes the branch -- nothing
+was published, so there is nothing to revert.
