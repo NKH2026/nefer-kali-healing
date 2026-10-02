@@ -17,7 +17,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     Send, Loader2, Sparkles, AlertTriangle, Wrench, User as UserIcon,
     ShieldAlert, Check, ArrowRight, Undo2, Mic, MicOff,
-    ExternalLink, GitPullRequest, UploadCloud, Paperclip, X as XIcon, ImageIcon,
+    ExternalLink, GitPullRequest, UploadCloud, Paperclip, X as XIcon, ImageIcon, Eye,
 } from 'lucide-react';
 import {
     useAssistant, SUGGESTIONS, THINKING_LINES, prettyTool, riskStyles, renderValue,
@@ -660,6 +660,21 @@ const AssistantPanel: React.FC<Props> = ({ mode, className = '' }) => {
                                             <ImageIcon size={12} className="text-gray-400 flex-shrink-0" />
                                         )}
                                         <span className="truncate max-w-[11rem] text-gray-300">{a.fileName}</span>
+                                        {a.mimeType.startsWith('image/') && (
+                                            <button
+                                                onClick={() => {
+                                                    // Ask directly, so looking at an image is one
+                                                    // action rather than composing a sentence.
+                                                    send(`What is in the image "${a.fileName}"?`);
+                                                    setAttached([]);
+                                                }}
+                                                title="Ask Tuu Beetuu what this image shows"
+                                                aria-label={`Describe ${a.fileName}`}
+                                                className="p-0.5 rounded text-gray-500 hover:text-fuchsia-300 transition-colors"
+                                            >
+                                                <Eye size={11} />
+                                            </button>
+                                        )}
                                         <button
                                             onClick={() => setAttached((prev) => prev.filter((x) => x.id !== a.id))}
                                             aria-label={`Remove ${a.fileName}`}
