@@ -1,34 +1,27 @@
-﻿Add source editing: GitHub tools, preview links, and publish-by-merge
+﻿Add web research and content drafting
 
-The agent can now edit page and component source, but never directly. An edit
-becomes a branch, a pull request and a Vercel preview deployment; nothing reaches
-production until the admin has opened the preview and separately chosen to
-publish it.
+Research
+- research_web runs a SEPARATE, ISOLATED agent loop with only two tools, both
+  web-facing: web_search and fetch_page. It has no database access and no
+  proposal tools, so injected instructions inside a fetched page cannot reach
+  anything that writes. Web pages are attacker-controlled text, and an agent that
+  can both read an arbitrary page and write to the store is the dangerous
+  combination this design has avoided throughout.
+- _shared/web.ts does the retrieval: plain GET with a timeout, a 500 kB response
+  cap, markup stripped to text, and every result explicitly labelled untrusted.
+- Search uses DuckDuckGo's HTML endpoint, so no API key and no vendor lock-in.
+  Failures are reported as clear messages rather than an empty list, which would
+  otherwise look like "nothing exists".
 
-Tools
-- search_site_code, list_site_files, get_site_file (read)
-- propose_page_edit (write): exact find/replace against the file's current
-  contents, refused if the text is absent or ambiguous
-- merge_page_edit: an internal tool with no run and no usable propose, so it is
-  unreachable from the agent loop. Publishing is a separate admin click, sent as
-  the merge action on an already-applied proposal.
+Content drafting
+- propose_blog_post creates or updates a Wisdom Vault article. New posts default
+  to unpublished drafts; publishing requires an explicit request. Slug collisions
+  are refused with the conflicting title.
+- propose_marketing_content saves newsletter, social and partner-outreach copy to
+  marketing_drafts (new migration). The agent never sends anything: a message that
+  leaves the building cannot be recalled, so sending stays a human action.
+- Undo deletes created rows and restores updated ones.
 
-Restrictions live in _shared/github.ts, in one place, rather than being spread
-across tools:
-- a path denylist covering package.json, lockfiles, vite/tsconfig/vercel/tailwind
-  config, index.html, lib/, supabase/, scripts/ and .env
-- an extension allowlist: .tsx under pages/ or components/, plus index.css
-- one branch per change, never a commit to the default branch
-- a size cap, so an oversized file is readable but not rewritable
-
-Commits use the low-level git data API rather than the Contents API, so a
-multi-file change lands atomically.
-
-Preview URL resolution uses the Vercel API rather than guessing the generated
-hostname, which depends on project naming settings; a wrong guess would send the
-owner to a 404 instead of their preview. Without VERCEL_TOKEN the card falls back
-to linking the pull request.
-
-The card shows the preview link and a Publish button, and only then merges.
-Undo on a source edit closes the pull request and deletes the branch -- nothing
-was published, so there is nothing to revert.
+Also fixes the registry declaration order, which had drifted again: the tool
+registry is now declared once, after every tool object, with a comment explaining
+why it must stay last.
