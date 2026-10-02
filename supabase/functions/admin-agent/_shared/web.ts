@@ -181,76 +181,109 @@ export async function fetchPage(rawUrl: string): Promise<FetchResult> {
 }
 
 /**
- * Search the web for a query.
+ * Search the web using OpenAI's hosted web search tool.
  *
- * Uses DuckDuckGo's HTML endpoint: no API key, no cost, and no vendor lock-in.
- * It is a fallback-quality source -- results can be sparse and occasionally
- * blocked -- so failures are reported as a clear message rather than an empty
- * list that would look like "nothing exists".
+ * Replaces an earlier attempt that scraped DuckDuckGo's HTML endpoint. That was
+ * the wrong approach and it failed as such approaches do: the endpoint began
+ * answering with HTTP 202 and a bot-detection page rather than results. Scraping
+ * a search engine is inherently fragile, and the failure mode was an empty
+ * result set that looked like "nothing exists".
+ *
+ * This uses the Responses API with the hosted `web_search` tool, which returns
+ * grounded text plus URL citations -- and it reuses the OPENAI_API_KEY already
+ * present for voice, so no new vendor is introduced.
+ *
+ * Results are still UNTRUSTED. The model synthesised them from web pages it
+ * read, so they carry the same provenance as anything else scraped off the
+ * internet. The caller must treat the summary as data.
  */
-export async function searchWeb(query: string, limit = 6): Promise<{ title: string; url: string; snippet: string }[]> {
-  const endpoint = new URL('https://html.duckduckgo.com/html/')
-  endpoint.searchParams.set('q', query)
+export interface WebSearchResult {
+  summary: string
+  sources: string[]
+}
 
+export async function searchWebGrounded(
+  query: string,
+  apiKey: string,
+  baseUrl: string,
+  model: string,
+): Promise<WebSearchResult> {
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+  const timer = setTimeout(() => controller.abort(), 90_000)
 
   let res: Response
   try {
-    res = await fetch(endpoint.toString(), {
+    res = await fetch(`${baseUrl}/v1/responses`, {
+      method: 'POST',
       signal: controller.signal,
       headers: {
-        'User-Agent': USER_AGENT,
-        Accept: 'text/html,application/xhtml+xml',
-        'Accept-Language': 'en-US,en;q=0.9',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
       },
+      body: JSON.stringify({
+        model,
+        tools: [{ type: 'web_search' }],
+        // With "auto" the model may decline to search. This tool exists to
+        // search, so require it.
+        tool_choice: 'required',
+        input: query,
+      }),
     })
-  } catch {
-    throw new WebError('Web search was unreachable. Try again, or give me a specific URL to read.')
+  } catch (err) {
+    if (controller.signal.aborted) throw new WebError('Web search timed out.')
+    throw new WebError('Could not reach the search service.')
   } finally {
     clearTimeout(timer)
   }
 
+  if (res.status === 401) {
+    throw new WebError('The OpenAI API key was rejected. Check the OPENAI_API_KEY secret.')
+  }
+  if (res.status === 404) {
+    throw new WebError(
+      `The research model "${model}" was not found. Set RESEARCH_MODEL to a model your account can use.`,
+    )
+  }
+  if (res.status === 429) {
+    throw new WebError('The search service is rate limiting. Try again shortly.')
+  }
   if (!res.ok) {
-    throw new WebError(
-      `Web search returned HTTP ${res.status}. The search provider may be rate limiting; try again shortly.`,
-    )
+    const detail = await res.text()
+    throw new WebError(`Web search failed (${res.status}): ${detail.slice(0, 300)}`)
   }
 
-  const html = await res.text()
-
-  // Result links are wrapped: /l/?uddg=<encoded target>
-  const results: { title: string; url: string; snippet: string }[] = []
-  const linkRe = /<a[^>]+class="[^"]*result__a[^"]*"[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi
-  const snippetRe = /<a[^>]+class="[^"]*result__snippet[^"]*"[^>]*>([\s\S]*?)<\/a>/gi
-
-  const snippets: string[] = []
-  let sm: RegExpExecArray | null
-  while ((sm = snippetRe.exec(html)) !== null) {
-    snippets.push(htmlToText(sm[1]).text)
+  const body = (await res.json()) as {
+    output_text?: string
+    output?: {
+      type?: string
+      content?: { type?: string; text?: string; annotations?: { type?: string; url?: string }[] }[]
+      action?: { sources?: { url?: string }[] }
+    }[]
   }
 
-  let m: RegExpExecArray | null
-  let i = 0
-  while ((m = linkRe.exec(html)) !== null && results.length < limit) {
-    let href = decodeEntities(m[1])
-    const uddg = href.match(/[?&]uddg=([^&]+)/)
-    if (uddg) href = decodeURIComponent(uddg[1])
-    if (!/^https?:\/\//i.test(href)) continue
+  const sources = new Set<string>()
+  const texts: string[] = []
 
-    const title = htmlToText(m[2]).text
-    if (!title) continue
-
-    results.push({ title, url: href, snippet: snippets[i] ?? '' })
-    i += 1
+  for (const item of body.output ?? []) {
+    if (item?.type === 'message') {
+      for (const c of item.content ?? []) {
+        if (typeof c?.text === 'string') texts.push(c.text)
+        for (const a of c?.annotations ?? []) {
+          if (a?.type === 'url_citation' && a.url) sources.add(a.url)
+        }
+      }
+    }
+    // The full list of pages consulted, distinct from the cited subset.
+    for (const s of item?.action?.sources ?? []) {
+      if (s?.url) sources.add(s.url)
+    }
   }
 
-  if (results.length === 0) {
-    throw new WebError(
-      'Web search returned no usable results. The search provider may have changed its markup or ' +
-        'be rate limiting. Try a different phrasing, or give me a specific URL to read instead.',
-    )
+  const summary = (body.output_text ?? texts.join('\n\n')).trim()
+
+  if (!summary) {
+    throw new WebError('The search service returned no text. Try rephrasing the question.')
   }
 
-  return results
+  return { summary, sources: [...sources] }
 }

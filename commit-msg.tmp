@@ -1,23 +1,28 @@
-﻿Fix stray brace that broke the Edge Function bundle
+﻿Replace the unreliable search provider with OpenAI hosted web search
 
-My earlier line surgery, moving a misplaced block out of performUndo, left a
-duplicate closer behind: }) followed by a stray } at the end of the
-CONTENT_WRITE_TOOLS declaration. Deno's type checker accepted the file, but the
-Supabase bundler rejected it, so the deploy failed with:
+The first research implementation scraped DuckDuckGo's HTML endpoint. That was
+the wrong approach and it failed as such approaches do: verified locally, the
+endpoint now answers HTTP 202 with a bot-detection page rather than results
+(no result__a, no uddg=, anomaly detected). The failure mode was an empty result
+set that looked like "nothing exists", and the agent correctly refused to invent
+findings rather than papering over it.
 
-  The module's source code could not be parsed: Expression expected at
-  .../index.ts:2037:1
+Replaced with the Responses API and the hosted web_search tool. That reuses the
+OPENAI_API_KEY already present for voice, so no new vendor, and returns grounded
+text plus url_citation annotations rather than scraped markup.
 
-Removed the stray brace and confirmed all four function modules check cleanly.
+- tool_choice is "required": this tool exists to search, so letting the model
+  decline would reintroduce the same silent-empty-result failure.
+- Sources are collected from both inline citations and the web_search_call
+  action sources, so the list reflects everything consulted, not just what was
+  cited.
+- Distinct error messages for 401 (bad key), 404 (unknown model) and 429 (rate
+  limit), so a failure names its own cause.
+- RESEARCH_MODEL defaults to gpt-5.6-luna; override with that secret.
+- fetch_page is unchanged and still works: plain page fetching returned 200
+  throughout, so reading a URL the owner supplies remains a valid path.
+- Research budget raised to 120s with up to 6 steps, since real search takes
+  longer than the earlier stub.
 
-Add scripts/check-edge-functions.mjs, wired to 
-pm run deploy:agent, so this
-class of failure cannot reach a deploy again. It:
-  - locates Deno automatically, including the WinGet package directory, since
-    deno is not reliably on PATH in a fresh shell
-  - checks every module the function bundles, not just index.ts
-  - prints only the diagnostics, and refuses to deploy on any error
-  - warns and continues when Deno is absent, so it never blocks a deploy for
-    someone who lacks it
-
-Also adds npm run sync:theme for the theme token sync.
+Also: research now reports clearly when OPENAI_API_KEY is missing instead of
+failing obscurely.
