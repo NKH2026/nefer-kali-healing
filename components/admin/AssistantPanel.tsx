@@ -17,13 +17,14 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     Send, Loader2, Sparkles, AlertTriangle, Wrench, User as UserIcon,
     ShieldAlert, Check, ArrowRight, Undo2, Mic, MicOff,
-    ExternalLink, GitPullRequest, UploadCloud,
+    ExternalLink, GitPullRequest, UploadCloud, Paperclip, X as XIcon, ImageIcon,
 } from 'lucide-react';
 import {
     useAssistant, SUGGESTIONS, THINKING_LINES, prettyTool, riskStyles, renderValue,
     type Proposal,
 } from './useAssistant';
 import { VoiceSession, type VoiceState } from './voiceSession';
+import { uploadAsset, assetsContext, ACCEPTED_TYPES, MAX_UPLOAD_BYTES, type UploadedAsset } from '../../lib/uploads';
 
 // Three.js is ~140 kB gzipped. The scene is code-split so it only downloads for
 // the full-page view -- storefront visitors and widget-only users never pay.
@@ -313,6 +314,32 @@ const AssistantPanel: React.FC<Props> = ({ mode, className = '' }) => {
     const voiceRef = useRef<VoiceSession | null>(null);
 
     const compact = mode === 'widget';
+
+    // ---- attachments (Option A: assets the assistant can reference) -------
+    const [attached, setAttached] = useState<UploadedAsset[]>([]);
+    const [uploading, setUploading] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+    const fileRef = useRef<HTMLInputElement>(null);
+
+    const onFilesPicked = async (files: FileList | null) => {
+        if (!files || files.length === 0) return;
+        setUploadError(null);
+        setUploading(true);
+        try {
+            // Sequential, so a rejection part-way through does not leave an
+            // ambiguous set of half-uploaded files.
+            const added: UploadedAsset[] = [];
+            for (const file of Array.from(files)) {
+                added.push(await uploadAsset(file));
+            }
+            setAttached((prev) => [...prev, ...added]);
+        } catch (err: any) {
+            setUploadError(err?.message || 'That file could not be uploaded.');
+        } finally {
+            setUploading(false);
+            if (fileRef.current) fileRef.current.value = '';
+        }
+    };
     useEffect(() => {
         scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
     }, [turns, busy]);
@@ -360,9 +387,21 @@ const AssistantPanel: React.FC<Props> = ({ mode, className = '' }) => {
     const voiceLive = voiceState === 'live';
 
     const submit = () => {
-        if (!input.trim() || busy) return;
-        send(input);
+        if (busy || uploading) return;
+        const text = input.trim();
+        // An attachment on its own is a valid message: the owner may just be
+        // handing over a file for later use.
+        if (!text && attached.length === 0) return;
+
+        // Assets are described to the assistant as plain text appended to the
+        // message, since it has no vision capability.
+        const payload = attached.length
+            ? `${text || 'I have attached some files.'}${assetsContext(attached)}`
+            : text;
+
+        send(payload);
         setInput('');
+        setAttached([]);
     };
 
     const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -586,7 +625,74 @@ const AssistantPanel: React.FC<Props> = ({ mode, className = '' }) => {
                     </div>
                 )}
 
+                {/* Attached files, uploaded and ready to reference */}
+                {(attached.length > 0 || uploading || uploadError) && (
+                    <div className="mb-2.5 space-y-1.5">
+                        {uploadError && (
+                            <div className="flex items-start gap-2 text-[11px] font-urbanist text-red-300 bg-red-900/20 border border-red-500/30 rounded-lg px-3 py-2">
+                                <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                <span className="min-w-0 break-words">{uploadError}</span>
+                            </div>
+                        )}
+
+                        {uploading && (
+                            <div className="flex items-center gap-2 text-[11px] font-urbanist text-purple-200/80">
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                                Uploading…
+                            </div>
+                        )}
+
+                        {attached.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                                {attached.map((a) => (
+                                    <span
+                                        key={a.id}
+                                        className="inline-flex items-center gap-1.5 max-w-full text-[11px] font-urbanist bg-white/5 border border-white/15 rounded-lg pl-2 pr-1 py-1"
+                                        title={a.publicUrl}
+                                    >
+                                        {a.mimeType.startsWith('image/') ? (
+                                            <img
+                                                src={a.publicUrl}
+                                                alt=""
+                                                className="w-5 h-5 rounded object-cover flex-shrink-0"
+                                            />
+                                        ) : (
+                                            <ImageIcon size={12} className="text-gray-400 flex-shrink-0" />
+                                        )}
+                                        <span className="truncate max-w-[11rem] text-gray-300">{a.fileName}</span>
+                                        <button
+                                            onClick={() => setAttached((prev) => prev.filter((x) => x.id !== a.id))}
+                                            aria-label={`Remove ${a.fileName}`}
+                                            className="p-0.5 rounded text-gray-500 hover:text-white transition-colors"
+                                        >
+                                            <XIcon size={11} />
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 <div className="flex items-end gap-2">
+                    <input
+                        ref={fileRef}
+                        type="file"
+                        multiple
+                        accept={ACCEPTED_TYPES.join(',')}
+                        onChange={(e) => void onFilesPicked(e.target.files)}
+                        className="hidden"
+                    />
+                    <button
+                        onClick={() => fileRef.current?.click()}
+                        disabled={uploading}
+                        title={`Attach a file (max ${MAX_UPLOAD_BYTES / 1024 / 1024} MB)`}
+                        aria-label="Attach a file"
+                        className="flex-shrink-0 p-2.5 rounded-lg border bg-black/40 border-white/10 text-gray-400 hover:text-white hover:border-fuchsia-500/40 disabled:opacity-40 transition-all"
+                    >
+                        {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
+                    </button>
+
                     <button
                         onClick={toggleVoice}
                         title={voiceLive ? 'End voice conversation' : 'Talk to Tuu Beetuu'}
@@ -617,7 +723,7 @@ const AssistantPanel: React.FC<Props> = ({ mode, className = '' }) => {
                     />
                     <button
                         onClick={submit}
-                        disabled={busy || !input.trim()}
+                        disabled={busy || uploading || (!input.trim() && attached.length === 0)}
                         aria-label="Send"
                         className={`flex items-center gap-2 ${compact ? 'px-3 py-2.5' : 'px-5 py-3'} bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg font-urbanist font-medium text-sm text-white transition-all`}
                     >

@@ -1,28 +1,23 @@
-﻿Replace the unreliable search provider with OpenAI hosted web search
+﻿Add file attachments as referenceable assets (Option A)
 
-The first research implementation scraped DuckDuckGo's HTML endpoint. That was
-the wrong approach and it failed as such approaches do: verified locally, the
-endpoint now answers HTTP 202 with a bot-detection page rather than results
-(no result__a, no uddg=, anomaly detected). The failure mode was an empty result
-set that looked like "nothing exists", and the agent correctly refused to invent
-findings rather than papering over it.
+The owner can attach images and PDFs in the chat. Files go to a public
+site-assets bucket, are recorded in admin_uploads, and the assistant is told
+their names and URLs so it can reference them -- "use this as the blog cover
+image" -- via a new list_assets tool.
 
-Replaced with the Responses API and the hosted web_search tool. That reuses the
-OPENAI_API_KEY already present for voice, so no new vendor, and returns grounded
-text plus url_citation annotations rather than scraped markup.
+Deliberately NOT included: the assistant cannot see inside these files. Nothing
+here gives the model any ability to interpret an image, so it is told to say
+plainly that it cannot view photos. Reading a screenshot's contents is Option B
+and needs a vision model plus its own safety pass, because text inside an image
+is another injection surface.
 
-- tool_choice is "required": this tool exists to search, so letting the model
-  decline would reintroduce the same silent-empty-result failure.
-- Sources are collected from both inline citations and the web_search_call
-  action sources, so the list reflects everything consulted, not just what was
-  cited.
-- Distinct error messages for 401 (bad key), 404 (unknown model) and 429 (rate
-  limit), so a failure names its own cause.
-- RESEARCH_MODEL defaults to gpt-5.6-luna; override with that secret.
-- fetch_page is unchanged and still works: plain page fetching returned 200
-  throughout, so reading a URL the owner supplies remains a valid path.
-- Research budget raised to 120s with up to 6 steps, since real search takes
-  longer than the earlier stub.
-
-Also: research now reports clearly when OPENAI_API_KEY is missing instead of
-failing obscurely.
+- New migration: bucket, storage policies (public read, admin-only write and
+  delete), and the admin_uploads table with RLS gated on is_admin().
+- lib/uploads.ts validates type and size, generates a safe unique object path
+  rather than trusting the uploaded filename, and reports metadata-save failures
+  honestly instead of claiming the whole operation succeeded.
+- Attachments are described to the assistant as plain text appended to the
+  message, marked as referenceable-but-not-readable.
+- UI: paperclip button, image thumbnails, per-file removal, and an
+  attachment-only message is valid so a file can be handed over for later use.
+- Limits: 8 MB, images and PDF only.

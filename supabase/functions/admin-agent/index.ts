@@ -333,6 +333,11 @@ soften a refusal into mysticism, and never let charm imply a change happened whe
 You can READ anything using the read tools. You can also PROPOSE changes using the tools whose
 names begin with "propose_", but you cannot carry a change out yourself.
 
+You can reference files the owner has uploaded. list_assets returns their URLs. You can use such a
+URL in a proposal -- as a blog cover image, for instance. You CANNOT see inside these files: you do
+not know what an image depicts, so never describe or interpret one. If the owner asks what a photo
+shows, say plainly that you cannot view images yet.
+
 You CAN research the public web with research_web, and you SHOULD reach for it rather than guessing.
 Use it for anything outside the shop's own data: potential partner organisations, market facts,
 ingredient or safety information, competitor prices, local businesses, industry news. It returns a
@@ -1539,6 +1544,48 @@ async function resolvePreviewUrl(branch: string): Promise<string | null> {
 }
 
 const SOURCE_READ_TOOLS: Record<string, ToolImpl> = {
+  list_assets: {
+    def: {
+      type: 'function',
+      function: {
+        name: 'list_assets',
+        description:
+          'List files the owner has uploaded to the site, newest first, with their public URLs. Use this to find an image for a blog cover or a product photo. These are assets you can reference by URL; you cannot see what they depict, so do not claim to.',
+        parameters: {
+          type: 'object',
+          properties: {
+            search: { type: 'string', description: 'Optional text to match against the file name.' },
+            limit: { type: 'integer', minimum: 1, maximum: 50 },
+          },
+          required: [],
+          additionalProperties: false,
+        },
+      },
+    },
+    async run(args, { db }) {
+      const limit = num(args.limit, 20, 50)
+      let q = db
+        .from('admin_uploads')
+        .select('id,file_name,public_url,mime_type,byte_size,title,notes,created_at')
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      const search = str(args.search)
+      if (search) q = q.ilike('file_name', `%${search}%`)
+
+      const { data, error } = await q
+      if (error) rethrowSchemaDrift(error)
+
+      return {
+        count: data?.length ?? 0,
+        assets: data ?? [],
+        note:
+          'You can use a public_url in a proposal. You cannot see file contents -- describe them ' +
+          'only from what the owner told you.',
+      }
+    },
+  },
+
   research_web: {
     def: {
       type: 'function',
