@@ -1,35 +1,30 @@
-﻿Add Tier 3 publishing: draft and explicitly confirm, never agent-sent
+﻿Add image generation via the OpenAI Image API
 
-Tier 3 is different from everything built so far: a price change, a theme change
-or a merge can be reverted. An email that has left the building cannot be. The
-model here is therefore different too.
+generate_image creates an image from a description and saves it into the
+site-assets bucket, recorded in admin_uploads, so the result behaves exactly like
+any other asset: list_assets finds it, and it can be used as a blog cover or in a
+page edit with no special handling. Shares the OPENAI_API_KEY already present for
+voice and research, so no new secret.
 
-The boundary: the assistant can draft and revise, and there is NO tool that can
-send, schedule or publish. Verified -- nothing in the registry matches
-send/publish/schedule. Dispatching happens only through a publish action on the
-Edge Function, triggered by a named confirmation in the admin UI.
+On flyers, the tool and the prompt both push back rather than pretending. OpenAI's
+own docs state that image models remain weak at precise text placement and
+struggle with layout-sensitive compositions, and a flyer is exactly that. A
+plausible-looking flyer with a subtly wrong phone number or date is worse than no
+flyer, because nobody re-reads a number they did not type. So:
+  - generate_image is described as for artwork, backgrounds and photography
+  - the prompt instructs the agent to refuse whole-layout requests and offer the
+    split that works: generate the artwork, then set the words as real content
+  - when a prompt looks text-heavy (flyer, poster, banner, "that says", phone
+    number, address), the result carries a warning telling the owner to verify
+    every word and number
 
-- New migration: publisher, published_at, publish_ref, publish_error, approved_at,
-  approved_by and sent_snapshot on marketing_drafts, plus a status state machine
-  draft -> approved -> sending -> sent/failed and a CHECK constraint that a row
-  cannot claim sent without a timestamp. The guard is in the database, not just
-  in code, so a bug in the Edge Function cannot produce a false success.
-- Claim-before-dispatch: the row is stamped sending before the network call, so
-  two concurrent sends cannot both fire.
-- A stale claim is NOT auto-retried. If dispatch did not report back it is unknown
-  whether it was delivered, so the owner is told to check the destination. An
-  automatic retry there would risk sending twice, which is the worse failure.
-- sent_snapshot records the exact payload, because ody can still be edited
-  afterwards and the point is to know what actually left.
-- Toolchain: list_marketing_drafts, get_marketing_draft,
-  propose_marketing_draft_edit. A sent draft cannot be revised.
-- Publishers: Kit (v4 broadcasts) for newsletters, plus a generic
-  PUBLISH_WEBHOOK_URL for Zapier/Make/Buffer and similar. Kit broadcasts are
-  created with public:false so there is still a final confirmation inside Kit.
-- Channels that cannot be automated (partner outreach, press) are refused with a
-  plain explanation rather than a button that fails.
-- New /admin/drafts page. Two deliberate frictions, since sending is
-  irreversible: the full text is shown before any send control appears, and the
-  confirmation requires typing SEND rather than clicking a button.
-
-Also fixes a duplicate tool-registry declaration introduced while wiring this in.
+Also:
+- New migration: image_generations, recording prompt, model, size, quality and
+  output, since output is not reproducible across settings.
+- Failure messages name their own cause: a 403 or verification error tells the
+  owner to check API Organization Verification, which is the usual first-run
+  blocker for GPT Image models and would otherwise look like a code fault.
+- moderation_blocked returns a plain explanation rather than a raw error body.
+- Generation timeout is 150s, since complex prompts can take up to two minutes.
+- list_image_generations lets the agent reuse an existing image instead of
+  generating a near-duplicate.
