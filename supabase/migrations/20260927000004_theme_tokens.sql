@@ -37,7 +37,19 @@ grant select on table public.theme_settings to anon, authenticated;
 grant all on table public.theme_settings to service_role;
 
 -- ---------------------------------------------------------------------------
--- Seed. Only inserted if absent, so re-running never overwrites a live theme.
+-- Seed.
+--
+-- Three keys, forming a base layer plus per-surface overrides:
+--   tokens        -> base, inherited by both surfaces
+--   tokens:site   -> storefront-only override  (sparse patch)
+--   tokens:admin  -> admin-only override       (sparse patch)
+--
+-- The overrides start EMPTY on purpose. They are merges, not full sets, so an
+-- override only needs to carry the tokens it changes; everything else keeps
+-- following the base. That is what lets "make the admin trippy" leave the
+-- storefront untouched without freezing the admin at stale values.
+--
+-- on conflict do nothing, so re-running never overwrites a live theme.
 -- ---------------------------------------------------------------------------
 insert into public.theme_settings (key, value)
 values (
@@ -57,6 +69,10 @@ values (
     'grain',           12    -- 0-100, subtle texture overlay
   )::jsonb
 )
+on conflict (key) do nothing;
+
+insert into public.theme_settings (key, value)
+values ('tokens:site', '{}'::jsonb), ('tokens:admin', '{}'::jsonb)
 on conflict (key) do nothing;
 
 

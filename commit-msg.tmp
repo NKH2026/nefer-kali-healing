@@ -1,19 +1,22 @@
-Add theme tokens: data-driven visual control of the whole site
+﻿Scope theme tokens per surface; make the agent propose instead of asking
 
-The site's colours, glow, motion and canvas depth are now stored as a row in
-theme_settings rather than living only in CSS, so the admin assistant can propose
-a visual change and have it apply with no build and no deploy.
+Two problems with the first cut of the theme system:
 
-- Ten tokens with hard clamps: three accent hues, saturation, glow, motion speed,
-  canvas depth, hue cycling, contrast and grain. Plus five named vibe presets.
-- get_theme (read) and propose_theme_change (write) tools. A theme change goes
-  through the same proposal, fingerprint and undo path as every other change.
-- lib/theme.ts is the single source of truth for the token vocabulary.
-  scripts/sync-theme-tokens.mjs copies it into the Edge Function directory, since
-  a function cannot import from ../../lib. Run it after editing lib/theme.ts.
-- ThemeProvider applies the tokens as CSS custom properties on the document, so
-  one change moves the storefront and the admin panel together.
-- index.css styles are additive and opt-in behind [data-tb-theme="on"], so if the
-  theme fails to load the site keeps exactly its previous appearance.
-- Confirmation cards render hue swatches, since a bare number tells you nothing
-  about the colour you are about to approve.
+1. One token set drove the storefront and admin panel together, so making the
+   admin trippy unavoidably hit the customer-facing shop. Tokens are now a base
+   layer (key tokens) plus sparse per-surface overrides (tokens:site,
+   tokens:admin), merged at load. A proposal targets the narrowest surface that
+   satisfies the request, and the confirmation card names that surface.
+
+2. The agent asked for permission instead of proposing. The proposal card IS the
+   confirmation step, so asking in prose wastes a turn and leaves the owner with
+   nothing to review. The prompt now requires it to make the call.
+
+- ThemeProvider takes a surface prop and is mounted twice: once at the app root
+  for the site, once in the admin layout. It applies CSS variables to its own
+  element rather than documentElement, so the two surfaces cannot clobber each
+  other, and the admin surface paints its own opaque canvas over the site's.
+- propose_theme_change takes a required surface argument.
+- get_theme returns base, both effective surfaces, and the raw overrides.
+- resolveTokens() merges base over sparse override.
+- Migration seeds the two empty overrides; re-running changes nothing.

@@ -114,8 +114,9 @@
     50%      { opacity: calc(var(--tb-glow) * 0.95); }
 }
 
-/* Fixed colour wash behind all content. Pointer-events none so it can never
-   intercept a click, and z-index -1 so it never covers content. */
+/* Fixed colour wash, per surface.
+   Applied on the element that carries [data-tb-theme], so the site and admin
+   providers each paint their own layer and cannot clobber one another. */
 [data-tb-theme='on']::before {
     content: '';
     position: fixed;
@@ -128,6 +129,15 @@
         radial-gradient(ellipse 90% 60% at 50% 108%, hsl(var(--tb-hue-3) var(--tb-sat) 50% / calc(var(--tb-glow) * 0.35)), transparent 65%),
         var(--tb-bg);
     animation: tb-breathe calc(14s * var(--tb-speed)) ease-in-out infinite;
+}
+
+/* The admin surface sits on top of the site surface, so it needs its own opaque
+   canvas. Without this the storefront wash shows through the admin panel. */
+[data-tb-surface='admin']::before {
+    background:
+        radial-gradient(ellipse 70% 45% at 50% 0%, hsl(var(--tb-hue-1) var(--tb-sat) 55% / calc(var(--tb-glow) * 0.45)), transparent 65%),
+        radial-gradient(ellipse 90% 60% at 50% 110%, hsl(var(--tb-hue-3) var(--tb-sat) 50% / calc(var(--tb-glow) * 0.3)), transparent 65%),
+        hsl(var(--tb-hue-1) 22% calc(var(--tb-bg-l, 2) * 1%));
 }
 
 /* Grain: an optional texture layer, off at 0. Uses a tiny inline SVG noise so

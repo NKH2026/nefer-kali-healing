@@ -36,11 +36,15 @@
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import {
   DEFAULT_TOKENS,
+  SURFACE_LABEL,
+  THEME_KEYS,
   TOKEN_KEYS,
   TOKEN_SPEC,
   VIBE_PRESETS,
   clampTokens,
   normaliseTokens,
+  resolveTokens,
+  type ThemeSurface,
   type ThemeTokens,
 } from './_shared/themeTokens.ts'
 
@@ -281,12 +285,17 @@ soften a refusal into mysticism, and never let charm imply a change happened whe
 You can READ anything using the read tools. You can also PROPOSE changes using the tools whose
 names begin with "propose_", but you cannot carry a change out yourself.
 
-You CAN change the look of the site. The site's colours, glow, motion and depth are stored as
-theme tokens, not baked into code, and you can propose changes to them with
-propose_theme_change. This affects the public storefront AND the admin panel together, including
-your own panel's styling. Call get_theme first to see the current values and the named vibe
-presets. This is how to answer requests like "make it more psychedelic", "warmer", "calmer" or
-"more purple" -- it is a real capability, not something to refuse.
+You CAN change the look of the site, and you can do it PER SURFACE. The site's colours, glow,
+motion and depth are stored as theme tokens rather than baked into code, and you change them with
+propose_theme_change. Target the public storefront, the admin panel, or both independently -- so
+"make the admin trippy" does NOT have to drag the customer-facing shop along with it. Call
+get_theme first to see current values and any existing per-surface overrides. Always choose the
+narrowest surface that satisfies the request.
+
+When a request is something you can actually do, PROPOSE IT. Do not ask permission in prose first.
+The proposal card IS the confirmation step -- the owner reviews the exact before/after values
+there and decides. Asking "want me to send that through?" and stopping wastes a turn and leaves
+them with nothing to look at. Make the call, then let the card do its job.
 
 You CANNOT change page layout, add new sections, edit body copy on individual pages, or alter
 code. If asked for those, say plainly that it needs the source-editing capability, which is not
@@ -1236,12 +1245,21 @@ const THEME_READ_TOOLS: Record<string, ToolImpl> = {
       const { data, error } = await db
         .from('theme_settings')
         .select('key,value,updated_at')
-        .eq('key', 'tokens')
-        .maybeSingle()
+        .in('key', ['tokens', THEME_KEYS.site, THEME_KEYS.admin])
       if (error) rethrowSchemaDrift(error)
 
+      const byKey = new Map((data ?? []).map((r) => [r.key, r.value]))
+      const base = normaliseTokens(byKey.get('tokens'))
+
       return {
-        current: normaliseTokens(data?.value),
+        base,
+        storefront: resolveTokens(byKey.get('tokens'), byKey.get(THEME_KEYS.site)),
+        admin: resolveTokens(byKey.get('tokens'), byKey.get(THEME_KEYS.admin)),
+        // Sparse overrides only. Empty means that surface follows the base.
+        overrides: {
+          storefront: clampTokens((byKey.get(THEME_KEYS.site) ?? {}) as Record<string, unknown>),
+          admin: clampTokens((byKey.get(THEME_KEYS.admin) ?? {}) as Record<string, unknown>),
+        },
         token_reference: TOKEN_KEYS.map((k) => ({
           token: k,
           label: TOKEN_SPEC[k].label,
@@ -1254,7 +1272,8 @@ const THEME_READ_TOOLS: Record<string, ToolImpl> = {
           description: p.description,
         })),
         note:
-          'This theme drives the public storefront AND the admin panel together. It changes no data.',
+          'base is inherited by both surfaces. storefront and admin are the effective values, ' +
+          'including each surface\'s own override. Theme changes alter no data.',
       }
     },
   },
@@ -1267,10 +1286,18 @@ const THEME_WRITE_TOOLS: Record<string, ToolImpl> = {
       function: {
         name: 'propose_theme_change',
         description:
-          "Propose a change to the site's visual theme -- colours, glow, motion and depth -- across the public storefront and the admin panel together. Provide only the tokens you want to change; everything else stays as it is. Call get_theme first to see current values. Creates a proposal for approval; changes nothing by itself.",
+          "Propose a change to the site's visual theme -- colours, glow, motion and depth. You can target the public storefront, the admin panel, or both independently, so changing one does not force a change on the other. Provide only the tokens you want to change. Call get_theme first for current values and existing overrides. Creates a proposal for approval; changes nothing by itself.",
         parameters: {
           type: 'object',
           properties: {
+            surface: {
+              type: 'string',
+              enum: ['storefront', 'admin', 'both'],
+              description:
+                'Which part of the site this affects. "storefront" is what customers see; ' +
+                '"admin" is the admin panel only; "both" writes the shared base layer. ' +
+                'Choose the NARROWEST surface that satisfies the request.',
+            },
             tokens: {
               type: 'object',
               description: 'Only the tokens to change, as whole numbers.',
@@ -1296,20 +1323,33 @@ const THEME_WRITE_TOOLS: Record<string, ToolImpl> = {
             },
             reason: { type: 'string', description: 'Short reason, in your own voice.' },
           },
-          required: [],
+          required: ['surface'],
           additionalProperties: false,
         },
       },
     },
     async propose(args, { db }) {
+      const requestedSurface = str(args.surface) ?? 'both'
+      const surface: ThemeSurface =
+        requestedSurface === 'storefront' ? 'site' : requestedSurface === 'admin' ? 'admin' : 'both'
+
       const { data, error } = await db
         .from('theme_settings')
-        .select('value')
-        .eq('key', 'tokens')
-        .maybeSingle()
+        .select('key,value')
+        .in('key', ['tokens', THEME_KEYS.site, THEME_KEYS.admin])
       if (error) rethrowSchemaDrift(error)
 
-      const before = normaliseTokens(data?.value)
+      const byKey = new Map((data ?? []).map((r) => [r.key, r.value]))
+      const base = normaliseTokens(byKey.get('tokens'))
+      const targetKey = surface === 'both' ? 'tokens' : THEME_KEYS[surface]
+
+      // Editing a surface means editing its SPARSE override, so the comparison
+      // shown to the admin is against that override merged over the base --
+      // i.e. what that surface actually looks like right now.
+      const layerBefore: ThemeTokens =
+        surface === 'both'
+          ? base
+          : { ...base, ...clampTokens((byKey.get(targetKey) ?? {}) as Record<string, unknown>) }
 
       const presetKey = str(args.preset)
       if (presetKey && !VIBE_PRESETS[presetKey]) {
@@ -1333,11 +1373,11 @@ const THEME_WRITE_TOOLS: Record<string, ToolImpl> = {
       }
 
       const presetTokens = presetKey ? VIBE_PRESETS[presetKey].tokens : {}
-      const after = normaliseTokens({ ...before, ...presetTokens, ...clampTokens(requested) })
+      const after = normaliseTokens({ ...layerBefore, ...presetTokens, ...clampTokens(requested) })
 
-      const preview = describeTokenDelta(before, after)
+      const preview = describeTokenDelta(layerBefore, after)
       if (preview.length === 0) {
-        throw new Error('That would not change anything -- the theme already has those values.')
+        throw new Error('That would not change anything -- those values are already in place.')
       }
 
       const reason = str(args.reason)
@@ -1345,15 +1385,14 @@ const THEME_WRITE_TOOLS: Record<string, ToolImpl> = {
 
       return {
         summary:
-          `Change the site theme: ${label}` +
+          `Change ${SURFACE_LABEL[surface]}: ${label}` +
           (presetKey ? ` (applying the "${VIBE_PRESETS[presetKey].label}" vibe)` : '') +
           (reason ? ` — ${reason}` : ''),
         target_table: 'theme_settings',
-        target_id: null,
-        before: { key: 'tokens', value: before },
-        after: { key: 'tokens', value: after },
+        target_id: targetKey,
+        before: { key: targetKey, value: layerBefore },
+        after: { key: targetKey, value: after },
         preview,
-        // Affects every page for every visitor, but is trivially reversible.
         risk: 'medium' as const,
         reversible: true,
       }

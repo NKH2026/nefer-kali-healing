@@ -21,6 +21,30 @@
  * both the UI and the Edge Function.
  */
 
+/**
+ * Surfaces a theme can target.
+ *
+ *   site  — the customer-facing storefront
+ *   admin — the admin panel
+ *
+ * Tokens live in a base layer plus optional per-surface overrides, so "make the
+ * admin trippy" can be done without dragging the shop along with it. Asking for
+ * `both` writes to the base layer, which both surfaces inherit.
+ */
+export type ThemeSurface = 'site' | 'admin' | 'both';
+
+export const THEME_KEYS: Record<ThemeSurface, string> = {
+    site: 'tokens:site',
+    admin: 'tokens:admin',
+    both: 'tokens',
+};
+
+export const SURFACE_LABEL: Record<ThemeSurface, string> = {
+    site: 'the public storefront only',
+    admin: 'the admin panel only',
+    both: 'the storefront and the admin panel together',
+};
+
 export interface ThemeTokens {
     /** Primary accent, HSL degrees. */
     hue1: number;
@@ -139,4 +163,19 @@ export function clampTokens(input: Partial<Record<string, unknown>>): Partial<Th
 export function normaliseTokens(stored: unknown): ThemeTokens {
     if (!stored || typeof stored !== 'object') return { ...DEFAULT_TOKENS };
     return { ...DEFAULT_TOKENS, ...clampTokens(stored as Record<string, unknown>) };
+}
+
+/**
+ * Combines the base layer with a surface's own overrides.
+ *
+ * A surface override is a SPARSE patch, not a full token set, so changing one
+ * aspect of the admin panel does not freeze every other token at whatever value
+ * it happened to have at the time.
+ */
+export function resolveTokens(base: unknown, override: unknown): ThemeTokens {
+    return {
+        ...DEFAULT_TOKENS,
+        ...clampTokens((base ?? {}) as Record<string, unknown>),
+        ...clampTokens((override ?? {}) as Record<string, unknown>),
+    };
 }

@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { LayoutDashboard, FileText, ShoppingBag, MessageSquare, LogOut, Home, Tag, Calendar, Package, RefreshCw, Settings, Menu, X, Sparkles } from 'lucide-react';
 import { AssistantProvider } from './useAssistant';
 import AssistantWidget from './AssistantWidget';
+import { ThemeProvider } from '../../lib/ThemeProvider';
 
 const AdminLayout = () => {
     const navigate = useNavigate();
@@ -34,8 +35,9 @@ const AdminLayout = () => {
     }, [location.pathname]);
 
     return (
+        <ThemeProvider surface="admin">
         <AssistantProvider>
-        <div className="min-h-screen bg-[#0a0a0a] text-white flex relative">
+        <div className="min-h-screen text-white flex relative">
             {/* Mobile Header */}
             <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-black/90 backdrop-blur-md border-b border-white/10 p-4 flex items-center justify-between">
                 <h1 className="text-lg font-cinzel text-purple-400 font-bold tracking-wider">NKH Admin</h1>
@@ -120,6 +122,7 @@ const AdminLayout = () => {
             {!location.pathname.startsWith('/admin/assistant') && <AssistantWidget />}
         </div>
         </AssistantProvider>
+        </ThemeProvider>
     );
 };
 

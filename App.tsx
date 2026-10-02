@@ -84,7 +84,7 @@ const App: React.FC = () => {
     checkConnection();
   }, []);
   return (
-    <ThemeProvider>
+    <ThemeProvider surface="site">
       <CartProvider>
         <Router>
           <ScrollToTop />
