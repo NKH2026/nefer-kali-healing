@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "check:functions": "node scripts/check-edge-functions.mjs",
     "deploy:agent": "node scripts/check-edge-functions.mjs && supabase functions deploy admin-agent",
-    "sync:theme": "node scripts/sync-theme-tokens.mjs"
+    "sync:theme": "node scripts/sync-theme-tokens.mjs",
+    "build:migrations": "node scripts/build-all-migrations.mjs"
   },
   "dependencies": {
     "@stripe/stripe-js": "^8.6.3",
