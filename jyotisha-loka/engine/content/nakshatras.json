@@ -1,0 +1,298 @@
+{
+  "id": "nakshatras",
+  "name": "The Nakshatras",
+  "icon": "✨",
+  "oneLine": "The twenty-seven lunar mansions: the Moon's daily houses among the stars, their deities and symbols, and the birth star.",
+  "definition": [
+    {
+      "text": "The nakṣatras — usually written nakshatras — are the twenty-seven 'lunar mansions' of Jyotish: equal divisions of the sidereal zodiac, each roughly the distance the Moon travels in a day.",
+      "evidence": "established",
+      "sources": [
+        "pingree-1981"
+      ]
+    },
+    {
+      "text": "Each nakshatra spans 13°20′ of the ecliptic, so twenty-seven of them fill the full 360°. Each is named for a star or star group that lies in or near it.",
+      "evidence": "established",
+      "sources": [
+        "plofker-2009"
+      ]
+    }
+  ],
+  "whyItMatters": [
+    {
+      "text": "The nakshatras are older than the twelve signs in Indian sources. They appear in Vedic literature and organise the earliest Indian calendar.",
+      "evidence": "established",
+      "sources": [
+        "pingree-1981",
+        "plofker-2009"
+      ]
+    },
+    {
+      "text": "They are still in daily use: a person's janma nakshatra, the mansion the Moon held at their birth, is widely used in naming, in matching for marriage, and in choosing times.",
+      "evidence": "established",
+      "needsSource": true
+    },
+    {
+      "text": "The Moon moves through all twenty-seven in about 27.3 days, so watching it change mansions is one of the simplest ways to learn the sky by eye.",
+      "evidence": "established",
+      "editorial": true
+    }
+  ],
+  "howItIsStudied": [
+    {
+      "text": "Historians compare the nakshatra lists in Vedic texts with later ones, tracing changes in order, number and the stars named.",
+      "evidence": "established",
+      "sources": [
+        "pingree-1981"
+      ]
+    },
+    {
+      "text": "Each mansion's deity, symbol and qualities are learned in the tradition from the classical texts and from teachers, and are studied here as tradition.",
+      "evidence": "traditional",
+      "sources": [
+        "santhanam-bphs"
+      ]
+    }
+  ],
+  "keyTerms": [
+    {
+      "term": "Nakṣatra",
+      "gloss": "A lunar mansion: one of twenty-seven equal 13°20′ divisions of the sidereal zodiac."
+    },
+    {
+      "term": "Pada",
+      "gloss": "A quarter of a nakshatra, 3°20′ wide. Twenty-seven nakshatras of four padas each make 108 padas."
+    },
+    {
+      "term": "Janma nakṣatra",
+      "gloss": "The birth star: the nakshatra the Moon occupied at the moment of birth."
+    },
+    {
+      "term": "Abhijit",
+      "gloss": "A twenty-eighth nakshatra found in older lists, between Uttara Āṣāḍhā and Śravaṇa, usually left out of the twenty-seven-fold scheme."
+    },
+    {
+      "term": "Nakṣatra lord",
+      "gloss": "The graha that rules a nakshatra. The nine grahas rule them in a repeating order, three mansions each."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "lunar-mansions",
+      "title": "The Moon's twenty-seven houses",
+      "minutes": 6,
+      "objectives": [
+        "Explain why there are twenty-seven nakshatras and how wide each is.",
+        "Describe how the Moon moves through them."
+      ],
+      "body": [
+        {
+          "text": "The Moon goes once round the sky against the stars in about 27.3 days — the sidereal month. Dividing the circle into twenty-seven gives the Moon roughly one mansion for each day and night.",
+          "evidence": "established",
+          "sources": [
+            "plofker-2009"
+          ]
+        },
+        {
+          "text": "Each mansion is 13°20′ wide. Its name comes from a star or group of stars — Kṛttikā is the Pleiades, Rohiṇī is Aldebaran, Chitrā is Spica, Svātī is Arcturus.",
+          "evidence": "established",
+          "sources": [
+            "pingree-1981"
+          ]
+        },
+        {
+          "text": "Early Vedic lists begin with Kṛttikā, the Pleiades. Later lists, and Jyotish today, begin with Aśvinī at the start of Meṣa (Aries).",
+          "evidence": "established",
+          "sources": [
+            "pingree-1981"
+          ]
+        },
+        {
+          "text": "Older lists also include a twenty-eighth mansion, Abhijit, near the star Vega. The twenty-seven-fold scheme of equal divisions is the one used in calendars and charts.",
+          "evidence": "established",
+          "sources": [
+            "pingree-1981"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deities-and-symbols",
+      "title": "Deities, symbols and lords",
+      "minutes": 8,
+      "objectives": [
+        "Give the deity and symbol of at least five nakshatras.",
+        "Explain the order in which the grahas rule the nakshatras."
+      ],
+      "body": [
+        {
+          "text": "Every nakshatra has a presiding deity and a symbol. Aśvinī belongs to the Aśvins, the divine physicians, and its symbol is a horse's head. Bharaṇī belongs to Yama; Kṛttikā to Agni, the fire, with a blade for its symbol.",
+          "evidence": "traditional",
+          "sources": [
+            "santhanam-bphs"
+          ]
+        },
+        {
+          "text": "Rohiṇī, the ruddy one, belongs to Prajāpati and is pictured as a chariot. Mṛgaśirā, the deer's head, belongs to Soma. Ārdrā, the teardrop, belongs to Rudra. Puṣya, 'nourishing', belongs to Bṛhaspati, the teacher of the gods.",
+          "evidence": "traditional",
+          "sources": [
+            "santhanam-bphs"
+          ]
+        },
+        {
+          "text": "Mūla, 'the root', belongs to Nirṛti and is pictured as a bundle of roots. Svātī belongs to Vāyu, the wind, and is pictured as a young sprout bending in the breeze. Revatī, the last, belongs to Pūṣan, the guide of travellers.",
+          "evidence": "traditional",
+          "sources": [
+            "santhanam-bphs"
+          ]
+        },
+        {
+          "text": "The grahas rule the nakshatras in a fixed repeating order — Ketu, Venus, Sun, Moon, Mars, Rāhu, Jupiter, Saturn, Mercury — three times round. So Aśvinī, Maghā and Mūla are all Ketu's; Revatī, the twenty-seventh, is Mercury's.",
+          "evidence": "traditional",
+          "sources": [
+            "santhanam-bphs"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "birth-star",
+      "title": "Padas and the birth star",
+      "minutes": 6,
+      "objectives": [
+        "Explain what a pada is and why there are 108 of them.",
+        "Describe what a janma nakshatra is and what is needed to find it."
+      ],
+      "body": [
+        {
+          "text": "Each nakshatra is split into four padas, 'feet', of 3°20′. Twenty-seven nakshatras of four padas each make 108 — one of the reasons the number is held sacred.",
+          "evidence": "traditional",
+          "sources": [
+            "santhanam-bphs"
+          ]
+        },
+        {
+          "text": "The janma nakshatra is the mansion the Moon held at the moment of birth. Because the Moon moves about 13° a day, the birth date alone is often enough, but near a boundary the time and place of birth decide it.",
+          "evidence": "established",
+          "editorial": true
+        },
+        {
+          "text": "In the tradition the birth star sets the order of the Vimśottarī daśā, a 120-year cycle of planetary periods, starting from the lord of the birth nakshatra.",
+          "evidence": "traditional",
+          "sources": [
+            "santhanam-bphs"
+          ]
+        },
+        {
+          "text": "In the realm a member's birth star is worked out on their own device. Only the nakshatra is kept, never the birth date, time or place — a birth time is personal information, and the mansion is all the realm needs.",
+          "evidence": "established",
+          "editorial": true
+        }
+      ]
+    }
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "prompt": "How wide is each nakshatra?",
+      "options": [
+        "30°",
+        "13°20′",
+        "12°",
+        "3°20′"
+      ],
+      "answer": 1,
+      "explanation": "Twenty-seven equal divisions of 360° are 13°20′ each. 30° is a rāśi, 12° is a tithi of the Moon's lead over the Sun, and 3°20′ is a pada.",
+      "evidence": "established"
+    },
+    {
+      "id": "q2",
+      "type": "truefalse",
+      "prompt": "The earliest Vedic lists of nakshatras begin with Kṛttikā, the Pleiades.",
+      "answer": true,
+      "explanation": "Early lists start with Kṛttikā; later lists, and Jyotish today, start with Aśvinī at the beginning of Meṣa.",
+      "evidence": "established"
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "prompt": "Which nakshatra is 'the root', pictured as a bundle of roots?",
+      "options": [
+        "Svātī",
+        "Mūla",
+        "Rohiṇī",
+        "Revatī"
+      ],
+      "answer": 1,
+      "explanation": "Mūla means root. Svātī is the young sprout of Vāyu, Rohiṇī the chariot of Prajāpati, and Revatī belongs to Pūṣan.",
+      "evidence": "traditional"
+    },
+    {
+      "id": "q4",
+      "type": "multi",
+      "prompt": "Which of these nakshatras are ruled by Ketu? (choose all that apply)",
+      "options": [
+        "Aśvinī",
+        "Maghā",
+        "Rohiṇī",
+        "Mūla",
+        "Revatī"
+      ],
+      "answer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "The lords repeat every nine mansions starting with Ketu, so the first, tenth and nineteenth — Aśvinī, Maghā and Mūla — are Ketu's. Rohiṇī is the Moon's; Revatī is Mercury's.",
+      "evidence": "traditional"
+    },
+    {
+      "id": "q5",
+      "type": "single",
+      "prompt": "Why are there 108 padas?",
+      "options": [
+        "The Moon has 108 phases",
+        "Twenty-seven nakshatras each have four padas",
+        "There are 108 stars in the zodiac",
+        "Nine grahas times twelve days"
+      ],
+      "answer": 1,
+      "explanation": "27 × 4 = 108. (Nine grahas times twelve signs also makes 108, which the tradition notices too, but padas are quarters of nakshatras.)",
+      "evidence": "established"
+    },
+    {
+      "id": "q6",
+      "type": "truefalse",
+      "prompt": "The realm stores a member's birth date and time so it can recompute their birth star later.",
+      "answer": false,
+      "explanation": "Only the resulting nakshatra is kept. The birth details are used once, on the member's own device, and not saved.",
+      "evidence": "established"
+    }
+  ],
+  "workItLeadsTo": [
+    "Naked-eye astronomy: following the Moon through the star groups each night",
+    "History of Indian astronomy and Vedic literature",
+    "Calendar and festival reckoning, where many observances are set by nakshatra"
+  ],
+  "contested": [
+    {
+      "text": "Some writers date the Krittikā-first lists astronomically, arguing that they record the Pleiades rising near the spring equinox and so preserve observations from very early times. Others hold that such dating reads more precision into the texts than they contain.",
+      "evidence": "hypothesis",
+      "sources": [
+        "pingree-1981",
+        "plofker-2009"
+      ]
+    },
+    {
+      "text": "Whether the birth nakshatra describes a person's nature is a teaching of the tradition. It has not been shown in controlled study, and it is offered here as tradition rather than as a finding.",
+      "evidence": "traditional",
+      "editorial": true
+    }
+  ],
+  "related": [
+    "jyotish",
+    "panchanga"
+  ]
+}

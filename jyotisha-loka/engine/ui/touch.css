@@ -1,0 +1,600 @@
+/* The touch controls' styles, copied from the Per Ankh realm (ui/hud.css). */
+:root {
+  --ink: #e8e6ff;
+  --ink-dim: #9d99c8;
+  --void: #06050e;
+  --panel: rgba(14, 11, 30, 0.62);
+  --panel-line: rgba(150, 130, 255, 0.22);
+  --glow: #8f6bff;
+  --accent: #ff5ce1;
+  --font: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ------------------------------------------------------------ touch controls */
+
+#touch-controls {
+  display: none;
+}
+
+#touch-controls.active {
+  display: block;
+}
+
+#stick {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+
+#stick-base {
+  position: absolute;
+  width: 152px;
+  height: 152px;
+  margin-left: -76px;
+  margin-top: -76px;
+  border-radius: 50%;
+  border: 2px solid rgba(180, 160, 255, 0.35);
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(143, 107, 255, 0.16),
+    rgba(143, 107, 255, 0.05) 70%,
+    transparent 72%
+  );
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+#stick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #d9ccff, #8f6bff 70%);
+  box-shadow: 0 0 22px rgba(143, 107, 255, 0.7), inset 0 2px 6px rgba(255, 255, 255, 0.4);
+  transform: translate(-50%, -50%);
+}
+
+#look-hint {
+  position: fixed;
+  right: 18%;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(232, 230, 255, 0.4);
+  pointer-events: none;
+  z-index: 15;
+  animation: look-hint-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes look-hint-pulse {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 0.65; }
+}
+
+/* --------------------------------------------------------------- touch HUD */
+
+/* On a phone the bottom half belongs to the thumbs, so the mixer moves up. */
+body.touch-mode #mixer-panel {
+  top: 12px;
+  left: 12px;
+  bottom: auto;
+  width: 176px;
+}
+
+/* The dial is drawn in a fixed 420-unit space (see `_drawMinimap`), so a narrow
+   panel scales the whole map down with it: at 124px the 14px canvas labels
+   landed at about four CSS pixels, which made the best navigation aid in the
+   game decorative on the one device that needs it most. Wider panel, plus the
+   label sizing in hud.js. The vw cap keeps it clear of the mixer, which shares
+   the top row on a portrait screen. */
+body.touch-mode #minimap-panel {
+  top: 12px;
+  right: 12px;
+  width: min(190px, 40vw);
+}
+
+body.touch-mode #hints {
+  display: none;
+}
+
+body.touch-mode #now-playing {
+  top: 40%;
+}
+
+/* Compact the meters so they stay readable at 176px wide. */
+body.touch-mode #zone-meters {
+  padding: 0.45rem 0.6rem 0.55rem;
+  gap: 0.38rem;
+}
+
+body.touch-mode .zone-row {
+  grid-template-columns: 8px 1fr;
+  gap: 0.45rem;
+  font-size: 0.58rem;
+}
+
+body.touch-mode .zone-dot {
+  width: 8px;
+  height: 8px;
+}
+
+/* The distance column used to be dropped here to save width. It is the one
+   number on the panel that answers "how far", which on a 358 m world is the last
+   thing that should go rather than the first. The row tightens instead. */
+body.touch-mode .zone-db {
+  font-size: 0.5rem;
+}
+
+body.touch-mode .panel-title {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.52rem;
+  letter-spacing: 0.12em;
+}
+
+body.touch-mode #mixer-status {
+  display: none;
+}
+
+body.touch-mode #debug-readout {
+  display: none;
+}
+
+body.touch-mode #crosshair {
+  opacity: 0.5;
+} 
+
+/* ============================================================================
+   Jump pips, fast travel and volume
+   ========================================================================= */
+
+#jump-pips {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 26px);
+  transform: translateX(-50%);
+  display: flex;
+  gap: 7px;
+  z-index: 12;
+}
+
+#jump-pips span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #8f6bff;
+  box-shadow: 0 0 12px #8f6bff;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+/* Spent pips shrink away, so a glance tells you how many jumps are left. */
+#jump-pips span.spent {
+  opacity: 0.18;
+  transform: scale(0.6);
+  box-shadow: none;
+}
+
+#travel-panel {
+  bottom: 18px;
+  right: 18px;
+  width: 250px;
+  overflow: hidden;
+}
+
+#travel-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0.5rem 0.55rem;
+}
+
+.travel-button {
+  pointer-events: auto;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.36rem 0.5rem;
+  font-family: inherit;
+  font-size: 0.62rem;
+  color: var(--ink);
+  text-align: left;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--panel-line);
+  border-left: 3px solid var(--z, #fff);
+  border-radius: 7px;
+  transition: background 0.16s ease, transform 0.12s ease;
+}
+
+.travel-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(2px);
+}
+
+.travel-button:active {
+  transform: translateX(2px) scale(0.985);
+}
+
+.travel-button .tb-key {
+  flex: 0 0 auto;
+  min-width: 1.35em;
+  padding: 0.05em 0.3em;
+  border: 1px solid var(--panel-line);
+  border-radius: 4px;
+  font-size: 0.9em;
+  text-align: center;
+  color: var(--ink-dim);
+}
+
+.travel-button .tb-name {
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.travel-button .tb-dist {
+  flex: 0 0 auto;
+  font-size: 0.9em;
+  color: var(--ink-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.travel-button.is-here {
+  background: rgba(143, 107, 255, 0.22);
+  border-color: var(--glow);
+}
+
+.travel-button.is-here .tb-dist {
+  color: var(--ink);
+}
+
+#volume-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.55rem 0.6rem;
+  border-top: 1px solid var(--panel-line);
+}
+
+#volume-row button {
+  pointer-events: auto;
+  cursor: pointer;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--panel-line);
+  border-radius: 6px;
+}
+
+#volume-row button:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+#volume {
+  pointer-events: auto;
+  flex: 1 1 auto;
+  height: 4px;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 99px;
+  outline: none;
+}
+
+#volume::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d9ccff, #8f6bff);
+  box-shadow: 0 0 12px rgba(143, 107, 255, 0.8);
+  cursor: pointer;
+}
+
+#volume::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d9ccff, #8f6bff);
+  box-shadow: 0 0 12px rgba(143, 107, 255, 0.8);
+  cursor: pointer;
+}
+
+/* Volume readout flashes when it changes. */
+#travel-volume-label.bump {
+  color: #fff;
+  text-shadow: 0 0 12px var(--glow);
+}
+
+/* ------------------------------------------------------------- touch layout */
+
+/* On a phone the bottom-right belongs to the thumbs (run + jump), so travel
+   moves to the left edge, clear of both the stick zone and the look area. */
+body.touch-mode #travel-panel {
+  bottom: auto;
+  top: 50%;
+  right: auto;
+  left: 12px;
+  transform: translateY(-50%);
+  width: 158px;
+}
+
+body.touch-mode #travel-buttons {
+  padding: 0.4rem;
+  gap: 3px;
+}
+
+body.touch-mode .travel-button {
+  padding: 0.4rem 0.45rem;
+  font-size: 0.56rem;
+}
+
+/* The key badge goes instead of the distance. On a phone the number key is not a
+   thing anyone can press — the button itself is the control — so the badge is
+   pure decoration there, while the distance is what turns "I am lost" into
+   "240 m that way". */
+body.touch-mode .travel-button .tb-key {
+  display: none;
+}
+
+body.touch-mode #volume-row {
+  padding: 0.4rem;
+}
+
+body.touch-mode #travel-panel .panel-title {
+  padding: 0.35rem 0.5rem;
+  font-size: 0.5rem;
+}
+
+body.touch-mode #jump-pips {
+  top: calc(50% + 22px);
+}
+
+@media (max-height: 460px) {
+  /* Landscape phone: the panels get short, so trim them further. */
+  body.touch-mode #travel-panel {
+    width: 140px;
+  }
+  body.touch-mode .travel-button {
+    padding: 0.28rem 0.4rem;
+  }
+  body.touch-mode #mixer-panel {
+    width: 150px;
+  }
+}
+
+/* ------------------------------------------------------- run + jump buttons */
+
+#touch-buttons {
+  position: fixed;
+  right: 18px;
+  bottom: 24px;
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  pointer-events: none;
+}
+
+.touch-btn {
+  pointer-events: auto;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-family: inherit;
+  color: var(--ink);
+  border-radius: 50%;
+  border: 2px solid rgba(180, 160, 255, 0.4);
+  background: radial-gradient(circle at 40% 35%, rgba(143, 107, 255, 0.35), rgba(20, 14, 44, 0.6));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
+  touch-action: none;
+  transition: transform 0.1s ease, background 0.1s ease;
+}
+
+.touch-btn .tb-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.touch-btn .tb-text {
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+}
+
+/* Jump sits above and inboard of run, like a gamepad face button. */
+#btn-jump {
+  width: 78px;
+  height: 78px;
+  margin-bottom: 54px;
+}
+
+#btn-run {
+  width: 92px;
+  height: 92px;
+}
+
+/* Mount / dismount: a small pill inboard of the two big buttons, so it is
+   reachable without moving the thumb that is already flying. Hidden unless
+   something is actually in reach. */
+#btn-action {
+  width: 74px;
+  height: 46px;
+  border-radius: 23px;
+  align-self: center;
+  background: radial-gradient(circle at 40% 35%, rgba(255, 206, 92, 0.4), rgba(38, 26, 8, 0.65));
+  border-color: rgba(255, 206, 92, 0.55);
+}
+
+#btn-action .tb-text {
+  font-size: 0.58rem;
+}
+
+/* Root-dash (a lifecycle power): small, beside RUN, hidden until unlocked. */
+#btn-dash {
+  width: 58px;
+  height: 58px;
+  margin-bottom: 20px;
+}
+#btn-dash.hidden { display: none; }
+#btn-pulse.hidden { display: none; }
+#btn-sight.hidden { display: none; }
+#btn-sight.active { box-shadow: 0 0 14px rgba(79, 255, 208, 0.75); border-color: rgba(79, 255, 208, 0.9); }
+#btn-action.hidden {
+  display: none;
+}
+
+#btn-action.is-dim {
+  opacity: 0.45;
+}
+
+/* While flying, the pad reads teal rather than violet: the carpet's own colour,
+   so the switch is visible without reading a label. */
+#touch-controls.is-flying #btn-jump,
+#touch-controls.is-flying #btn-run {
+  border-color: rgba(159, 252, 240, 0.55);
+  background: radial-gradient(circle at 40% 35%, rgba(60, 200, 190, 0.35), rgba(8, 30, 34, 0.65));
+}
+
+.touch-btn:active,
+.touch-btn.held {
+  transform: scale(0.93);
+  background: radial-gradient(circle at 40% 35%, rgba(217, 79, 176, 0.55), rgba(60, 20, 70, 0.7));
+  border-color: var(--accent);
+}
+
+/* A held control should look held whichever mode it is in, so this comes after
+   the flight colouring above. */
+#touch-controls.is-flying .touch-btn.held {
+  background: radial-gradient(circle at 40% 35%, rgba(120, 255, 235, 0.5), rgba(10, 44, 48, 0.75));
+}
+
+@media (max-height: 460px) {
+  /* Landscape phone: shrink so the buttons do not eat the view. */
+  #touch-buttons {
+    right: 12px;
+    bottom: 14px;
+    gap: 10px;
+  }
+  #btn-jump {
+    width: 62px;
+    height: 62px;
+    margin-bottom: 40px;
+    font-size: 0.9rem;
+  }
+  #btn-run {
+    width: 74px;
+    height: 74px;
+  }
+  .touch-btn .tb-icon {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1200px) {
+  /* Not enough width for the keyboard hints and the travel panel side by side. */
+  #hints {
+    display: none;
+  }
+}
+
+/* Unlimited-jumps badge, in the same place the pips would be. */
+#jump-infinite {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 18px);
+  transform: translateX(-50%);
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #8f6bff;
+  text-shadow: 0 0 14px #8f6bff;
+  z-index: 12;
+  pointer-events: none;
+  animation: jump-inf-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes jump-inf-pulse {
+  0%, 100% { opacity: 0.45; transform: translateX(-50%) scale(1); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.12); }
+}
+
+/* With a dozen areas the travel list can outgrow the screen. */
+#travel-buttons {
+  max-height: min(46vh, 420px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* The page disables touch gestures; scrolling this list is still allowed. */
+  touch-action: pan-y;
+  scrollbar-width: thin;
+}
+
+#travel-buttons::-webkit-scrollbar {
+  width: 6px;
+}
+
+#travel-buttons::-webkit-scrollbar-thumb {
+  background: rgba(150, 130, 255, 0.35);
+  border-radius: 99px;
+}
+
+body.touch-mode #travel-buttons {
+  max-height: min(38vh, 260px);
+}
+
+#btn-fire {
+  width: 74px;
+  height: 46px;
+  border-radius: 23px;
+  align-self: center;
+  background: radial-gradient(circle at 40% 35%, rgba(255, 92, 225, 0.42), rgba(50, 10, 44, 0.65));
+  border-color: rgba(255, 92, 225, 0.6);
+}
+
+#btn-fire .tb-text {
+  font-size: 0.58rem;
+}
+
+/* Call the carpet: a smaller pill beside SPORE, in the carpet's own gold. */
+#btn-call {
+  width: 64px;
+  height: 40px;
+  border-radius: 20px;
+  align-self: center;
+  background: radial-gradient(circle at 40% 35%, rgba(255, 210, 122, 0.4), rgba(50, 30, 10, 0.65));
+  border-color: rgba(255, 210, 122, 0.6);
+}
+#btn-call .tb-text { font-size: 0.56rem; }
+#touch-identity {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: calc(12px + env(safe-area-inset-right, 0px));
+  display: flex;
+  gap: 8px;
+  pointer-events: none;
+}
+#touch-identity .touch-btn { width: 56px; height: 40px; border-radius: 20px; }
+#touch-identity .tb-text { font-size: 0.52rem; }

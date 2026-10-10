@@ -1,0 +1,66 @@
+/*
+ * Jyotisha Loka on Nefer Kali Healing: the page's own furniture — the canvas,
+ * the way in, the message line, the cards and the reading panel. Everything is
+ * under body.jl-active or a jl- class, so none of it reaches the rest of the site.
+ */
+body.jl-active { overflow: hidden; background: #05021a; }
+.jl-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; z-index: 1; touch-action: none; }
+
+.jl-overlay {
+  position: fixed; inset: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  background: radial-gradient(ellipse at center, rgba(40, 14, 70, 0.55), rgba(5, 2, 26, 0.92));
+  color: #f4ecff; text-align: center; transition: opacity 0.6s ease;
+}
+.jl-overlay.gone { opacity: 0; pointer-events: none; }
+.jl-overlay-inner { max-width: 520px; }
+.jl-overlay h1 { font-size: clamp(2rem, 6vw, 3.4rem); margin: 0.2rem 0 0.8rem; color: #f1d38a; letter-spacing: 0.04em; }
+.jl-kicker { text-transform: uppercase; letter-spacing: 0.18em; font-size: 0.75rem; color: #c9b6ff; margin: 0; }
+.jl-tagline { color: #e2d8ff; line-height: 1.55; margin: 0 0 1.4rem; }
+.jl-hint { font-size: 0.8rem; color: #a99ad8; margin-top: 1rem; }
+.jl-link { background: none; border: none; color: #c9b6ff; margin-top: 0.8rem; cursor: pointer; font: inherit; }
+.jl-enter { font-size: 1.1rem; padding: 0.7rem 2.6rem; }
+
+.jl-ctl {
+  font: inherit; font-size: 0.9rem; cursor: pointer;
+  padding: 0.5rem 1rem; border-radius: 999px;
+  border: 1px solid rgba(241, 211, 138, 0.55); background: rgba(241, 211, 138, 0.1); color: #f1d38a;
+}
+.jl-ctl--primary { background: linear-gradient(135deg, #f1d38a, #d4a640); color: #1a0f05; border-color: transparent; font-weight: 600; }
+
+.jl-toast {
+  position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%); z-index: 45;
+  max-width: min(560px, calc(100vw - 32px)); padding: 0.55rem 1.1rem; border-radius: 999px;
+  background: rgba(20, 10, 44, 0.85); border: 1px solid rgba(150, 130, 255, 0.35);
+  color: #f2ecff; font-size: 0.9rem; text-align: center; pointer-events: none;
+}
+.jl-toast.hidden { display: none; }
+
+.jl-card {
+  padding: 0.6rem 0.8rem; border-radius: 14px;
+  background: linear-gradient(160deg, rgba(20, 8, 44, 0.82), rgba(8, 4, 20, 0.82));
+  border: 1px solid rgba(241, 211, 138, 0.4); color: #ece6ff; font-size: 0.8rem;
+}
+.jl-card p { margin: 0.2rem 0 0.5rem; }
+.jl-card-title { font-size: 0.72rem; letter-spacing: 0.12em; color: #f1d38a; }
+
+/* The reading panel, and the classes the Jyotish altars' panels use. */
+.jl-panel { font-family: inherit; }
+.jl-panel .pa-world-card { background: #120a24; border-color: rgba(241, 211, 138, 0.25); color: #efe8ff; }
+.jl-panel .my-lesson-kicker { margin: 0 0 0.3rem; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: #c9b6ff; }
+.jl-panel .my-field-title { margin: 0 0 0.8rem; font-size: 1.5rem; color: #f1d38a; }
+.jl-panel .my-note { color: #b8aee0; font-size: 0.85rem; }
+.jl-panel .my-ctl { font: inherit; font-size: 0.9rem; cursor: pointer; padding: 0.5rem 1rem; border-radius: 999px; border: 1px solid rgba(241, 211, 138, 0.55); background: rgba(241, 211, 138, 0.1); color: #f1d38a; }
+.jl-panel .my-ctl--primary { background: linear-gradient(135deg, #f1d38a, #d4a640); color: #1a0f05; border-color: transparent; font-weight: 600; }
+.jl-panel .my-ctl[disabled] { opacity: 0.5; cursor: default; }
+.jl-panel .my-input { font: inherit; padding: 0.4rem 0.6rem; border-radius: 8px; border: 1px solid rgba(150, 130, 255, 0.4); background: rgba(255, 255, 255, 0.06); color: #f2ecff; }
+.jl-panel .co-actions, .jl-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1rem; }
+.jl-claims { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.9rem; }
+.jl-claim p { margin: 0.25rem 0 0; line-height: 1.6; }
+.jl-grade { display: inline-block; font-size: 0.66rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.1rem 0.5rem; border-radius: 999px; border: 1px solid rgba(201, 182, 255, 0.4); color: #c9b6ff; }
+.jl-grade--traditional, .jl-grade--spiritual { border-color: rgba(241, 211, 138, 0.55); color: #f1d38a; }
+.jl-objectives { color: #d9cffd; margin: 0 0 1rem 1.1rem; padding: 0; }
+.jl-lede { color: #e2d8ff; }
+.jl-h { color: #f1d38a; margin: 1.2rem 0 0.4rem; font-size: 1rem; }
+.jl-terms dt { font-weight: 600; margin-top: 0.4rem; }
+.jl-terms dd { margin: 0 0 0.3rem; color: #d9cffd; }

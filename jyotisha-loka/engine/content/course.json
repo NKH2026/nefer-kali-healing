@@ -1,0 +1,127 @@
+{
+  "title": "Jyotish: the Science of Light",
+  "teacherName": "Saseshmu Ra Herut",
+  "teacherShown": false,
+  "listed": false,
+  "icon": "🪐",
+  "world": "jyotisha-loka",
+  "oneLine": "The foundations of Jyotish, the Vedic science of light: the sidereal sky and its nine grahas, the twenty-seven lunar mansions, and the five-limbed almanac.",
+  "description": "Jyotish is a living sacred tradition and one of the oldest continuous ways of reading the sky. This course teaches its foundations in three modules, each with three lessons and a quiz: the sidereal sky and the nine grahas; the nakshatras, the Moon's twenty-seven mansions; and the panchanga, the almanac of the day. Study it here or walk it in Jyotisha Loka, where the grahas wheel overhead where they truly stand tonight.",
+  "notice": "This course teaches the foundations of Jyotish: its astronomy as astronomy and its teachings as tradition. It gives no readings, predictions or remedies.",
+  "status": "published",
+  "access": "preview",
+  "modules": [
+    "jyotish",
+    "nakshatras",
+    "panchanga"
+  ],
+  "sources": [
+    {
+      "id": "pingree-1981",
+      "authors": "Pingree D",
+      "year": 1981,
+      "title": "Jyotiḥśāstra: Astral and Mathematical Literature (A History of Indian Literature, vol. 6, fasc. 4)",
+      "journal": "Otto Harrassowitz, Wiesbaden",
+      "topics": [
+        "jyotish",
+        "history",
+        "nakshatras",
+        "panchanga"
+      ],
+      "kind": "book",
+      "verified": false,
+      "note": "The standard survey of Sanskrit astral science: the Vedāṅga Jyotiṣa, the siddhāntas, horoscopy and calendrics. Added October 2026; needs a reader with the book to confirm each citation."
+    },
+    {
+      "id": "plofker-2009",
+      "authors": "Plofker K",
+      "year": 2009,
+      "title": "Mathematics in India",
+      "journal": "Princeton University Press",
+      "topics": [
+        "jyotish",
+        "astronomy",
+        "history"
+      ],
+      "kind": "book",
+      "verified": false,
+      "note": "History of Indian mathematical astronomy, including nakṣatra and tithi reckoning and the siddhānta tradition. Added October 2026; needs review."
+    },
+    {
+      "id": "burgess-1860",
+      "authors": "Burgess E (trans.), Whitney WD (notes)",
+      "year": 1860,
+      "title": "Translation of the Sûrya-Siddhânta, a text-book of Hindu astronomy",
+      "journal": "Journal of the American Oriental Society 6",
+      "topics": [
+        "jyotish",
+        "astronomy",
+        "grahas",
+        "panchanga"
+      ],
+      "kind": "primary",
+      "verified": false,
+      "note": "The classic English translation of the Sūrya Siddhānta, with notes. Added October 2026; needs review."
+    },
+    {
+      "id": "calendar-reform-1955",
+      "authors": "Calendar Reform Committee (chair: Saha MN)",
+      "year": 1955,
+      "title": "Report of the Calendar Reform Committee",
+      "journal": "Council of Scientific and Industrial Research, Government of India",
+      "topics": [
+        "jyotish",
+        "panchanga",
+        "ayanamsa"
+      ],
+      "kind": "report",
+      "verified": false,
+      "note": "The report behind India's national calendar and the Lahiri (Chitrapakṣa) ayanāṃśa used in official ephemerides. Added October 2026; needs review."
+    },
+    {
+      "id": "santhanam-bphs",
+      "authors": "Santhanam R (trans.)",
+      "year": 1984,
+      "title": "Brihat Parasara Hora Sastra (English translation)",
+      "journal": "Ranjan Publications, New Delhi",
+      "topics": [
+        "jyotish",
+        "grahas",
+        "dasha",
+        "tradition"
+      ],
+      "kind": "primary",
+      "verified": false,
+      "note": "A widely used translation of the classical compendium of Jyotiṣa as practised today. The text's date and authorship are debated. Added October 2026; needs review."
+    },
+    {
+      "id": "carlson-1985",
+      "authors": "Carlson S",
+      "year": 1985,
+      "title": "A double-blind test of astrology",
+      "journal": "Nature 318: 419–425",
+      "doi": "10.1038/318419a0",
+      "topics": [
+        "astrology",
+        "evidence"
+      ],
+      "kind": "research",
+      "verified": false,
+      "note": "A controlled test of (Western, tropical) natal astrology; the participating astrologers did not match charts to personality profiles better than chance. Added October 2026; needs review."
+    },
+    {
+      "id": "mak-2013",
+      "authors": "Mak BM",
+      "year": 2013,
+      "title": "The date and nature of Sphujidhvaja's Yavanajātaka reconsidered in the light of some newly discovered materials",
+      "journal": "History of Science in South Asia 1: 1–20",
+      "topics": [
+        "jyotish",
+        "history"
+      ],
+      "kind": "research",
+      "verified": false,
+      "note": "Re-examines the dating of the Yavanajātaka and with it the story of how Hellenistic horoscopy reached India. Added October 2026; needs review."
+    }
+  ]
+}

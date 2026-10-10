@@ -1,0 +1,332 @@
+{
+  "id": "jyotish",
+  "name": "Jyotish: Foundations",
+  "icon": "🪐",
+  "oneLine": "The science of light: the sidereal sky of the Vedic tradition, its nine grahas, and how to study a living sacred practice honestly.",
+  "definition": [
+    {
+      "text": "Jyotiṣa — usually written Jyotish — is the Vedic tradition of reading the sky. Its name comes from jyotis, light, and in this cabinet it is studied as a living sacred and cultural practice, with its astronomy kept separate from its interpretation.",
+      "evidence": "established",
+      "sources": [
+        "pingree-1981"
+      ]
+    },
+    {
+      "text": "Classically it has three branches: gaṇita, the mathematics of where the lights are; saṃhitā, omens and the world at large; and horā, the reading of a moment's chart, which includes the birth chart.",
+      "evidence": "established",
+      "sources": [
+        "pingree-1981"
+      ]
+    },
+    {
+      "text": "This module teaches the foundations — the sky Jyotish measures and the beings it names there. It does not offer readings, predictions or remedies.",
+      "evidence": "established",
+      "editorial": true
+    }
+  ],
+  "whyItMatters": [
+    {
+      "text": "Jyotish still orders daily life for hundreds of millions of people: the dates of festivals and fasts, the naming of children, the choosing of times for weddings and new beginnings.",
+      "evidence": "established",
+      "needsSource": true
+    },
+    {
+      "text": "Its calendar mathematics is a real astronomical achievement. Indian astronomers computed the motions of the Sun, Moon and planets with sophisticated models for well over a thousand years.",
+      "evidence": "established",
+      "sources": [
+        "plofker-2009",
+        "burgess-1860"
+      ]
+    },
+    {
+      "text": "For a member of this church it is a second sky-tradition to set beside the Kemetic one: two ways of reading the same heavens, each meaningful on its own terms.",
+      "evidence": "spiritual",
+      "editorial": true
+    }
+  ],
+  "howItIsStudied": [
+    {
+      "text": "Historians read the Sanskrit texts — the Vedāṅga Jyotiṣa, the siddhāntas such as the Sūrya Siddhānta, and the horā compendia — and trace how their methods changed and travelled.",
+      "evidence": "established",
+      "sources": [
+        "pingree-1981",
+        "plofker-2009"
+      ]
+    },
+    {
+      "text": "Practitioners learn in lineages, from a teacher, alongside the classical texts. That living transmission is part of the tradition and is not replaced by a course like this one.",
+      "evidence": "traditional",
+      "needsSource": true
+    },
+    {
+      "text": "The positions themselves can be checked by anyone: modern ephemerides give where each graha is to a fraction of a degree, and the realm's sky is computed the same way.",
+      "evidence": "established",
+      "editorial": true
+    }
+  ],
+  "keyTerms": [
+    {
+      "term": "Jyotiṣa",
+      "gloss": "The Vedic science of light: astronomy, calendrics and astrology as one tradition."
+    },
+    {
+      "term": "Graha",
+      "gloss": "Literally 'seizer': one of the nine celestial influences — Sun, Moon, five visible planets, and the two lunar nodes Rāhu and Ketu."
+    },
+    {
+      "term": "Sidereal zodiac",
+      "gloss": "A zodiac fixed to the stars rather than to the seasons. Jyotish uses it."
+    },
+    {
+      "term": "Ayanāṃśa",
+      "gloss": "The angle between the sidereal and the tropical zodiacs, growing about 50 arc-seconds a year with precession; about 24° today."
+    },
+    {
+      "term": "Rāśi",
+      "gloss": "One of the twelve 30° signs of the sidereal zodiac, from Meṣa (Aries) to Mīna (Pisces)."
+    },
+    {
+      "term": "Chāyā graha",
+      "gloss": "A 'shadow' graha: Rāhu and Ketu, which are points in space rather than bodies."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "science-of-light",
+      "title": "The science of light",
+      "minutes": 6,
+      "objectives": [
+        "Name the three classical branches of Jyotish.",
+        "Explain why this course keeps astronomy and interpretation apart."
+      ],
+      "body": [
+        {
+          "text": "Jyotish is one of the six Vedāṅgas, the 'limbs' of Vedic learning. Its first purpose was practical and sacred at once: to fix the right times for the Vedic rites.",
+          "evidence": "established",
+          "sources": [
+            "pingree-1981"
+          ]
+        },
+        {
+          "text": "The oldest surviving text, the Vedāṅga Jyotiṣa, is a short calendar manual. It reckons time by the Sun, the Moon and the twenty-seven nakṣatras, and says nothing about birth charts.",
+          "evidence": "established",
+          "sources": [
+            "pingree-1981",
+            "plofker-2009"
+          ]
+        },
+        {
+          "text": "Later the tradition grew three branches: gaṇita, the computation of positions; saṃhitā, omens and mundane affairs; and horā, the reading of a chart for a moment, a person or a question.",
+          "evidence": "established",
+          "sources": [
+            "pingree-1981"
+          ]
+        },
+        {
+          "text": "Two kinds of statement are made in Jyotish, and this course grades them differently. 'Jupiter is in Pisces tonight' is astronomy, and can be checked. 'Jupiter is the teacher' is a teaching of the tradition, and is offered as tradition.",
+          "evidence": "established",
+          "editorial": true
+        }
+      ]
+    },
+    {
+      "id": "sidereal-sky",
+      "title": "The sidereal sky",
+      "minutes": 7,
+      "objectives": [
+        "Explain the difference between the sidereal and tropical zodiacs.",
+        "Say roughly how large the ayanāṃśa is today, and why it grows."
+      ],
+      "body": [
+        {
+          "text": "The Sun, Moon and planets all travel close to one path round the sky, the ecliptic. Both zodiacs divide that path into twelve signs of 30°; they differ in where they start counting.",
+          "evidence": "established",
+          "sources": [
+            "plofker-2009"
+          ]
+        },
+        {
+          "text": "The tropical zodiac of Western astrology starts at the spring equinox, so it is tied to the seasons. The sidereal zodiac of Jyotish starts from the stars themselves.",
+          "evidence": "established",
+          "sources": [
+            "plofker-2009"
+          ]
+        },
+        {
+          "text": "Because the Earth's axis slowly wobbles — precession — the equinox drifts backwards against the stars by about 50 arc-seconds a year, a degree every 72 years or so. The gap between the two zodiacs, the ayanāṃśa, is now about 24°.",
+          "evidence": "established",
+          "sources": [
+            "calendar-reform-1955"
+          ]
+        },
+        {
+          "text": "Where exactly the sidereal zodiac begins is a convention. India's Calendar Reform Committee adopted the Chitrapakṣa or Lahiri ayanāṃśa, which places the star Spica — Chitrā — at the start of Tulā (Libra), and it is the most widely used today.",
+          "evidence": "established",
+          "sources": [
+            "calendar-reform-1955"
+          ]
+        },
+        {
+          "text": "So a member whose Western sign is Aries is, for most birthdays, a Pisces Sun in Jyotish terms — not because either is wrong, but because they measure from different places.",
+          "evidence": "established",
+          "editorial": true
+        }
+      ]
+    },
+    {
+      "id": "nine-grahas",
+      "title": "The nine grahas",
+      "minutes": 8,
+      "objectives": [
+        "Name the nine grahas with their Sanskrit names.",
+        "Explain what Rāhu and Ketu are astronomically, and why eclipses happen near them.",
+        "Connect the grahas to the seven days of the week."
+      ],
+      "body": [
+        {
+          "text": "The navagraha, the nine grahas, are Sūrya the Sun, Chandra the Moon, Maṅgala (Mars), Budha (Mercury), Guru or Bṛhaspati (Jupiter), Śukra (Venus), Śani (Saturn), and the two shadow grahas, Rāhu and Ketu.",
+          "evidence": "established",
+          "sources": [
+            "pingree-1981",
+            "santhanam-bphs"
+          ]
+        },
+        {
+          "text": "Rāhu and Ketu are the Moon's nodes: the two points where the Moon's tilted orbit crosses the ecliptic. They are always exactly opposite each other and drift backwards round the zodiac once in about 18.6 years.",
+          "evidence": "established",
+          "sources": [
+            "plofker-2009"
+          ]
+        },
+        {
+          "text": "An eclipse can only happen when a new or full Moon falls near a node, which is why the tradition tells of Rāhu swallowing the Sun or the Moon. The story and the astronomy point at the same places in the sky.",
+          "evidence": "established",
+          "sources": [
+            "plofker-2009",
+            "burgess-1860"
+          ]
+        },
+        {
+          "text": "Each graha carries significations in the tradition: the Sun the soul and authority, the Moon the mind, Jupiter the guru and wisdom, Saturn time, discipline and endurance, Venus beauty and relationship, Mars courage, Mercury speech and learning.",
+          "evidence": "traditional",
+          "sources": [
+            "santhanam-bphs"
+          ]
+        },
+        {
+          "text": "The seven-day week is a week of grahas: Ravivāra (Sun) is Sunday, Somavāra (Moon) Monday, Maṅgalavāra Tuesday, Budhavāra Wednesday, Guruvāra Thursday, Śukravāra Friday and Śanivāra Saturday — the same planetary order as the European weekday names.",
+          "evidence": "established",
+          "sources": [
+            "pingree-1981"
+          ]
+        }
+      ]
+    }
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "prompt": "What does the sidereal zodiac of Jyotish measure the signs from?",
+      "options": [
+        "The spring equinox",
+        "The fixed stars",
+        "The member's birthplace",
+        "The new Moon nearest the solstice"
+      ],
+      "answer": 1,
+      "explanation": "The sidereal zodiac is anchored to the stars; the tropical zodiac of Western astrology is anchored to the spring equinox, which drifts against the stars with precession.",
+      "evidence": "established"
+    },
+    {
+      "id": "q2",
+      "type": "truefalse",
+      "prompt": "Rāhu and Ketu are planets that can be seen through a telescope.",
+      "answer": false,
+      "explanation": "They are the Moon's nodes — points where its orbit crosses the ecliptic — which is why the tradition calls them shadow grahas. Eclipses happen near them.",
+      "evidence": "established"
+    },
+    {
+      "id": "q3",
+      "type": "multi",
+      "prompt": "Which of these are among the nine grahas? (choose all that apply)",
+      "options": [
+        "Śani (Saturn)",
+        "Rāhu",
+        "Uranus",
+        "Chandra (the Moon)",
+        "Neptune"
+      ],
+      "answer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "The navagraha are the Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rāhu and Ketu. The outer planets, invisible to the naked eye, are not among them.",
+      "evidence": "established"
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "prompt": "About how large is the ayanāṃśa — the gap between the sidereal and tropical zodiacs — today?",
+      "options": [
+        "About 2°",
+        "About 24°",
+        "About 90°",
+        "It is always zero at midnight"
+      ],
+      "answer": 1,
+      "explanation": "On the Lahiri convention it is a little over 24° and grows by about 50 arc-seconds a year with precession.",
+      "evidence": "established"
+    },
+    {
+      "id": "q5",
+      "type": "single",
+      "prompt": "Which day of the week is Guruvāra, the day of Jupiter?",
+      "options": [
+        "Monday",
+        "Thursday",
+        "Saturday",
+        "Sunday"
+      ],
+      "answer": 1,
+      "explanation": "Guru (Bṛhaspati) is Jupiter, and his day is Thursday — Jupiter's day in the European names too (jeudi, Jove's day).",
+      "evidence": "established"
+    },
+    {
+      "id": "q6",
+      "type": "truefalse",
+      "prompt": "In this course, 'Jupiter is the teacher' is graded as traditional knowledge, while 'Jupiter is in Pisces tonight' is astronomy that can be checked.",
+      "answer": true,
+      "explanation": "The course keeps the tradition's teachings and the sky's positions apart, so each can be held on its own terms.",
+      "evidence": "established"
+    }
+  ],
+  "workItLeadsTo": [
+    "Study of Sanskrit astronomical and astrological texts in history-of-science programmes",
+    "Calendar and festival reckoning within temples and religious communities",
+    "Traditional study with a teacher in a Jyotish lineage",
+    "Public astronomy: reading and teaching the naked-eye sky"
+  ],
+  "contested": [
+    {
+      "text": "Whether the birth chart predicts personality or events is not supported by controlled tests. In the best-known double-blind study, astrologers could not match charts to personality profiles better than chance. That study tested Western astrology; Jyotish practitioners argue their methods differ.",
+      "evidence": "supported",
+      "sources": [
+        "carlson-1985"
+      ]
+    },
+    {
+      "text": "How Indian horoscopy took shape is debated. The Yavanajātaka shows Greek-language astrology being adapted in India, but its date — and so the timing of that exchange — has been reconsidered from newly read manuscripts.",
+      "evidence": "hypothesis",
+      "sources": [
+        "pingree-1981",
+        "mak-2013"
+      ]
+    }
+  ],
+  "related": [
+    "nakshatras",
+    "panchanga"
+  ]
+}

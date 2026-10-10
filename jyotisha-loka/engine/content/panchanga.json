@@ -1,0 +1,306 @@
+{
+  "id": "panchanga",
+  "name": "The Panchanga",
+  "icon": "🌗",
+  "oneLine": "The five limbs of the day — tithi, vāra, nakshatra, yoga and karaṇa — and how a lunar calendar is kept in step with the Sun.",
+  "definition": [
+    {
+      "text": "The pañcāṅga — usually written panchanga — is the traditional Hindu almanac. Its name means 'five limbs', the five quantities it gives for every day: tithi, vāra, nakṣatra, yoga and karaṇa.",
+      "evidence": "established",
+      "sources": [
+        "pingree-1981"
+      ]
+    },
+    {
+      "text": "Four of the five limbs come from just two numbers — the sidereal longitudes of the Sun and the Moon. The fifth, the vāra, is the weekday.",
+      "evidence": "established",
+      "sources": [
+        "plofker-2009",
+        "calendar-reform-1955"
+      ]
+    }
+  ],
+  "whyItMatters": [
+    {
+      "text": "The panchanga sets the dates of most Hindu festivals and fasts, among them Ekādaśī, the full and new Moon observances, and the great festivals of the year.",
+      "evidence": "established",
+      "sources": [
+        "calendar-reform-1955"
+      ]
+    },
+    {
+      "text": "It is a working example of a lunisolar calendar: months that follow the Moon, kept in step with a year that follows the Sun.",
+      "evidence": "established",
+      "sources": [
+        "plofker-2009"
+      ]
+    }
+  ],
+  "howItIsStudied": [
+    {
+      "text": "Almanac-makers compute the limbs from the positions of the Sun and Moon. The drik method uses observed, modern positions; older vākya methods use traditional mean-motion tables, and the two can differ by hours at a boundary.",
+      "evidence": "established",
+      "sources": [
+        "calendar-reform-1955"
+      ]
+    },
+    {
+      "text": "Historians compare the rules in the siddhāntas and in regional almanacs, which still differ in when a month begins and in local conventions.",
+      "evidence": "established",
+      "sources": [
+        "pingree-1981"
+      ]
+    }
+  ],
+  "keyTerms": [
+    {
+      "term": "Tithi",
+      "gloss": "A lunar day: the time it takes the Moon to gain 12° on the Sun. Thirty make a lunar month."
+    },
+    {
+      "term": "Pakṣa",
+      "gloss": "A fortnight: śukla pakṣa, the bright, waxing half, and kṛṣṇa pakṣa, the dark, waning half."
+    },
+    {
+      "term": "Vāra",
+      "gloss": "The weekday, ruled by a graha, counted in the panchanga from sunrise to sunrise."
+    },
+    {
+      "term": "Yoga",
+      "gloss": "One of twenty-seven divisions of the sum of the Sun's and Moon's longitudes, each 13°20′."
+    },
+    {
+      "term": "Karaṇa",
+      "gloss": "Half a tithi: 6° of the Moon's gain on the Sun. There are eleven kinds."
+    },
+    {
+      "term": "Adhika māsa",
+      "gloss": "An extra lunar month added about every two and a half to three years to keep the lunar months in step with the solar year."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "tithi",
+      "title": "Tithi: the lunar day",
+      "minutes": 7,
+      "objectives": [
+        "Explain how a tithi is measured and why its length varies.",
+        "Name the two pakṣas and the tithis that end them."
+      ],
+      "body": [
+        {
+          "text": "A tithi is the time it takes the Moon to move 12° further ahead of the Sun. A full cycle, new Moon to new Moon, is 360° of that lead, so there are thirty tithis in a lunar month.",
+          "evidence": "established",
+          "sources": [
+            "plofker-2009",
+            "burgess-1860"
+          ]
+        },
+        {
+          "text": "Because the Moon's speed varies along its elliptical orbit, a tithi can last from roughly 19 to 26 hours. So a tithi does not match a civil day; one can be skipped, or one can span two sunrises.",
+          "evidence": "established",
+          "sources": [
+            "calendar-reform-1955"
+          ]
+        },
+        {
+          "text": "The first fifteen tithis are the bright fortnight, śukla pakṣa, ending at Pūrṇimā, the full Moon. The second fifteen are the dark fortnight, kṛṣṇa pakṣa, ending at Amāvāsyā, the new Moon.",
+          "evidence": "established",
+          "sources": [
+            "calendar-reform-1955"
+          ]
+        },
+        {
+          "text": "The eleventh tithi of each fortnight, Ekādaśī, is widely kept as a day of fasting and devotion, especially in Vaiṣṇava traditions.",
+          "evidence": "traditional",
+          "needsSource": true
+        }
+      ]
+    },
+    {
+      "id": "five-limbs",
+      "title": "The other limbs: vāra, nakshatra, yoga, karaṇa",
+      "minutes": 7,
+      "objectives": [
+        "Compute which nakshatra the Moon is in from its sidereal longitude.",
+        "Explain how yoga and karaṇa are derived."
+      ],
+      "body": [
+        {
+          "text": "The vāra is the weekday, each ruled by a graha. In the panchanga a day runs from sunrise to sunrise, not midnight to midnight.",
+          "evidence": "established",
+          "sources": [
+            "calendar-reform-1955"
+          ]
+        },
+        {
+          "text": "The day's nakshatra is the Moon's: divide the Moon's sidereal longitude by 13°20′ and the whole number tells you which of the twenty-seven mansions it is in.",
+          "evidence": "established",
+          "sources": [
+            "plofker-2009"
+          ]
+        },
+        {
+          "text": "The yoga adds the Sun's and Moon's sidereal longitudes and divides the sum by 13°20′, giving twenty-seven yogas from Viṣkambha to Vaidhṛti.",
+          "evidence": "established",
+          "sources": [
+            "burgess-1860"
+          ]
+        },
+        {
+          "text": "A karaṇa is half a tithi, 6° of the Moon's lead. Seven movable karaṇas repeat eight times through the month, and four fixed ones fill the rest — sixty half-tithis in all. Viṣṭi, also called Bhadrā, is traditionally avoided for new beginnings.",
+          "evidence": "traditional",
+          "sources": [
+            "burgess-1860",
+            "santhanam-bphs"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "months-and-years",
+      "title": "Months, saṅkrānti and the extra month",
+      "minutes": 6,
+      "objectives": [
+        "Explain how the lunar months get their names.",
+        "Explain why an adhika māsa is needed and roughly how often."
+      ],
+      "body": [
+        {
+          "text": "Lunar months are named for the nakshatra near which their full Moon falls: Chaitra from Chitrā, Vaiśākha from Viśākhā, Kārttika from Kṛttikā.",
+          "evidence": "established",
+          "sources": [
+            "calendar-reform-1955"
+          ]
+        },
+        {
+          "text": "Some regions end the month at the new Moon (amānta) and others at the full Moon (pūrṇimānta), so the same day can fall in differently named months in different parts of India.",
+          "evidence": "established",
+          "sources": [
+            "calendar-reform-1955"
+          ]
+        },
+        {
+          "text": "A saṅkrānti is the moment the Sun enters a sidereal sign. Makara Saṅkrānti, the Sun entering Capricorn, falls in mid-January — weeks after the solstice, because the zodiac is sidereal.",
+          "evidence": "established",
+          "sources": [
+            "calendar-reform-1955"
+          ]
+        },
+        {
+          "text": "Twelve lunar months are about eleven days shorter than a solar year. To keep festivals in their seasons, an extra month, the adhika māsa, is inserted about every two and a half to three years — when a lunar month passes with no saṅkrānti in it.",
+          "evidence": "established",
+          "sources": [
+            "calendar-reform-1955",
+            "plofker-2009"
+          ]
+        }
+      ]
+    }
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "prompt": "What does one tithi measure?",
+      "options": [
+        "One sunrise to the next",
+        "The Moon gaining 12° on the Sun",
+        "The Moon moving through one nakshatra",
+        "One twenty-fourth of a day"
+      ],
+      "answer": 1,
+      "explanation": "A tithi is 12° of the Moon's lead over the Sun; thirty of them make the 360° of a lunar month.",
+      "evidence": "established"
+    },
+    {
+      "id": "q2",
+      "type": "truefalse",
+      "prompt": "Every tithi lasts exactly 24 hours.",
+      "answer": false,
+      "explanation": "The Moon's speed varies, so a tithi runs from roughly 19 to 26 hours, and tithis drift against civil days.",
+      "evidence": "established"
+    },
+    {
+      "id": "q3",
+      "type": "multi",
+      "prompt": "Which of these are among the five limbs of the panchanga? (choose all that apply)",
+      "options": [
+        "Tithi",
+        "Rāśi",
+        "Yoga",
+        "Karaṇa",
+        "Daśā"
+      ],
+      "answer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "The five limbs are tithi, vāra, nakshatra, yoga and karaṇa. Rāśi (a sign) and daśā (a planetary period) belong to chart reading, not to the almanac's five limbs.",
+      "evidence": "established"
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "prompt": "The Moon's sidereal longitude is 45°. Which nakshatra is it in? (each is 13°20′, and the first is Aśvinī)",
+      "options": [
+        "Aśvinī (1st)",
+        "Kṛttikā (3rd)",
+        "Rohiṇī (4th)",
+        "Mṛgaśirā (5th)"
+      ],
+      "answer": 2,
+      "explanation": "45° ÷ 13°20′ = 3.375, so three whole mansions are complete and the Moon is in the fourth, Rohiṇī (40° to 53°20′).",
+      "evidence": "established"
+    },
+    {
+      "id": "q5",
+      "type": "single",
+      "prompt": "Why is an adhika māsa, an extra month, added to the calendar?",
+      "options": [
+        "To mark a leap year in the Gregorian calendar",
+        "Because twelve lunar months fall about eleven days short of a solar year",
+        "To honour Rāhu after an eclipse",
+        "Because the weekdays drift"
+      ],
+      "answer": 1,
+      "explanation": "Without it the lunar months would slide backwards through the seasons by about eleven days a year.",
+      "evidence": "established"
+    },
+    {
+      "id": "q6",
+      "type": "truefalse",
+      "prompt": "Makara Saṅkrānti falls weeks after the December solstice because Jyotish uses the sidereal zodiac.",
+      "answer": true,
+      "explanation": "The Sun enters sidereal Capricorn about 24 days after it enters tropical Capricorn at the solstice — the ayanāṃśa, measured in days.",
+      "evidence": "established"
+    }
+  ],
+  "workItLeadsTo": [
+    "Calendar-making and almanac computation",
+    "Temple and community festival planning",
+    "History of astronomy and of calendars",
+    "Software that computes traditional calendars"
+  ],
+  "contested": [
+    {
+      "text": "Which ayanāṃśa to use is a convention, not something astronomy can settle. Lahiri is the official and the most common, but Raman, Krishnamurti and others are used, and they give slightly different boundaries.",
+      "evidence": "established",
+      "sources": [
+        "calendar-reform-1955"
+      ]
+    },
+    {
+      "text": "Whether almanacs should keep traditional vākya computation or move wholly to modern drik positions is still argued; the Calendar Reform Committee recommended modern positions, and many almanacs keep their own traditions.",
+      "evidence": "established",
+      "sources": [
+        "calendar-reform-1955"
+      ]
+    }
+  ],
+  "related": [
+    "jyotish",
+    "nakshatras"
+  ]
+}

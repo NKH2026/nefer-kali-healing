@@ -49,6 +49,8 @@ import AdminSettings from './pages/admin/Settings';
 import AdminAssistant from './pages/admin/Assistant';
 import AdminDrafts from './pages/admin/Drafts';
 import AdminLayout from './components/admin/AdminLayout';
+// Loaded only when an administrator opens it: the 3D world stays out of everyone else's download.
+const JyotishaLoka = React.lazy(() => import('./pages/JyotishaLoka'));
 import ProtectedRoute from './components/admin/ProtectedRoute';
 
 
@@ -125,6 +127,15 @@ const App: React.FC = () => {
 
               {/* Admin Routes */}
               <Route path="/admin/login" element={<Login />} />
+              {/* Jyotisha Loka: a full-screen 3D world, administrators only for now.
+                  Under /admin so the site's navbar and footer stay out of it. */}
+              <Route path="/admin/jyotisha-loka" element={
+                <ProtectedRoute>
+                  <React.Suspense fallback={<div className="fixed inset-0 bg-[#05021a] flex items-center justify-center text-[#f1d38a]">Opening Jyotisha Loka…</div>}>
+                    <JyotishaLoka />
+                  </React.Suspense>
+                </ProtectedRoute>
+              } />
               <Route path="/admin" element={
                 <ProtectedRoute>
                   <AdminLayout />

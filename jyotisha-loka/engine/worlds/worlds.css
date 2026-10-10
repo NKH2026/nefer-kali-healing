@@ -1,0 +1,247 @@
+/* The world kit's own chrome: the prompt, the standing panel, and the study
+   panel over the scene. The panel's contents are the Fungarium's own (.my-*),
+   inside .my-shell so its palette applies. */
+
+.pa-world-prompt {
+  position: fixed;
+  left: 50%;
+  bottom: calc(18vh + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  background: rgba(8, 6, 14, 0.78);
+  border: 1px solid rgba(241, 211, 138, 0.45);
+  color: #f1d38a;
+  font: 600 0.95rem/1.2 Inter, system-ui, sans-serif;
+  max-width: calc(100vw - 32px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  z-index: 40;
+}
+.pa-world-prompt.hidden { display: none; }
+
+.pa-world-standing {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: 12px;
+  max-width: min(320px, calc(100vw - 24px));
+  z-index: 30;
+}
+.pa-world-standing p { margin: 0.3rem 0 0.5rem; font-size: 0.85rem; }
+.pa-world-standing .pa-world-stage { margin-top: -0.2rem; font-size: 0.78rem; color: #f1d38a; }
+.pa-world-home {
+  font: inherit;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid rgba(143, 107, 255, 0.6);
+  background: rgba(143, 107, 255, 0.14);
+  color: #e6defc;
+  cursor: pointer;
+}
+
+.pa-world-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(4, 3, 8, 0.62);
+}
+.pa-world-panel[hidden] { display: none; }
+.pa-world-card {
+  position: relative;
+  width: min(720px, 100%);
+  max-height: calc(100dvh - 32px);
+  /* The card does not scroll; its body does, under a fixed header row that
+     holds Close — so nothing in the content can ever cover the button. */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 1.1rem 1.2rem 0;
+  border-radius: 14px;
+  background: var(--my-bark, #150f0a);
+  border: 1px solid var(--my-line, rgba(217, 164, 65, 0.18));
+  color: var(--my-text, #efeae0);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+}
+.pa-world-close {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: calc(12px + env(safe-area-inset-right, 0px));
+  z-index: 75;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+.pa-world-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-bottom: 1.6rem; }
+@media (max-width: 520px) {
+  .pa-world-panel { padding: 0; align-items: stretch; }
+  .pa-world-card { border-radius: 0; max-height: 100dvh; width: 100%; }
+}
+
+/* Hyphal Sight (hyphal-scene.js): the edges of the view sink into the dark
+   while the network glows. Opacity is driven from the loop. */
+.pa-hyphal-veil {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 2;
+  background:
+    radial-gradient(ellipse at center, rgba(5, 4, 14, 0) 45%, rgba(5, 4, 14, 0.55) 85%, rgba(5, 4, 14, 0.8) 100%),
+    radial-gradient(ellipse at center, rgba(79, 255, 208, 0) 60%, rgba(79, 255, 208, 0.08) 100%);
+}
+
+/* Jyotisha Loka (../jyotish/world.js): the live panchanga card, top right, and
+   the orrery's and altars' panels. */
+.pa-jyotish-card {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: 12px;
+  width: min(300px, calc(100vw - 24px));
+  z-index: 30;
+  padding: 0.6rem 0.8rem 0.55rem;
+  border-radius: 14px;
+  background: linear-gradient(160deg, rgba(20, 8, 44, 0.82), rgba(8, 4, 20, 0.82));
+  border: 1px solid rgba(241, 211, 138, 0.45);
+  box-shadow: 0 0 22px rgba(143, 107, 255, 0.35);
+  color: #ece6ff;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  backdrop-filter: blur(6px);
+}
+.pa-jyotish-card.travelling { border-color: rgba(79, 255, 208, 0.8); box-shadow: 0 0 26px rgba(79, 255, 208, 0.45); }
+.pa-jyotish-kicker { margin: 0 0 0.35rem; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: #f1d38a; }
+.pa-jyotish-lines p { margin: 0.12rem 0; }
+.pa-jyotish-label { display: inline-block; min-width: 5.2em; color: #b9a8ff; }
+.pa-jyotish-steps { display: flex; gap: 0.4rem; margin-top: 0.45rem; }
+.pa-jyotish-step {
+  flex: 1;
+  font: inherit;
+  padding: 0.3rem 0;
+  border-radius: 8px;
+  border: 1px solid rgba(241, 211, 138, 0.5);
+  background: rgba(241, 211, 138, 0.1);
+  color: #f1d38a;
+  cursor: pointer;
+}
+.pa-jyotish-hint { margin: 0.35rem 0 0; font-size: 0.68rem; color: #9d92c4; }
+@media (max-width: 640px) {
+  /* On a phone the standing card owns the top left; keep this one compact. */
+  .pa-jyotish-card { width: min(230px, calc(100vw - 24px)); font-size: 0.72rem; top: calc(64px + env(safe-area-inset-top, 0px)); }
+  .pa-jyotish-hint { display: none; }
+}
+.pa-jyotish-table-wrap { overflow-x: auto; }
+.pa-jyotish-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.pa-jyotish-table th, .pa-jyotish-table td { text-align: left; padding: 0.35rem 0.4rem; border-bottom: 1px solid rgba(241, 211, 138, 0.18); vertical-align: top; }
+.pa-jyotish-glyph { font-size: 1.15rem; }
+.pa-jyotish-meanings { padding-left: 1.1rem; }
+.pa-jyotish-meanings li { margin: 0.2rem 0; }
+.pa-jyotish-mansions { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 0.4rem; margin-top: 0.8rem; }
+.pa-jyotish-mansion {
+  display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
+  padding: 0.4rem 0.2rem; border-radius: 10px;
+  border: 1px solid rgba(185, 168, 255, 0.25); background: rgba(20, 10, 40, 0.5);
+  text-align: center; opacity: 0.55;
+}
+.pa-jyotish-mansion span { font-size: 1.3rem; }
+.pa-jyotish-mansion small { font-size: 0.62rem; line-height: 1.15; }
+.pa-jyotish-mansion.got { opacity: 1; border-color: rgba(241, 211, 138, 0.7); }
+.pa-jyotish-mansion.now { box-shadow: 0 0 0 2px rgba(79, 255, 208, 0.8); opacity: 1; }
+.pa-jyotish-field { display: block; margin: 0.5rem 0; }
+.pa-jyotish-field input { margin-left: 0.3rem; }
+.pa-jyotish-birth { font-size: 1.4rem; margin: 0.8rem 0 0.3rem; color: #f1d38a; }
+
+/* The Lotus Sanctuary (../reiki/world.js): the stillness card, top right, and the
+   breathing guide over the scene. */
+.pa-reiki-card {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: 12px;
+  width: min(250px, calc(100vw - 24px));
+  z-index: 30;
+  padding: 0.6rem 0.8rem;
+  border-radius: 14px;
+  background: linear-gradient(160deg, rgba(30, 14, 60, 0.8), rgba(8, 6, 24, 0.8));
+  border: 1px solid rgba(167, 123, 255, 0.5);
+  box-shadow: 0 0 22px rgba(167, 123, 255, 0.3);
+  color: #ece6ff;
+  font-size: 0.8rem;
+}
+.pa-reiki-kicker { margin: 0 0 0.35rem; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: #f1d38a; }
+.pa-reiki-meter { height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+.pa-reiki-meter span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #a77bff, #5ff2e0, #f1d38a); transition: width 0.3s; }
+.pa-reiki-words { margin: 0.4rem 0 0.15rem; }
+.pa-reiki-tally { margin: 0; color: #b9a8ff; font-size: 0.72rem; }
+@media (max-width: 640px) {
+  .pa-reiki-card { width: min(200px, calc(100vw - 24px)); font-size: 0.72rem; top: calc(64px + env(safe-area-inset-top, 0px)); }
+}
+.pa-breath { position: fixed; inset: 0; z-index: 40; pointer-events: none; }
+.pa-breath[hidden] { display: none; }
+.pa-breath-ring {
+  position: absolute; left: 50%; top: 45%;
+  width: min(60vw, 340px); aspect-ratio: 1; border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0.5);
+  border: 2px solid rgba(241, 211, 138, 0.8);
+  background: radial-gradient(circle, rgba(241, 211, 138, 0.18), rgba(167, 123, 255, 0.12) 60%, rgba(95, 242, 224, 0) 72%);
+  box-shadow: 0 0 40px rgba(167, 123, 255, 0.45), inset 0 0 30px rgba(241, 211, 138, 0.25);
+  transition: transform 0.25s linear;
+}
+.pa-breath-word, .pa-breath-time { position: absolute; left: 0; right: 0; text-align: center; color: #f6ecff; text-shadow: 0 0 12px rgba(0, 0, 0, 0.9); }
+.pa-breath-word { top: 45%; transform: translateY(-50%); font-family: 'Cinzel', serif; font-size: 1.5rem; margin: 0; }
+.pa-breath-time { top: calc(45% + min(30vw, 170px) + 1rem); margin: 0; font-size: 0.95rem; color: #d8ccff; }
+.pa-breath .my-ctl { position: absolute; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); pointer-events: auto; }
+.pa-reiki-gokai { list-style: none; padding: 0; }
+.pa-reiki-gokai li { margin: 0.45rem 0; opacity: 0.7; }
+.pa-reiki-gokai li.lit { opacity: 1; color: #f1d38a; }
+.pa-reiki-flyer { width: 100%; max-width: 360px; border-radius: 10px; margin-top: 0.6rem; display: block; }
+.pa-reiki-event h3 { margin: 0.2rem 0; }
+
+/* One column for the world's cards (boot.js hudColumn): top left on a computer;
+   on a phone, below the row of touch buttons that runs along the top right. The
+   cards inside give up their own fixed positions. */
+.pa-world-cards {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: 12px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(300px, calc(100vw - 24px));
+  max-height: calc(100dvh - 45vh);
+  overflow-y: auto;
+  pointer-events: none;
+}
+.pa-world-cards > * { pointer-events: auto; }
+.pa-world-cards > .pa-world-standing,
+.pa-world-cards > .pa-jyotish-card,
+.pa-world-cards > .pa-reiki-card {
+  position: static;
+  top: auto; right: auto; left: auto;
+  width: auto;
+  max-width: none;
+  margin: 0;
+}
+.pa-jyotish-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
+.pa-jyotish-more { font: inherit; font-size: 0.7rem; background: none; border: none; color: #b9a8ff; cursor: pointer; padding: 0; flex: none; }
+.pa-jyotish-card.compact .pa-jyotish-lines p:nth-child(n+4),
+.pa-jyotish-card.compact .pa-jyotish-lines p:first-child,
+.pa-jyotish-card.compact .pa-jyotish-hint { display: none; }
+@media (max-width: 700px), (pointer: coarse) {
+  .pa-world-cards {
+    top: calc(62px + env(safe-area-inset-top, 0px));
+    width: min(250px, calc(100vw - 24px));
+    max-height: calc(100dvh - 62px - 46vh);
+  }
+  .pa-world-cards .pa-world-standing { padding: 0.5rem 0.7rem; font-size: 0.78rem; }
+  .pa-world-cards .pa-world-standing p { margin: 0.2rem 0 0.3rem; font-size: 0.75rem; }
+}
+
+/* In a world the Wardrobe button does nothing (the Wardrobe lives in the realm),
+   so it is not shown — one less button along the top. */
+.world-mode #btn-wardrobe { display: none !important; }
+#btn-call.hidden, #btn-fire.hidden { display: none !important; }
