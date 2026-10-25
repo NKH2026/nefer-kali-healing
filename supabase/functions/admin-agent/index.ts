@@ -3194,6 +3194,16 @@ async function requireAdmin(
     return { error: json({ error: 'invalid_or_expired_token' }, 401, headers) }
   }
 
+  // Enforce verified MFA with the caller's JWT, never the service-role client.
+  const caller = createClient(SUPABASE_URL, ANON_KEY, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+  const access = await caller.rpc('is_admin')
+  if (access.error || access.data !== true) {
+    return { error: json({ error: 'admin_mfa_required' }, 403, headers) }
+  }
+
   // Authorization is a separate question from authentication. `authenticated`
   // only means "has an account" and can never gate an admin surface.
   const { data: adminRow, error: adminErr } = await db

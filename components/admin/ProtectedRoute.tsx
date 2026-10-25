@@ -7,23 +7,31 @@ const ProtectedRoute = ({ children }: { children?: React.ReactNode }) => {
     const [authenticated, setAuthenticated] = useState(false);
 
     useEffect(() => {
+        let active = true;
+        let revision = 0;
         const checkAuth = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                setAuthenticated(true);
-            } else {
-                setAuthenticated(false);
+            const current = ++revision;
+            try {
+                const { data, error } = await supabase.auth.getSession();
+                const admin = !error && data.session ? await supabase.rpc('is_admin') : null;
+                if (active && current === revision) setAuthenticated(admin?.data === true && !admin.error);
+            } catch {
+                if (active && current === revision) setAuthenticated(false);
+            } finally {
+                if (active && current === revision) setLoading(false);
             }
-            setLoading(false);
         };
 
         checkAuth();
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setAuthenticated(!!session);
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+            setAuthenticated(false);
+            setLoading(true);
+            // Avoid re-entering the auth lock from its callback.
+            setTimeout(() => { if (active) void checkAuth(); }, 0);
         });
 
-        return () => subscription.unsubscribe();
+        return () => { active = false; subscription.unsubscribe(); };
     }, []);
 
     if (loading) {
