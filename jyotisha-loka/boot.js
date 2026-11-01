@@ -22,6 +22,7 @@ import { PLAYER, QUALITY, TOUCH, POST } from './engine/config.js';
 import { GradeShader } from './engine/post-fx.js';
 import { Player } from './engine/player.js';
 import { CameraDirector, RIDING_CHASE } from './engine/camera-director.js';
+import { createTour } from './engine/tour.js';
 import { TouchControls } from './engine/ui/touch.js';
 import { createGround, createPortal, createSite } from './engine/worlds/builders.js';
 import { createWorldCarpet } from './engine/worlds/world-carpet.js';
@@ -43,9 +44,21 @@ export function isTouchDevice() {
   return Boolean(globalThis.matchMedia?.('(pointer: coarse)').matches) || 'ontouchstart' in globalThis;
 }
 
-export function bootJyotishaLoka({ mount, onExit = () => {} }) {
+export function bootJyotishaLoka({ mount, onExit = () => {}, mode = 'explore' }) {
   const recipe = JYOTISHA_LOKA;
-  const touchMode = isTouchDevice();
+  /**
+   * Two ways to be in this world, and they share everything except the camera
+   * and the input:
+   *
+   *   explore  the realm as it has always been — a body, pointer lock, the
+   *            walking physics, and the carpet to fly.
+   *   tour     the home-page prototype — no body, no pointer lock, no free
+   *            movement at all. A rig flies between a handful of stops.
+   *
+   * The whole of the difference is this flag; the world below is built the same.
+   */
+  const touring = mode === 'tour';
+  const touchMode = isTouchDevice() && !touring;
   const cleanups = [];
   const listen = (target, type, fn, opts) => {
     target.addEventListener(type, fn, opts);
@@ -101,30 +114,46 @@ export function bootJyotishaLoka({ mount, onExit = () => {} }) {
   scene.add(portal.group);
 
   // ---- the body
-  const director = new CameraDirector(camera, {
-    mode: 'chase',
-    sens: { get lookSensitivity() { return TOUCH.lookSensitivity; }, invertY: false, maxPitch: PLAYER.maxPitch },
-  });
-  const player = new Player(camera, canvas, { groundAt: heightAt, respawnY: -40 });
-  player.setColliders([]);
-  const ground = recipe.terrain || {};
-  const walkable = (ground.wallHeight ?? 1) < 0 ? (ground.wallStart ?? 0.85) * recipe.radius - 2 : recipe.radius - 6;
-  player.setBounds([{ x: 0, z: 0, radius: walkable }]);
-  player.aim = director;
-  director.attachWorld({ colliders: [] });
-  director.followControls = !touchMode;
-  director.adoptFromCamera();
-  player.reset(recipe.spawn);
+  //
+  // In tour mode there is no body at all: `player` and `flight` stay null, the
+  // CameraDirector is never constructed, and the tour rig owns the camera. Every
+  // use of `player` or `flight` below is guarded by `touring` or by `?.`.
+  let director = null;
+  let player = null;
+  let flight = null;
+  if (!touring) {
+    director = new CameraDirector(camera, {
+      mode: 'chase',
+      sens: { get lookSensitivity() { return TOUCH.lookSensitivity; }, invertY: false, maxPitch: PLAYER.maxPitch },
+    });
+    player = new Player(camera, canvas, { groundAt: heightAt, respawnY: -40 });
+    player.setColliders([]);
+    const ground = recipe.terrain || {};
+    const walkable = (ground.wallHeight ?? 1) < 0 ? (ground.wallStart ?? 0.85) * recipe.radius - 2 : recipe.radius - 6;
+    player.setBounds([{ x: 0, z: 0, radius: walkable }]);
+    player.aim = director;
+    director.attachWorld({ colliders: [] });
+    director.followControls = !touchMode;
+    director.adoptFromCamera();
+    player.reset(recipe.spawn);
 
-  // The flying carpet, as in the realm — open to whoever reaches this page (the
-  // page itself is for administrators).
-  const flight = createWorldCarpet({ scene, player, heightAt, access: { role: 'admin' }, recipe, walkRadius: walkable });
+    // The flying carpet, as in the realm — open to whoever reaches this page (the
+    // page itself is for administrators).
+    flight = createWorldCarpet({ scene, player, heightAt, access: { role: 'admin' }, recipe, walkRadius: walkable });
+  }
   let climbHeld = false;
   let descendHeld = false;
 
   // Maa Kali, who dances as the carpet flies.
   const kali = createKaliFigure();
   scene.add(kali.root);
+  if (touring) {
+    // Nothing carries her in tour mode, so she waits by the parked carpet —
+    // which is where the third stop points the camera.
+    const p = recipe.carpet?.park ?? { x: 7, z: 23, heading: Math.PI };
+    kali.root.position.set(p.x, heightAt(p.x, p.z), p.z);
+    kali.root.rotation.y = p.heading ?? Math.PI;
+  }
 
   // ---- post
   const composer = new EffectComposer(renderer);
@@ -172,18 +201,78 @@ export function bootJyotishaLoka({ mount, onExit = () => {} }) {
     el('p', { text: 'Three foundations of Jyotish, the Vedic science of light. Walk to a site and read.' }),
     el('button', { type: 'button', class: 'jl-ctl', onclick: () => leave() }, 'Leave the world'));
   hudColumn.append(standing);
+  if (touring) {
+    // The panchanga card and the reach prompt belong to a walker. The world
+    // itself is untouched — only the furniture that assumes a body is hidden.
+    hudColumn.style.display = 'none';
+    prompt.style.display = 'none';
+  }
 
-  let started = false;
+  /**
+   * A tour is already "in": there is no pointer lock to acquire, so the world
+   * starts live rather than waiting behind the Enter overlay.
+   */
+  let started = touring;
   const panel = createPanel({
-    onOpen: () => { if (!touchMode && player.isLocked) document.exitPointerLock?.(); },
-    onClose: () => { if (!touchMode && started) { try { player.lock(); } catch { /* click to resume */ } } },
+    onOpen: () => { if (!touchMode && player?.isLocked) document.exitPointerLock?.(); },
+    onClose: () => { if (!touchMode && started && player) { try { player.lock(); } catch { /* click to resume */ } } },
   });
   added.push(panel.root);
 
   const jyotish = createJyotishWorld({ scene, recipe, heightAt, panel, toast, touchMode, quality: quality.name, sky, hud: hudColumn });
 
+  // ---- the tour: a rig, and the buttons that drive it
+  //
+  // Prototype furniture, deliberately inline-styled: this is a feel test, not
+  // the finished layer. It exists so the three stops can be reached without a
+  // navbar, a scroll position or a raycast.
+  let tourBar = null;
+  function showStop(stop) {
+    if (!tourBar || !stop) return;
+    tourBar.querySelector('[data-jl-tour-title]').textContent = stop.title;
+    for (const b of tourBar.querySelectorAll('[data-jl-tour-go]')) {
+      const on = b.dataset.jlTourGo === stop.id;
+      b.style.opacity = on ? '1' : '0.55';
+      b.style.borderColor = on ? '#f1d38a' : 'rgba(241,211,138,0.3)';
+    }
+  }
+  const tour = touring ? createTour({ camera, heightAt, recipe, onStop: showStop }) : null;
+  if (touring) {
+    const pill = 'cursor:pointer;border-radius:999px;padding:9px 15px;font-size:11px;'
+      + 'letter-spacing:.14em;text-transform:uppercase;backdrop-filter:blur(6px);';
+    tourBar = add(el('div', {
+      role: 'navigation',
+      'aria-label': 'Tour stops',
+      style: 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;'
+        + 'display:flex;flex-direction:column;gap:10px;align-items:center;max-width:94vw;'
+        + "font-family:Montserrat,sans-serif;",
+    },
+      el('p', {
+        'data-jl-tour-title': 'true',
+        style: 'margin:0;font-family:"Cormorant Garamond",serif;font-size:21px;letter-spacing:.04em;'
+          + 'color:#f1d38a;text-align:center;text-shadow:0 2px 14px rgba(0,0,0,.85);',
+      }),
+      el('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center;' },
+        ...tour.STOPS.map((s) => el('button', {
+          type: 'button',
+          'data-jl-tour-go': s.id,
+          onclick: () => tour.goTo(s.id),
+          style: `${pill}background:rgba(10,4,28,.72);color:#f4ecff;`
+            + 'border:1px solid rgba(241,211,138,.3);opacity:.55;',
+        }, s.label)),
+        el('button', {
+          type: 'button',
+          onclick: () => leave(),
+          style: `${pill}background:transparent;color:rgba(244,236,255,.6);`
+            + 'border:1px solid rgba(244,236,255,.2);',
+        }, 'Leave')),
+    ));
+    showStop(tour.STOPS[0]);
+  }
+
   // ---- what is in reach
   function inReach() {
+    if (touring) return null;
     const p = player.position;
     let best = null;
     const consider = (d, target) => { if (d < REACH && (!best || d < best.d)) best = { d, ...target }; };
@@ -225,14 +314,14 @@ export function bootJyotishaLoka({ mount, onExit = () => {} }) {
     player.setSprinting(false);
   }
   function callCarpet() {
-    if (!started) return;
+    if (touring || !started) return;
     const r = flight.call();
     if (r.ok) toast(`The carpet is on its way — about ${Math.max(1, Math.round(r.eta))}s`, 2.6);
     else toast({ here: 'The carpet is right here', riding: 'You are already on it', 'already coming': 'It is already on its way' }[r.reason] || 'The carpet cannot come just now', 2.4);
   }
 
   function act() {
-    if (!started || panel.isOpen) return;
+    if (touring || !started || panel.isOpen) return;
     const target = inReach();
     if (flight.riding) {
       if (target?.kind === 'spot') { target.spot.act(); return; }
@@ -266,6 +355,17 @@ export function bootJyotishaLoka({ mount, onExit = () => {} }) {
   listen(window, 'keydown', (e) => {
     if (e.repeat || panel.isOpen) return;
     if (jyotish.onKey(e.code)) return;
+    if (touring) {
+      // Arrow keys move along the stops; 1-3 jump straight to one.
+      if (e.code === 'ArrowRight' || e.code === 'Space') { e.preventDefault(); tour.next(); }
+      else if (e.code === 'ArrowLeft') { e.preventDefault(); tour.prev(); }
+      else if (e.code === 'Escape') leave();
+      else if (/^Digit[1-9]$/.test(e.code)) {
+        const stop = tour.STOPS[Number(e.code.slice(5)) - 1];
+        if (stop) tour.goTo(stop.id);
+      }
+      return;
+    }
     if (e.code === 'KeyE' || e.code === 'Enter') act();
     else if (e.code === 'KeyV') director.cycle();
     else if (e.code === 'KeyC') callCarpet();
@@ -294,30 +394,36 @@ export function bootJyotishaLoka({ mount, onExit = () => {} }) {
   }
 
   // ---- the way in
-  const startButton = el('button', { type: 'button', class: 'jl-ctl jl-ctl--primary jl-enter' }, 'Enter');
-  const overlay = add(el('div', { class: 'jl-overlay' },
-    el('div', { class: 'jl-overlay-inner' },
-      el('p', { class: 'jl-kicker', text: 'Nefer Kali Healing' }),
-      el('h1', { text: recipe.name }),
-      el('p', { class: 'jl-tagline', text: recipe.tagline }),
-      startButton,
-      el('p', { class: 'jl-hint', text: touchMode
-        ? 'Left thumb to walk, right to look. The action button reads, and rides the carpet.'
-        : 'WASD to walk, mouse to look, E to read and to ride the carpet, V for the camera.' }),
-      el('button', { type: 'button', class: 'jl-link', onclick: () => leave() }, '← Back'))));
-  startButton.addEventListener('click', () => {
-    if (started) return;
-    started = true;
-    overlay.classList.add('gone');
-    toast('Walk to a site and press E (or the action button) to read. The carpet waits by the way in — ride it out to the grahas.', 7);
-    if (touchMode) touch.enable();
-    else { try { player.lock(); } catch { /* click the world */ } }
-  });
-  listen(canvas, 'click', () => {
-    if (!touchMode && started && !player.isLocked && !panel.isOpen) {
-      try { player.lock(); } catch { /* click again */ }
-    }
-  });
+  //
+  // Only for a walker. A tour is already in, and pointer lock is exactly the
+  // thing the tour must not take: it would hide the cursor and capture the
+  // mouse on a page whose whole point is clicking things.
+  if (!touring) {
+    const startButton = el('button', { type: 'button', class: 'jl-ctl jl-ctl--primary jl-enter' }, 'Enter');
+    const overlay = add(el('div', { class: 'jl-overlay' },
+      el('div', { class: 'jl-overlay-inner' },
+        el('p', { class: 'jl-kicker', text: 'Nefer Kali Healing' }),
+        el('h1', { text: recipe.name }),
+        el('p', { class: 'jl-tagline', text: recipe.tagline }),
+        startButton,
+        el('p', { class: 'jl-hint', text: touchMode
+          ? 'Left thumb to walk, right to look. The action button reads, and rides the carpet.'
+          : 'WASD to walk, mouse to look, E to read and to ride the carpet, V for the camera.' }),
+        el('button', { type: 'button', class: 'jl-link', onclick: () => leave() }, '← Back'))));
+    startButton.addEventListener('click', () => {
+      if (started) return;
+      started = true;
+      overlay.classList.add('gone');
+      toast('Walk to a site and press E (or the action button) to read. The carpet waits by the way in — ride it out to the grahas.', 7);
+      if (touchMode) touch.enable();
+      else { try { player.lock(); } catch { /* click the world */ } }
+    });
+    listen(canvas, 'click', () => {
+      if (!touchMode && started && !player.isLocked && !panel.isOpen) {
+        try { player.lock(); } catch { /* click again */ }
+      }
+    });
+  }
 
   const seatAt = new THREE.Vector3();
   const SEAT_FLIP = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
@@ -334,30 +440,39 @@ export function bootJyotishaLoka({ mount, onExit = () => {} }) {
     last = now;
     t += dt;
     const live = started && !leaving && !panel.isOpen;
-    const riding = flight.riding;
-    if (riding) {
-      flight.update(live ? dt : 0, flight.input({ keys: player.keys, touchMove: touch?.move, climb: climbHeld, descend: descendHeld, sprint: player.isSprinting }));
-    } else {
-      if (live) player.update(dt);
-      flight.update(live ? dt : 0, {});
-    }
-    player.syncCamera();
-    director.ridingScale = riding ? RIDING_CHASE.carpet : null;
-    director.update(player.eyes, live ? dt : 0, { instant: !started });
-
-    kali.root.visible = !director.isFirstPerson;
-    if (kali.root.visible) {
-      const v = player.velocity;
-      kali.motion.step(live ? dt : 0.016, { vx: riding ? 0 : v.x, vy: riding ? 0 : v.y, vz: riding ? 0 : v.z, grounded: riding || player.onGround, riding });
+    if (touring) {
+      // One writer to the camera: the rig. Kali has no body to follow here, so
+      // she dances where she was parked and the rig decides what is in frame.
+      tour.update(live ? dt : 0, t);
+      kali.root.visible = true;
+      kali.motion.step(live ? dt : 0.016, { vx: 0, vy: 0, vz: 0, grounded: true, riding: false });
       kali.sync();
+    } else {
+      const riding = flight.riding;
       if (riding) {
-        // Standing on the rug — dancing — banking and pitching with it.
-        const rug = flight.carpet.group;
-        rug.updateMatrixWorld();
-        kali.root.position.copy(rug.localToWorld(seatAt.set(0, 0.12, 0.1)));
-        kali.root.quaternion.copy(rug.quaternion).multiply(SEAT_FLIP);
+        flight.update(live ? dt : 0, flight.input({ keys: player.keys, touchMove: touch?.move, climb: climbHeld, descend: descendHeld, sprint: player.isSprinting }));
       } else {
-        kali.root.position.copy(player.position);
+        if (live) player.update(dt);
+        flight.update(live ? dt : 0, {});
+      }
+      player.syncCamera();
+      director.ridingScale = riding ? RIDING_CHASE.carpet : null;
+      director.update(player.eyes, live ? dt : 0, { instant: !started });
+
+      kali.root.visible = !director.isFirstPerson;
+      if (kali.root.visible) {
+        const v = player.velocity;
+        kali.motion.step(live ? dt : 0.016, { vx: riding ? 0 : v.x, vy: riding ? 0 : v.y, vz: riding ? 0 : v.z, grounded: riding || player.onGround, riding });
+        kali.sync();
+        if (riding) {
+          // Standing on the rug — dancing — banking and pitching with it.
+          const rug = flight.carpet.group;
+          rug.updateMatrixWorld();
+          kali.root.position.copy(rug.localToWorld(seatAt.set(0, 0.12, 0.1)));
+          kali.root.quaternion.copy(rug.quaternion).multiply(SEAT_FLIP);
+        } else {
+          kali.root.position.copy(player.position);
+        }
       }
     }
 
@@ -366,9 +481,9 @@ export function bootJyotishaLoka({ mount, onExit = () => {} }) {
     for (const s of sites) s.built.update(t);
     jyotish.update(dt, t, { started: started && !leaving, paused: panel.isOpen });
 
-    const reach = started && !panel.isOpen ? inReach() : null;
+    const reach = started && !panel.isOpen && !touring ? inReach() : null;
     const label = reach ? labelFor(reach)
-      : started && !panel.isOpen && !riding && flight.canMount() ? 'Ride the carpet with Kali'
+      : !touring && started && !panel.isOpen && !flight.riding && flight.canMount() ? 'Ride the carpet with Kali'
         : null;
     if (label !== shownLabel) {
       shownLabel = label;
@@ -386,7 +501,8 @@ export function bootJyotishaLoka({ mount, onExit = () => {} }) {
     cancelAnimationFrame(raf);
     for (const fn of cleanups.splice(0)) { try { fn(); } catch { /* already gone */ } }
     try { if (document.pointerLockElement) document.exitPointerLock(); } catch { /* not locked */ }
-    try { player.dispose(); } catch { /* fine */ }
+    try { tour?.dispose(); } catch { /* fine */ }
+    try { player?.dispose(); } catch { /* fine */ }
     jyotish.setVisible?.(false);
     for (const node of added.splice(0)) node.remove();
     document.body.classList.remove('world-mode', 'jl-active', 'touch-mode');
