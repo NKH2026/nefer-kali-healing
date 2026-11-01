@@ -51,6 +51,8 @@ import AdminDrafts from './pages/admin/Drafts';
 import AdminLayout from './components/admin/AdminLayout';
 // Loaded only when an administrator opens it: the 3D world stays out of everyone else's download.
 const JyotishaLoka = React.lazy(() => import('./pages/JyotishaLoka'));
+// The full-page tour preview: unlisted, and lazy for the same reason as the world above.
+const LokaPreview = React.lazy(() => import('./pages/LokaPreview'));
 import ProtectedRoute from './components/admin/ProtectedRoute';
 
 
@@ -124,6 +126,14 @@ const App: React.FC = () => {
               <Route path="/guides/cashew-bark" element={<CashewBarkGuide />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsAndConditions />} />
+
+              {/* Loka tour preview: unlisted, noindex. The world sits behind a
+                  normal scrolling document. Not linked from anywhere on purpose. */}
+              <Route path="/loka-preview" element={
+                <React.Suspense fallback={<div className="fixed inset-0 bg-[#05021a]" />}>
+                  <LokaPreview />
+                </React.Suspense>
+              } />
 
               {/* Admin Routes */}
               <Route path="/admin/login" element={<Login />} />

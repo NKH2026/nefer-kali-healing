@@ -23,6 +23,8 @@ import { GradeShader } from './engine/post-fx.js';
 import { Player } from './engine/player.js';
 import { CameraDirector, RIDING_CHASE } from './engine/camera-director.js';
 import { createTour } from './engine/tour.js';
+import { buildShots, grahaFrame, TOUR_STOPS } from './engine/shots.js';
+import { createOfferings } from './engine/scenes/offerings.js';
 import { TouchControls } from './engine/ui/touch.js';
 import { createGround, createPortal, createSite } from './engine/worlds/builders.js';
 import { createWorldCarpet } from './engine/worlds/world-carpet.js';
@@ -44,7 +46,15 @@ export function isTouchDevice() {
   return Boolean(globalThis.matchMedia?.('(pointer: coarse)').matches) || 'ontouchstart' in globalThis;
 }
 
-export function bootJyotishaLoka({ mount, onExit = () => {}, mode = 'explore' }) {
+export function bootJyotishaLoka({
+  mount,
+  onExit = () => {},
+  mode = 'explore',
+  /** Whether this mode draws its own stop bar. A page with its own navigation passes false. */
+  chrome = true,
+  /** Called once with a handle the page can drive: { goTo, next, prev, stops }. */
+  onReady = null,
+}) {
   const recipe = JYOTISHA_LOKA;
   /**
    * Two ways to be in this world, and they share everything except the camera
@@ -58,7 +68,16 @@ export function bootJyotishaLoka({ mount, onExit = () => {}, mode = 'explore' })
    * The whole of the difference is this flag; the world below is built the same.
    */
   const touring = mode === 'tour';
-  const touchMode = isTouchDevice() && !touring;
+  /**
+   * A coarse pointer means "phone or tablet", and that is a fact about the
+   * DEVICE — not about whether the tour draws touch controls. Quality must
+   * follow the device, or a phone touring the world would get the desktop
+   * preset: full-resolution bloom, shadows and twice the pixels, which is the
+   * difference between smooth and a slideshow on exactly the devices that
+   * cannot afford it.
+   */
+  const coarsePointer = isTouchDevice();
+  const touchMode = coarsePointer && !touring;
   const cleanups = [];
   const listen = (target, type, fn, opts) => {
     target.addEventListener(type, fn, opts);
@@ -68,13 +87,19 @@ export function bootJyotishaLoka({ mount, onExit = () => {}, mode = 'explore' })
   const add = (node, parent = document.body) => { parent.append(node); added.push(node); return node; };
 
   document.body.classList.add('world-mode', 'jl-active');
+  /**
+   * Explore owns the whole window and locks the page behind it. A tour sits
+   * BEHIND the document instead — the sections scroll over the canvas — so the
+   * page must keep scrolling normally. Same class, opposite requirement.
+   */
+  if (!touring) document.body.classList.add('viewport-locked');
   if (touchMode) document.body.classList.add('touch-mode');
 
   // ---- renderer and scene
   const canvas = el('canvas', { class: 'jl-canvas' });
   mount.append(canvas);
   added.push(canvas);
-  const presetName = touchMode ? 'low' : 'high';
+  const presetName = coarsePointer ? 'low' : 'high';
   const quality = { name: presetName, ...QUALITY.presets[presetName] };
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', stencil: false });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, quality.pixelRatio));
@@ -86,11 +111,18 @@ export function bootJyotishaLoka({ mount, onExit = () => {}, mode = 'explore' })
   const P = recipe.palette;
   renderer.setClearColor(P.fog);
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(P.fog, P.fogDensity);
+  /**
+   * Fog is what gives the island its depth, but the sky tour is fought at
+   * 250 m: at the island's density the far grahas (Śani, Rāhu, Ketu at 232–252)
+   * come out ~67 % fogged, which turns half the districts into ghosts. The sky
+   * gets its own, far lighter air.
+   */
+  scene.fog = new THREE.FogExp2(P.fog, touring ? 0.0011 : P.fogDensity);
   const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 2000);
 
   const heightAt = makeHeightAt(recipe);
-  scene.add(createGround(recipe, heightAt, { segments: quality.name === 'low' ? 96 : 160 }));
+  // The island is for walking on. The sky tour has no ground at all.
+  if (!touring) scene.add(createGround(recipe, heightAt, { segments: quality.name === 'low' ? 96 : 160 }));
   const sky = createCosmosSky(P);
   scene.add(sky.mesh);
   const hemi = new THREE.HemisphereLight(P.ambient, 0x0a0705, 1.0);
@@ -102,16 +134,22 @@ export function bootJyotishaLoka({ mount, onExit = () => {}, mode = 'explore' })
   scene.add(hemi, key, key.target);
 
   // ---- the three sites: each module's lessons at its stations, its shrine behind
-  const sites = recipe.sites.map((site) => {
-    const m = MODULES[site.module];
-    const layout = layoutSite(site, { lessons: m?.lessons?.length || 3 });
-    const built = createSite(site, layout, heightAt, (m?.lessons || []).map((l) => l.id));
-    built.setState('open', new Set());
-    scene.add(built.group);
-    return { site, layout, built };
-  });
-  const portal = createPortal(recipe.portal, heightAt);
-  scene.add(portal.group);
+  //
+  // Island-only. The sky tour has no lesson stations to walk up to.
+  const sites = [];
+  let portal = null;
+  if (!touring) {
+    for (const site of recipe.sites) {
+      const m = MODULES[site.module];
+      const layout = layoutSite(site, { lessons: m?.lessons?.length || 3 });
+      const built = createSite(site, layout, heightAt, (m?.lessons || []).map((l) => l.id));
+      built.setState('open', new Set());
+      scene.add(built.group);
+      sites.push({ site, layout, built });
+    }
+    portal = createPortal(recipe.portal, heightAt);
+    scene.add(portal.group);
+  }
 
   // ---- the body
   //
@@ -148,11 +186,9 @@ export function bootJyotishaLoka({ mount, onExit = () => {}, mode = 'explore' })
   const kali = createKaliFigure();
   scene.add(kali.root);
   if (touring) {
-    // Nothing carries her in tour mode, so she waits by the parked carpet —
-    // which is where the third stop points the camera.
-    const p = recipe.carpet?.park ?? { x: 7, z: 23, heading: Math.PI };
-    kali.root.position.set(p.x, heightAt(p.x, p.z), p.z);
-    kali.root.rotation.y = p.heading ?? Math.PI;
+    // Nothing carries her in the sky, and there is no ground to dance on. She
+    // returns when the Community district gives her a drum circle to dance in.
+    kali.root.visible = false;
   }
 
   // ---- post
@@ -219,7 +255,29 @@ export function bootJyotishaLoka({ mount, onExit = () => {}, mode = 'explore' })
   });
   added.push(panel.root);
 
-  const jyotish = createJyotishWorld({ scene, recipe, heightAt, panel, toast, touchMode, quality: quality.name, sky, hud: hudColumn });
+  const jyotish = createJyotishWorld({ scene, recipe, heightAt, panel, toast, touchMode, quality: quality.name, sky, hud: hudColumn, island: !touring });
+
+  // ---- the sky districts
+  //
+  // Placed against tonight's real positions: Śukra's market sits a little
+  // outside where Venus actually is, turned so the river runs along the orbit
+  // and the planet hangs behind the stalls.
+  let offerings = null;
+  if (touring) {
+    const frame = grahaFrame(jyotish.positions, 'shukra');
+    const stop = TOUR_STOPS.find((s) => s.id === 'wellness');
+    const out = stop?.out ?? 0;
+    offerings = createOfferings();
+    offerings.group.position.set(
+      frame.x + Math.cos(frame.angle) * out,
+      frame.y + (stop?.lift ?? 0) - 3.2,
+      frame.z - Math.sin(frame.angle) * out,
+    );
+    // +X of the district points along the orbit's tangent, so the river runs
+    // the way the sky turns.
+    offerings.group.rotation.y = frame.angle + Math.PI / 2;
+    scene.add(offerings.group);
+  }
 
   // ---- the tour: a rig, and the buttons that drive it
   //
@@ -236,8 +294,18 @@ export function bootJyotishaLoka({ mount, onExit = () => {}, mode = 'explore' })
       b.style.borderColor = on ? '#f1d38a' : 'rgba(241,211,138,0.3)';
     }
   }
-  const tour = touring ? createTour({ camera, heightAt, recipe, onStop: showStop }) : null;
-  if (touring) {
+  const tour = touring ? createTour({ camera, stops: buildShots({ positions: jyotish.positions }), onStop: showStop }) : null;
+  if (tour && typeof onReady === 'function') {
+    // Everything the page needs to drive the world, and nothing else: the page
+    // owns scroll, the navbar and the sections; the world only knows how to fly.
+    onReady({
+      goTo: (id, opts) => tour.goTo(id, opts),
+      next: () => tour.next(),
+      prev: () => tour.prev(),
+      stops: tour.STOPS,
+    });
+  }
+  if (touring && chrome) {
     const pill = 'cursor:pointer;border-radius:999px;padding:9px 15px;font-size:11px;'
       + 'letter-spacing:.14em;text-transform:uppercase;backdrop-filter:blur(6px);';
     tourBar = add(el('div', {
@@ -355,7 +423,9 @@ export function bootJyotishaLoka({ mount, onExit = () => {}, mode = 'explore' })
   listen(window, 'keydown', (e) => {
     if (e.repeat || panel.isOpen) return;
     if (jyotish.onKey(e.code)) return;
-    if (touring) {
+    // When a page draws its own chrome it also owns the keys: two systems
+    // driving the camera would desync from the scroll position.
+    if (touring && chrome) {
       // Arrow keys move along the stops; 1-3 jump straight to one.
       if (e.code === 'ArrowRight' || e.code === 'Space') { e.preventDefault(); tour.next(); }
       else if (e.code === 'ArrowLeft') { e.preventDefault(); tour.prev(); }
@@ -441,12 +511,12 @@ export function bootJyotishaLoka({ mount, onExit = () => {}, mode = 'explore' })
     t += dt;
     const live = started && !leaving && !panel.isOpen;
     if (touring) {
-      // One writer to the camera: the rig. Kali has no body to follow here, so
-      // she dances where she was parked and the rig decides what is in frame.
+      // One writer to the camera: the rig.
       tour.update(live ? dt : 0, t);
-      kali.root.visible = true;
-      kali.motion.step(live ? dt : 0.016, { vx: 0, vy: 0, vz: 0, grounded: true, riding: false });
-      kali.sync();
+      if (kali.root.visible) {
+        kali.motion.step(live ? dt : 0.016, { vx: 0, vy: 0, vz: 0, grounded: true, riding: false });
+        kali.sync();
+      }
     } else {
       const riding = flight.riding;
       if (riding) {
@@ -477,7 +547,8 @@ export function bootJyotishaLoka({ mount, onExit = () => {}, mode = 'explore' })
     }
 
     sky.update(t);
-    portal.update(t);
+    portal?.update(t);
+    offerings?.update(t);
     for (const s of sites) s.built.update(t);
     jyotish.update(dt, t, { started: started && !leaving, paused: panel.isOpen });
 
@@ -505,7 +576,7 @@ export function bootJyotishaLoka({ mount, onExit = () => {}, mode = 'explore' })
     try { player?.dispose(); } catch { /* fine */ }
     jyotish.setVisible?.(false);
     for (const node of added.splice(0)) node.remove();
-    document.body.classList.remove('world-mode', 'jl-active', 'touch-mode');
+    document.body.classList.remove('world-mode', 'jl-active', 'touch-mode', 'viewport-locked');
     scene.traverse((o) => {
       o.geometry?.dispose?.();
       const mats = Array.isArray(o.material) ? o.material : o.material ? [o.material] : [];

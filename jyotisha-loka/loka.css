@@ -2,8 +2,13 @@
  * Jyotisha Loka on Nefer Kali Healing: the page's own furniture — the canvas,
  * the way in, the message line, the cards and the reading panel. Everything is
  * under body.jl-active or a jl- class, so none of it reaches the rest of the site.
+ *
+ * The page-scroll lock is a separate class on purpose. Explore is a portal that
+ * owns the window; the tour is a background behind a normal scrolling page, and
+ * locking the scroll there would freeze the site.
  */
-body.jl-active { overflow: hidden; background: #05021a; }
+body.jl-active { background: #05021a; }
+body.jl-active.viewport-locked { overflow: hidden; }
 .jl-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; z-index: 1; touch-action: none; }
 
 .jl-overlay {

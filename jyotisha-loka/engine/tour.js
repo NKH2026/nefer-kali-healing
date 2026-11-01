@@ -31,9 +31,9 @@
  *   • `lookAt` can never roll the horizon. Independent position/quaternion
  *     interpolation can, and a banked horizon looks like a bug.
  *
- * Prototype note: the three stops below are hardcoded to places that already
- * exist in the recipe. The real version reads them from a `shots.js` that the
- * navbar, the scroll positions and the world all share.
+ * Prototype note: the stops themselves live in `engine/shots.js`, shared with
+ * the page and the navigation. This module knows nothing about which places
+ * exist in the world — only how to fly between numbers.
  */
 import gsap from 'gsap';
 
@@ -52,17 +52,31 @@ function nearestYaw(from, to) {
   return from + d;
 }
 
-/** Place the camera from a shot's own numbers, plus any idle drift. */
+/**
+ * Place the camera from a shot's own numbers, plus any idle drift.
+ *
+ * ── Why the aim is three flat numbers, not a Vector3 ────────────────────────
+ *
+ * This rig used to hold `target: {x, y, z}` and tween it with a nested path,
+ * `'target.x'`. GSAP silently declined to move it, so `distance` and `yaw`
+ * changed while the aim stayed pinned at the world origin: the camera flew to
+ * thirty metres from the CENTRE of the sky and stared at empty space, with the
+ * district it was supposed to be showing sitting a couple of hundred metres
+ * away, tiny. Nothing threw. It just quietly framed nothing.
+ *
+ * Flat scalars cannot do that: `tx` is a number on the tweened object or it is
+ * a typo, and a typo shows up immediately as a camera in the wrong place.
+ */
 function placeCamera(camera, rig, drift) {
   const yaw = rig.yaw + drift.yaw;
   const pitch = rig.pitch + drift.pitch;
   const cosP = Math.cos(pitch);
   camera.position.set(
-    rig.target.x + Math.sin(yaw) * cosP * rig.distance,
-    rig.target.y + Math.sin(pitch) * rig.distance,
-    rig.target.z + Math.cos(yaw) * cosP * rig.distance,
+    rig.tx + Math.sin(yaw) * cosP * rig.distance,
+    rig.ty + Math.sin(pitch) * rig.distance,
+    rig.tz + Math.cos(yaw) * cosP * rig.distance,
   );
-  camera.lookAt(rig.target.x, rig.target.y, rig.target.z);
+  camera.lookAt(rig.tx, rig.ty, rig.tz);
   // Only touch the projection when the fov actually moved: rebuilding the
   // projection matrix every frame is wasted work and can shimmer.
   if (Math.abs(camera.fov - rig.fov) > 0.01) {
@@ -74,56 +88,18 @@ function placeCamera(camera, rig, drift) {
 /**
  * @param {object} opts
  * @param {import('three').PerspectiveCamera} opts.camera
- * @param {(x:number,z:number)=>number} opts.heightAt
- * @param {object} opts.recipe
+ * @param {Array<{id:string,title:string,target:{x:number,y:number,z:number},distance:number,yaw:number,pitch:number,fov:number}>} opts.stops
  * @param {(stop: {id:string,title:string}) => void} [opts.onStop]
  */
-export function createTour({ camera, heightAt, recipe, onStop = () => {} }) {
-  const H = heightAt;
-  const park = recipe.carpet?.park ?? { x: 7, z: 23 };
-  const observatory = (recipe.sites || []).find((s) => s.module === 'jyotish') || recipe.sites?.[0] || { x: 0, z: -52 };
-
-  /**
-   * The three shots. Chosen to exercise three different kinds of move:
-   * a wide establishing shot, a long flight to a far district, and a tight
-   * close-up — which is where a camera rig usually falls apart.
-   */
-  const STOPS = [
-    {
-      id: 'arrival',
-      label: '1 · Arrival',
-      title: 'The world, from above',
-      target: { x: 0, y: H(0, -4) + 8, z: -4 },
-      distance: 64,
-      yaw: 0.55,
-      pitch: 0.34,
-      fov: 66,
-    },
-    {
-      id: 'observatory',
-      label: '2 · Observatory',
-      title: 'The Observatory of Light',
-      target: { x: observatory.x, y: H(observatory.x, observatory.z) + 5.5, z: observatory.z },
-      distance: 26,
-      yaw: 0.16,
-      pitch: 0.3,
-      fov: 52,
-    },
-    {
-      id: 'kali',
-      label: '3 · Kali',
-      title: 'Maa Kali, dancing',
-      target: { x: park.x, y: H(park.x, park.z) + 1.7, z: park.z },
-      distance: 8.5,
-      yaw: 1.0,
-      pitch: 0.14,
-      fov: 38,
-    },
-  ];
+export function createTour({ camera, stops = [], onStop = () => {} }) {
+  const STOPS = stops;
+  if (!STOPS.length) throw new Error('[tour] no stops — pass shots built from engine/shots.js');
 
   /** The live numbers. Only this object is ever tweened. */
   const rig = {
-    target: { x: STOPS[0].target.x, y: STOPS[0].target.y, z: STOPS[0].target.z },
+    tx: STOPS[0].target.x,
+    ty: STOPS[0].target.y,
+    tz: STOPS[0].target.z,
     distance: STOPS[0].distance,
     yaw: STOPS[0].yaw,
     pitch: STOPS[0].pitch,
@@ -153,9 +129,9 @@ export function createTour({ camera, heightAt, recipe, onStop = () => {} }) {
     tween = null;
 
     if (immediate) {
-      rig.target.x = stop.target.x;
-      rig.target.y = stop.target.y;
-      rig.target.z = stop.target.z;
+      rig.tx = stop.target.x;
+      rig.ty = stop.target.y;
+      rig.tz = stop.target.z;
       rig.distance = stop.distance;
       rig.yaw = yaw;
       rig.pitch = stop.pitch;
@@ -165,9 +141,9 @@ export function createTour({ camera, heightAt, recipe, onStop = () => {} }) {
     }
 
     tween = gsap.to(rig, {
-      'target.x': stop.target.x,
-      'target.y': stop.target.y,
-      'target.z': stop.target.z,
+      tx: stop.target.x,
+      ty: stop.target.y,
+      tz: stop.target.z,
       distance: stop.distance,
       yaw,
       pitch: stop.pitch,

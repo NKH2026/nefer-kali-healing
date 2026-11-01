@@ -44,13 +44,19 @@ const grahaName = (id) => GRAHAS.find((g) => g.id === id)?.name ?? id;
  * @param {{scene: THREE.Scene, recipe: object, heightAt: Function, panel: object,
  *          toast: Function, touchMode: boolean, quality: string, sky?: {setTint?: Function}}} opts
  */
-export function createJyotishWorld({ scene, recipe, heightAt, panel, toast, touchMode, quality = 'high', sky = null, hud = document.body }) {
+export function createJyotishWorld({ scene, recipe, heightAt, panel, toast, touchMode, quality = 'high', sky = null, hud = document.body, island = true }) {
   const wheel = createZodiacWheel({ quality });
   const grahas = createGrahas({ quality });
   const orrery = createOrrery(recipe.centerpiece, heightAt);
   const moonAltar = createAltar(recipe.altars.moon, heightAt, { colour: PALETTE.glyph.cyan, emblem: 'moon' });
   const birthAltar = createAltar(recipe.altars.birth, heightAt, { colour: PALETTE.life.magenta, emblem: 'star' });
-  scene.add(wheel.group, grahas.group, orrery.group, moonAltar.group, birthAltar.group);
+  scene.add(wheel.group, grahas.group);
+  /**
+   * The orrery and the altars stand on the island. A tour in the sky has no
+   * ground for them, so they are built (the spots below still read their
+   * positions) but never added to the scene.
+   */
+  if (island) scene.add(orrery.group, moonAltar.group, birthAltar.group);
 
   const collected = loadMansions();
   let birth = loadBirthStar();
