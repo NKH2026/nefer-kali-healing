@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { CartIcon } from './cart';
 import { Menu, X } from 'lucide-react';
 
@@ -20,6 +20,47 @@ const Navbar: React.FC = () => {
   const isHome = pathname === '/';
   const isAdmin = pathname.startsWith('/admin');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [params] = useSearchParams();
+
+  /**
+   * When the 3D tour is switched on, this navbar does not navigate — it
+   * scrolls, and the world's camera follows the scroll. Everywhere else, and
+   * on `/` with the flag off, it behaves exactly as it always has.
+   *
+   * That matters as much as the feature does: the navbar is on every page, so
+   * the dark launch has to leave the old behaviour byte-for-byte intact.
+   */
+  const onTour = pathname === '/' && params.get('loka') === '1';
+  const [activeStop, setActiveStop] = useState('home');
+
+  // Which section is on screen, so the right item is lit.
+  useEffect(() => {
+    if (!onTour) return undefined;
+    const sync = () => {
+      let best = navItems[0].id;
+      let nearest = Infinity;
+      for (const item of navItems) {
+        const el = document.getElementById(item.id);
+        if (!el) continue;
+        const d = Math.abs(el.getBoundingClientRect().top);
+        if (d < nearest) { nearest = d; best = item.id; }
+      }
+      setActiveStop(best);
+    };
+    sync();
+    window.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync);
+    return () => {
+      window.removeEventListener('scroll', sync);
+      window.removeEventListener('resize', sync);
+    };
+  }, [onTour]);
+
+  /** Move the page. The camera follows the page; it never leads it. */
+  const flyTo = (id: string) => {
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    document.getElementById(id)?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+  };
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -57,11 +98,24 @@ const Navbar: React.FC = () => {
         {/* Desktop Navigation */}
         <div className="hidden md:flex gap-2 pointer-events-auto items-center">
           {navItems.map((item) => {
-            const isActive = pathname === item.path;
+            const isActive = onTour ? activeStop === item.id : pathname === item.path;
             const baseClasses = "px-4 py-2 text-xs uppercase tracking-widest rounded-full border transition-all duration-300";
             const activeClasses = isActive
               ? "text-[#D4AF37] border-[#D4AF37]/40 bg-[#D4AF37]/10"
               : "text-white/70 border-transparent hover:text-[#D4AF37] hover:border-[#D4AF37]/30 hover:bg-[#D4AF37]/5";
+            if (onTour) {
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => flyTo(item.id)}
+                  aria-current={isActive ? 'true' : undefined}
+                  className={`${baseClasses} ${activeClasses}`}
+                >
+                  {item.label}
+                </button>
+              );
+            }
             return item.path ? (
               <Link
                 key={item.id}
@@ -124,16 +178,30 @@ const Navbar: React.FC = () => {
           <ul className="space-y-1">
             {navItems.map((item) => (
               <li key={item.id}>
-                <Link
-                  to={item.path}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`block py-3 px-4 text-sm uppercase tracking-widest transition-colors rounded-lg ${pathname === item.path
-                      ? 'text-[#D4AF37] bg-[#D4AF37]/10'
-                      : 'text-white/60 hover:text-[#D4AF37] hover:bg-white/5'
-                    }`}
-                >
-                  {item.label}
-                </Link>
+                {onTour ? (
+                  <button
+                    type="button"
+                    onClick={() => { setMobileMenuOpen(false); flyTo(item.id); }}
+                    aria-current={activeStop === item.id ? 'true' : undefined}
+                    className={`block w-full text-left py-3 px-4 text-sm uppercase tracking-widest transition-colors rounded-lg ${activeStop === item.id
+                        ? 'text-[#D4AF37] bg-[#D4AF37]/10'
+                        : 'text-white/60 hover:text-[#D4AF37] hover:bg-white/5'
+                      }`}
+                  >
+                    {item.label}
+                  </button>
+                ) : (
+                  <Link
+                    to={item.path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`block py-3 px-4 text-sm uppercase tracking-widest transition-colors rounded-lg ${pathname === item.path
+                        ? 'text-[#D4AF37] bg-[#D4AF37]/10'
+                        : 'text-white/60 hover:text-[#D4AF37] hover:bg-white/5'
+                      }`}
+                  >
+                    {item.label}
+                  </Link>
+                )}
               </li>
             ))}
           </ul>

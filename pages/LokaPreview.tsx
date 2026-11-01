@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 // @ts-ignore — untyped JS modules
 import { bootJyotishaLoka } from '../jyotisha-loka/boot.js';
@@ -51,6 +51,14 @@ const LokaPreview: React.FC = () => {
   const mount = useRef<HTMLDivElement>(null);
   const world = useRef<{ goTo: (id: string, opts?: { immediate?: boolean }) => void } | null>(null);
   const [params] = useSearchParams();
+  const { pathname } = useLocation();
+  /**
+   * On its own preview URL this page is an internal tool and must never be
+   * indexed. Embedded on the real home page it IS the home page, so it takes
+   * the ordinary title and no robots directive — otherwise flipping the flag
+   * on would quietly de-index the site.
+   */
+  const isPreview = pathname !== '/';
 
   /**
    * `?stop=wellness` opens the tour already at a district. Useful for sending
@@ -177,9 +185,12 @@ const LokaPreview: React.FC = () => {
   return (
     <div className="relative">
       <Helmet>
-        <title>Loka tour preview — Nefer Kali Healing</title>
-        <meta name="robots" content="noindex, nofollow" />
-        <meta name="description" content="Internal preview of the Jyotisha Loka home-page tour." />
+        <title>{isPreview
+          ? 'Loka tour preview — Nefer Kali Healing'
+          : 'Nefer Kali Healing | Holistic Wellness & Spiritual Education'}</title>
+        {isPreview
+          ? <meta name="robots" content="noindex, nofollow" />
+          : <meta name="description" content="Holistic healing through Kemetic, Orisha, and Vedic wisdom. Natural herbal products, spiritual education, and community wellness for all." />}
       </Helmet>
 
       {/*

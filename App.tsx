@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, useSearchParams } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Navbar from './components/Navbar';
@@ -70,6 +70,24 @@ const ScrollToTop = () => {
 import { supabase } from './lib/supabase';
 import { ThemeProvider } from './lib/ThemeProvider';
 
+/**
+ * The home page, with the 3D tour behind a flag.
+ *
+ * `/?loka=1` renders the tour; without the flag this is the page that ships
+ * today, unchanged. That is deliberate: the tour can be deployed and reviewed
+ * on the real domain while every ordinary visitor still sees the old home page,
+ * and turning it on becomes a one-line decision rather than a deploy.
+ */
+const HomeRoute: React.FC = () => {
+  const [params] = useSearchParams();
+  if (params.get('loka') !== '1') return <Home />;
+  return (
+    <React.Suspense fallback={<div className="fixed inset-0 bg-[#05021a]" />}>
+      <LokaPreview />
+    </React.Suspense>
+  );
+};
+
 const App: React.FC = () => {
   console.log('--- App component rendering ---');
   React.useEffect(() => {
@@ -99,7 +117,7 @@ const App: React.FC = () => {
 
           <main className="overflow-x-hidden">
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<HomeRoute />} />
               <Route path="/about" element={<About />} />
               <Route path="/offerings" element={<Shop />} />
               <Route path="/offerings/:slug" element={<ProductDetail />} />
