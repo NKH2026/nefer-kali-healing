@@ -317,6 +317,8 @@ export function bootJyotishaLoka({
       stops: tour.STOPS,
       /** Hand the market its products: (0 = Sea Moss, 1 = Women's Wellness, 2 = Sacred Plants). */
       setProducts: (slot, urls) => offerings?.setProducts(slot, urls),
+      /** Send the sky to a moment — a birth date, in milliseconds. */
+      setChart: (ms) => jyotish.setDate(ms),
     });
   }
   if (touring && chrome) {

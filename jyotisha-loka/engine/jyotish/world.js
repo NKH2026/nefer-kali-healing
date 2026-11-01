@@ -288,6 +288,18 @@ export function createJyotishWorld({ scene, recipe, heightAt, panel, toast, touc
 
   refresh();
 
+  /**
+   * Move the whole sky to a moment.
+   *
+   * This is the birth chart, and it needed no new astronomy: the world already
+   * places the nine grahas at any instant, because it does so for "now" every
+   * twenty seconds. A chart is that same function with a different date.
+   */
+  function setDate(ms) {
+    offsetDays = Math.round((ms - Date.now()) / DAY_MS);
+    sinceRefresh = REFRESH;
+    refresh();
+  }
   return {
     spots,
     get today() { return today; },
@@ -296,6 +308,7 @@ export function createJyotishWorld({ scene, recipe, heightAt, panel, toast, touc
     collected,
     get birth() { return birth; },
     travel,
+    setDate,
     openGrahaGuide,
     openGraha,
     /** Where a graha is drawn right now (for tests and tinkering). */

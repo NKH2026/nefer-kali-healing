@@ -106,6 +106,7 @@ const LokaPreview: React.FC = () => {
   const world = useRef<{
     goTo: (id: string, opts?: { immediate?: boolean }) => void;
     setProducts?: (slot: number, urls: string[]) => void;
+    setChart?: (ms: number) => void;
   } | null>(null);
   const [params] = useSearchParams();
   const { pathname } = useLocation();
@@ -134,6 +135,8 @@ const LokaPreview: React.FC = () => {
   const [tab, setTab] = useState(0);
   /** Which room is open, and where it starts. Null = standing in the world. */
   const [room, setRoom] = useState<string | null>(params.get('room'));
+  const [birthDate, setBirthDate] = useState('');
+  const [birthTime, setBirthTime] = useState('');
   /** The page showing inside the room; the world stays mounted regardless. */
   const [roomPath, setRoomPath] = useState(params.get('room') || '');
   const navigate = useNavigate();
@@ -486,6 +489,42 @@ const LokaPreview: React.FC = () => {
                     </li>
                   ))}
                 </ul>
+              )}
+              {stop.id === 'planetary' && (
+                <div className="mt-6 rounded-xl border border-white/10 p-3">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-[#D4AF37]">Your sky</p>
+                  <p className="mt-1 text-[11px] text-white/45">Enter a birth date and the whole sky moves to that moment.</p>
+                  <div className="mt-3 flex flex-wrap items-end gap-2">
+                    <label className="text-[11px] text-white/60">
+                      Birth date
+                      <input
+                        type="date"
+                        value={birthDate}
+                        onChange={(e) => setBirthDate(e.target.value)}
+                        className="mt-1 block rounded-lg border border-white/15 bg-white/5 px-2 py-1 text-[12px] text-white"
+                      />
+                    </label>
+                    <label className="text-[11px] text-white/60">
+                      Time
+                      <input
+                        type="time"
+                        value={birthTime}
+                        onChange={(e) => setBirthTime(e.target.value)}
+                        className="mt-1 block rounded-lg border border-white/15 bg-white/5 px-2 py-1 text-[12px] text-white"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const at = new Date(`${birthDate || '1970-01-01'}T${birthTime || '12:00'}`);
+                        if (!Number.isNaN(at.getTime())) world.current?.setChart?.(at.getTime());
+                      }}
+                      className="rounded-full border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-4 py-2 text-[10px] uppercase tracking-[0.18em] text-[#D4AF37] hover:bg-[#D4AF37]/20"
+                    >
+                      Show my sky
+                    </button>
+                  </div>
+                </div>
               )}
               {stop.id === 'wellness' && goods.length > 0 && (
                 <div className="mt-6">
