@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 // The world itself is plain JavaScript (jyotisha-loka/), adapted from the Per Ankh
 // realm; this page only gives it somewhere to live and a way out.
 // @ts-ignore â€” untyped JS module
@@ -20,9 +20,16 @@ const JyotishaLoka: React.FC = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const mode = params.get('tour') === '1' ? 'tour' : 'explore';
+  /**
+   * ?tour=1 here is retired. This page is the bare world with a stop bar — it
+   * has no page content — and it is not what the tour became. Sending it to the
+   * real thing is kinder than leaving two tour pages that look similar and
+   * behave differently.
+   */
+  const retiredTour = mode === 'tour';
 
   useEffect(() => {
-    if (!mount.current) return undefined;
+    if (!mount.current || retiredTour) return undefined;
     let dispose: (() => void) | null = null;
     try {
       dispose = bootJyotishaLoka({
@@ -38,6 +45,8 @@ const JyotishaLoka: React.FC = () => {
     }
     return () => { dispose?.(); };
   }, [navigate, mode]);
+
+  if (retiredTour) return <Navigate to="/?loka=1" replace />;
 
   return <div ref={mount} className="fixed inset-0 bg-[#05021a]" aria-label="Jyotisha Loka" />;
 };
