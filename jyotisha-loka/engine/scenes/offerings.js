@@ -172,41 +172,84 @@ export function createOfferings({ scale = 1 } = {}) {
     roughness: 0.4,
   });
 
+  /**
+   * Three doors, three categories — not a row of canopies.
+   *
+   * A canopy full of jars reads as "market" and says nothing about what is for
+   * sale. A door is a promise about what is behind it: walk through Sea Moss
+   * and you have chosen Sea Moss. The live offerings page lists five
+   * categories; these three are the narrowing, and a door is where a category
+   * becomes somewhere to go.
+   */
   const stalls = [
-    { x: -9, rot: 0.12, tint: 0x8e1f4a },
-    { x: 0, rot: -0.08, tint: 0x2f6b5a },
-    { x: 9, rot: 0.06, tint: 0x7a4a1c },
+    { x: -10.5, rot: 0.10, tint: 0x2f6b5a, name: 'Sea Moss' },
+    { x: 0, rot: -0.04, tint: 0x8e1f4a, name: 'Women’s Wellness' },
+    { x: 10.5, rot: 0.06, tint: 0x7a4a1c, name: 'Sacred Plants' },
   ];
+
+  /** The carved name above a door, drawn once on a canvas. */
+  function doorLabel(text) {
+    const c = document.createElement('canvas');
+    c.width = 512;
+    c.height = 128;
+    const g2 = c.getContext('2d');
+    g2.clearRect(0, 0, 512, 128);
+    g2.font = '600 46px "Cormorant Garamond", Georgia, serif';
+    g2.textAlign = 'center';
+    g2.textBaseline = 'middle';
+    g2.fillStyle = '#f7e6bd';
+    g2.fillText(text, 256, 66);
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, fog: false }));
+    sprite.scale.set(7.4, 1.85, 1);
+    return sprite;
+  }
+
   for (const stall of stalls) {
-    const post = new THREE.Group();
-    post.position.set(stall.x, 0, 0);
-    post.rotation.y = stall.rot;
+    const door = new THREE.Group();
+    door.position.set(stall.x, 0, 0);
+    door.rotation.y = stall.rot;
 
-    const table = new THREE.Mesh(new THREE.BoxGeometry(6, 0.22, 3.4), deckMat);
-    table.position.y = 1.9;
-    post.add(table);
-
-    const cloth = new THREE.Mesh(new THREE.PlaneGeometry(6.2, 1.4), canopyMat.clone());
-    cloth.material.color.setHex(stall.tint);
-    cloth.position.set(0, 1.15, 1.68);
-    post.add(cloth);
-
-    // The canopy: four triangles is a roof, and a roof is enough.
-    const roof = new THREE.Mesh(new THREE.ConeGeometry(4.6, 2.1, 4), canopyMat.clone());
-    roof.material.color.setHex(stall.tint);
-    roof.position.y = 4.9;
-    roof.rotation.y = Math.PI / 4;
-    post.add(roof);
-
-    for (const dx of [-2.6, 2.6]) {
-      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 4.2, 6), trimMat);
-      pole.position.set(dx, 2.9, 0);
-      post.add(pole);
-      const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.34, 10, 8), lanternMat);
-      lamp.position.set(dx, 1.9, 1.5);
-      post.add(lamp);
+    // Jambs, lintel, step: a doorframe, in gold.
+    for (const dx of [-2.1, 2.1]) {
+      const jamb = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.2, 5, 8), trimMat);
+      jamb.position.set(dx, 3.4, 0);
+      door.add(jamb);
     }
-    group.add(post);
+    const lintel = new THREE.Mesh(new THREE.BoxGeometry(4.9, 0.42, 0.5), trimMat);
+    lintel.position.set(0, 5.9, 0);
+    door.add(lintel);
+    const step = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.3, 1.6), deckMat);
+    step.position.set(0, 1.05, 0.5);
+    door.add(step);
+
+    // The opening: a lit panel, so a door reads as somewhere to go rather than
+    // a hole in the barge.
+    const glowPanel = new THREE.Mesh(
+      new THREE.PlaneGeometry(4.1, 4.6),
+      new THREE.MeshBasicMaterial({
+        color: stall.tint,
+        transparent: true,
+        opacity: 0.42,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        fog: false,
+      }),
+    );
+    glowPanel.position.set(0, 3.5, -0.1);
+    door.add(glowPanel);
+
+    const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.32, 10, 8), lanternMat);
+    lamp.position.set(0, 5.35, 0.55);
+    door.add(lamp);
+
+    const name = doorLabel(stall.name);
+    name.position.set(0, 7.3, 0);
+    door.add(name);
+
+    group.add(door);
   }
 
   // ---- the goods: jars of honey, bottles of tincture, folded cloth
