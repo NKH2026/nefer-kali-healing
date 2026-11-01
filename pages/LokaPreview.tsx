@@ -164,16 +164,16 @@ const LokaPreview: React.FC = () => {
       try {
         const { data } = await supabase
           .from('products')
-          .select('title, type, image_url')
-          .not('image_url', 'is', null)
+          .select('title, category, featured_image_url')
+          .not('featured_image_url', 'is', null)
           .limit(80);
         if (cancelled || !data) return;
         const slots: string[][] = [[], [], []];
-        for (const p of data as Array<{ type?: string | null; image_url?: string | null }>) {
-          if (!p.image_url) continue;
-          const kind = String(p.type || '').toLowerCase();
+        for (const p of data as Array<{ category?: string | null; featured_image_url?: string | null }>) {
+          if (!p.featured_image_url) continue;
+          const kind = String(p.category || '').toLowerCase();
           const slot = /sea\s?moss/.test(kind) ? 0 : /(women|womb|yoni|fem|cycle)/.test(kind) ? 1 : 2;
-          slots[slot].push(p.image_url);
+          slots[slot].push(p.featured_image_url);
         }
         slots.forEach((urls, i) => world.current?.setProducts?.(i, urls));
       } catch (err) {
@@ -227,16 +227,16 @@ const LokaPreview: React.FC = () => {
       try {
         const { data } = await supabase
           .from('products')
-          .select('title, type, image_url')
-          .not('image_url', 'is', null)
+          .select('title, category, featured_image_url')
+          .not('featured_image_url', 'is', null)
           .limit(80);
         if (cancelled || !data) return;
         const slots: string[][] = [[], [], []];
-        for (const p of data as Array<{ type?: string | null; image_url?: string | null }>) {
-          if (!p.image_url) continue;
-          const kind = String(p.type || '').toLowerCase();
+        for (const p of data as Array<{ category?: string | null; featured_image_url?: string | null }>) {
+          if (!p.featured_image_url) continue;
+          const kind = String(p.category || '').toLowerCase();
           const slot = /sea\s?moss/.test(kind) ? 0 : /(women|womb|yoni|fem|cycle)/.test(kind) ? 1 : 2;
-          slots[slot].push(p.image_url);
+          slots[slot].push(p.featured_image_url);
         }
         slots.forEach((urls, i) => world.current?.setProducts?.(i, urls));
       } catch (err) {
