@@ -25,6 +25,7 @@ import { CameraDirector, RIDING_CHASE } from './engine/camera-director.js';
 import { createTour } from './engine/tour.js';
 import { buildShots, grahaFrame, TOUR_STOPS } from './engine/shots.js';
 import { createOfferings } from './engine/scenes/offerings.js';
+import { createJourney } from './engine/scenes/journey.js';
 import { TouchControls } from './engine/ui/touch.js';
 import { createGround, createPortal, createSite } from './engine/worlds/builders.js';
 import { createWorldCarpet } from './engine/worlds/world-carpet.js';
@@ -259,25 +260,34 @@ export function bootJyotishaLoka({
 
   // ---- the sky districts
   //
-  // Placed against tonight's real positions: Śukra's market sits a little
-  // outside where Venus actually is, turned so the river runs along the orbit
-  // and the planet hangs behind the stalls.
-  let offerings = null;
-  if (touring) {
-    const frame = grahaFrame(jyotish.positions, 'shukra');
-    const stop = TOUR_STOPS.find((s) => s.id === 'wellness');
-    const out = stop?.out ?? 0;
-    offerings = createOfferings();
-    offerings.group.position.set(
-      frame.x + Math.cos(frame.angle) * out,
-      frame.y + (stop?.lift ?? 0) - 3.2,
-      frame.z - Math.sin(frame.angle) * out,
+  // Each is placed against tonight's real positions: the market a little
+  // outside where Venus is, the road where Saturn is. Both turn so their local
+  // +X follows the orbit, which keeps a scene framed correctly as the graha
+  // moves round the wheel.
+  //
+  // `drop` is how far a district's own origin sits below the point the camera
+  // aims at — a barge deck is a few metres down, a road that climbs 26 metres
+  // starts that far below its midpoint.
+  const DROP = { wellness: -3.2, journey: -13 };
+
+  function placeDistrict(build, stopId) {
+    const stop = TOUR_STOPS.find((s) => s.id === stopId);
+    if (!stop || !stop.graha) return null;
+    const frame = grahaFrame(jyotish.positions, stop.graha);
+    const district = build();
+    const out = stop.out ?? 0;
+    district.group.position.set(
+      frame.x + Math.cos(frame.angle) * out - Math.sin(frame.angle) * (stop.along ?? 0),
+      frame.y + (stop.lift ?? 0) + (DROP[stopId] ?? 0),
+      frame.z - Math.sin(frame.angle) * out - Math.cos(frame.angle) * (stop.along ?? 0),
     );
-    // +X of the district points along the orbit's tangent, so the river runs
-    // the way the sky turns.
-    offerings.group.rotation.y = frame.angle + Math.PI / 2;
-    scene.add(offerings.group);
+    district.group.rotation.y = frame.angle + Math.PI / 2;
+    scene.add(district.group);
+    return district;
   }
+
+  const offerings = touring ? placeDistrict(() => createOfferings(), 'wellness') : null;
+  const journey = touring ? placeDistrict(() => createJourney(), 'journey') : null;
 
   // ---- the tour: a rig, and the buttons that drive it
   //
@@ -549,6 +559,7 @@ export function bootJyotishaLoka({
     sky.update(t);
     portal?.update(t);
     offerings?.update(t);
+    journey?.update(t);
     for (const s of sites) s.built.update(t);
     jyotish.update(dt, t, { started: started && !leaving, paused: panel.isOpen });
 

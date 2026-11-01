@@ -193,9 +193,9 @@ export function buildShots({ positions } = {}) {
       label: s.label,
       title: s.title,
       target: {
-        x: f.x + ux * out,
+        x: f.x + ux * out - Math.sin(f.angle) * (s.along ?? 0),
         y: f.y + (s.lift ?? 0),
-        z: f.z + uz * out,
+        z: f.z + uz * out - Math.cos(f.angle) * (s.along ?? 0),
       },
       distance: s.distance,
       // yaw is measured from the orbit's tangent, so "looking along the river"
