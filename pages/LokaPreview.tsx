@@ -1,11 +1,21 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import { Link, MemoryRouter, Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 // @ts-ignore â€” untyped JS modules
 import { bootJyotishaLoka } from '../jyotisha-loka/boot.js';
 // @ts-ignore
 import { TOUR_STOPS, STOP_CONTENT } from '../jyotisha-loka/engine/shots.js';
 import { supabase } from '../lib/supabase';
+/**
+ * The pages that open INSIDE the world.
+ *
+ * A MemoryRouter, not the app router. A real navigation would unmount the
+ * canvas and drop the visitor back on the 2D site — the one thing this design
+ * exists to prevent. Inside a room the URL never changes, and the world keeps
+ * rendering behind the page.
+ */
+const ShopRoom = React.lazy(() => import('./Shop'));
+const ProductRoom = React.lazy(() => import('./ProductDetail'));
 
 /**
  * /loka-preview â€” the full-page tour, with the world behind the document.
@@ -105,6 +115,8 @@ const LokaPreview: React.FC = () => {
   const [supported] = useState(hasWebGL);
   const [goods, setGoods] = useState<Array<{ title: string; price: string; image: string; category: string; slug: string }>>([]);
   const [tab, setTab] = useState(0);
+  /** Which room is open, and where it starts. Null = standing in the world. */
+  const [room, setRoom] = useState<string | null>(null);
 
   // ---- the world
   useEffect(() => {
@@ -444,6 +456,7 @@ const LokaPreview: React.FC = () => {
                       <Link
                         key={`${g.slug}-${g.title}`}
                         to={`/offerings/${g.slug}`}
+                        onClick={(e) => { e.preventDefault(); setRoom(`/offerings/${g.slug}`); }}
                         className="w-36 flex-none snap-start overflow-hidden rounded-lg border border-white/10 transition-colors hover:border-[#D4AF37]/50"
                       >
                         <img src={g.image} alt={g.title} loading="lazy" className="h-24 w-full object-cover" />
@@ -478,6 +491,28 @@ const LokaPreview: React.FC = () => {
           </section>
         ))}
       </div>
+      {room && (
+        <div className="fixed inset-0 z-[80] overflow-y-auto bg-[#05021a]">
+          <div className="sticky top-0 z-20 flex items-center justify-between border-b border-white/10 bg-[#05021a]/95 px-4 py-3 backdrop-blur">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-[#D4AF37]">Inside the Loka</p>
+            <button
+              type="button"
+              onClick={() => setRoom(null)}
+              className="rounded-full border border-[#D4AF37]/40 px-4 py-1.5 text-[10px] uppercase tracking-[0.18em] text-[#D4AF37] hover:bg-[#D4AF37]/10"
+            >
+              Back to the world
+            </button>
+          </div>
+          <React.Suspense fallback={<p className="p-10 text-sm text-white/50">Opening…</p>}>
+            <MemoryRouter key={room} initialEntries={[room]}>
+              <Routes>
+                <Route path="/offerings" element={<ShopRoom />} />
+                <Route path="/offerings/:slug" element={<ProductRoom />} />
+              </Routes>
+            </MemoryRouter>
+          </React.Suspense>
+        </div>
+      )}
     </div>
   );
 };
