@@ -67,6 +67,13 @@ function hasWebGL() {
   }
 }
 
+/** Which door a product belongs in — the same rule the 3D windows use. */
+const slotOf = (category: string) => {
+  const k = String(category || '').toLowerCase();
+  return /sea\s?moss/.test(k) ? 0 : /(women|womb|yoni|fem|cycle)/.test(k) ? 1 : 2;
+};
+
+const CATEGORIES = ['Sea Moss', 'Women’s Wellness', 'Sacred Plants'];
 const LokaPreview: React.FC = () => {
   const mount = useRef<HTMLDivElement>(null);
   const world = useRef<{
@@ -96,6 +103,8 @@ const LokaPreview: React.FC = () => {
   const firstShot = useRef(true);
   /** Probed once on mount; a GPU cannot appear mid-session. */
   const [supported] = useState(hasWebGL);
+  const [goods, setGoods] = useState<Array<{ title: string; price: string; image: string; category: string; slug: string }>>([]);
+  const [tab, setTab] = useState(0);
 
   // ---- the world
   useEffect(() => {
@@ -176,6 +185,17 @@ const LokaPreview: React.FC = () => {
           slots[slot].push(p.featured_image_url);
         }
         slots.forEach((urls, i) => world.current?.setProducts?.(i, urls));
+        setGoods(
+          (data as Array<Record<string, unknown>>)
+            .map((p) => ({
+              title: String(p.title || ''),
+              price: p.price ? String(p.price) : '',
+              image: String(p.featured_image_url || ''),
+              category: String(p.category || ''),
+              slug: String(p.slug || ''),
+            }))
+            .filter((g) => g.image),
+        );
       } catch (err) {
         console.error('[Loka] could not load the market goods:', err);
       }
@@ -239,6 +259,17 @@ const LokaPreview: React.FC = () => {
           slots[slot].push(p.featured_image_url);
         }
         slots.forEach((urls, i) => world.current?.setProducts?.(i, urls));
+        setGoods(
+          (data as Array<Record<string, unknown>>)
+            .map((p) => ({
+              title: String(p.title || ''),
+              price: p.price ? String(p.price) : '',
+              image: String(p.featured_image_url || ''),
+              category: String(p.category || ''),
+              slug: String(p.slug || ''),
+            }))
+            .filter((g) => g.image),
+        );
       } catch (err) {
         console.error('[Loka] could not load the market goods:', err);
       }
@@ -388,6 +419,45 @@ const LokaPreview: React.FC = () => {
                     </li>
                   ))}
                 </ul>
+              )}
+              {stop.id === 'wellness' && goods.length > 0 && (
+                <div className="mt-6">
+                  <div className="flex flex-wrap gap-2">
+                    {CATEGORIES.map((name, i) => (
+                      <button
+                        key={name}
+                        type="button"
+                        onClick={() => setTab(i)}
+                        aria-pressed={tab === i}
+                        className={`rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.14em] transition-colors ${
+                          tab === i
+                            ? 'border-[#D4AF37] bg-[#D4AF37]/10 text-[#D4AF37]'
+                            : 'border-white/15 text-white/50 hover:text-[#D4AF37]'
+                        }`}
+                      >
+                        {name}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">
+                    {goods.filter((g) => slotOf(g.category) === tab).map((g) => (
+                      <Link
+                        key={`${g.slug}-${g.title}`}
+                        to={`/offerings/${g.slug}`}
+                        className="w-36 flex-none snap-start overflow-hidden rounded-lg border border-white/10 transition-colors hover:border-[#D4AF37]/50"
+                      >
+                        <img src={g.image} alt={g.title} loading="lazy" className="h-24 w-full object-cover" />
+                        <div className="p-2">
+                          <p className="line-clamp-2 text-[11px] leading-snug text-white/80">{g.title}</p>
+                          {g.price && <p className="mt-1 text-[11px] text-[#D4AF37]">${g.price}</p>}
+                        </div>
+                      </Link>
+                    ))}
+                    {goods.filter((g) => slotOf(g.category) === tab).length === 0 && (
+                      <p className="text-[11px] text-white/40">Nothing in this door yet.</p>
+                    )}
+                  </div>
+                </div>
               )}
               <div className="mt-7 flex flex-wrap items-center gap-3">
                 <Link
