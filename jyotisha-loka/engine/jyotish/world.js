@@ -44,9 +44,9 @@ const grahaName = (id) => GRAHAS.find((g) => g.id === id)?.name ?? id;
  * @param {{scene: THREE.Scene, recipe: object, heightAt: Function, panel: object,
  *          toast: Function, touchMode: boolean, quality: string, sky?: {setTint?: Function}}} opts
  */
-export function createJyotishWorld({ scene, recipe, heightAt, panel, toast, touchMode, quality = 'high', sky = null, hud = document.body, island = true }) {
+export function createJyotishWorld({ scene, recipe, heightAt, panel, toast, touchMode, quality = 'high', sky = null, hud = document.body, island = true, camera = null }) {
   const wheel = createZodiacWheel({ quality });
-  const grahas = createGrahas({ quality });
+  const grahas = createGrahas({ quality, camera });
   const orrery = createOrrery(recipe.centerpiece, heightAt);
   const moonAltar = createAltar(recipe.altars.moon, heightAt, { colour: PALETTE.glyph.cyan, emblem: 'moon' });
   const birthAltar = createAltar(recipe.altars.birth, heightAt, { colour: PALETTE.life.magenta, emblem: 'star' });

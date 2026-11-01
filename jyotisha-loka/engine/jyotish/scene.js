@@ -231,12 +231,176 @@ export function createZodiacWheel({ quality = 'high' } = {}) {
 
 /* ── The grahas ───────────────────────────────────────────────────────────── */
 
-/** A graha's sphere: lit from within, ringed for Śani, smoky for the shadow grahas. */
+/**
+ * Real surface maps, from Solar System Scope (CC BY 4.0, based on NASA imagery)
+ * — see public/textures/planets/LICENSE.txt. Taken from the cipher project's
+ * sky, which solved this the same way.
+ *
+ * 1k is deliberate rather than a shortcut: at the closest the camera ever
+ * comes in the tour, a graha fills a few hundred pixels. The 2k set is ten
+ * times the weight and none of the difference. If the camera ever gets close
+ * enough to stand on a planet, swap these for the 2k files.
+ */
+const GRAHA_MAPS = {
+  surya: '/textures/planets/1k_sun.jpg',
+  chandra: '/textures/planets/1k_moon.jpg',
+  budha: '/textures/planets/1k_mercury.jpg',
+  shukra: '/textures/planets/1k_venus_atmosphere.jpg',
+  mangala: '/textures/planets/1k_mars.jpg',
+  guru: '/textures/planets/1k_jupiter.jpg',
+  shani: '/textures/planets/1k_saturn.jpg',
+};
+const SATURN_RING_MAP = '/textures/planets/2k_saturn_ring_alpha.png';
+
+/** Air at the limb: [r, g, b, strength]. Airless bodies get none. */
+const ATMOSPHERE = {
+  shukra: [1.0, 0.86, 0.6, 0.9],
+  mangala: [1.0, 0.6, 0.45, 0.35],
+  guru: [0.95, 0.86, 0.72, 0.4],
+  shani: [0.95, 0.88, 0.7, 0.3],
+};
+
+/**
+ * How much a body scatters like dust rather than like a painted sphere.
+ *
+ * An airless, rough surface (the Moon, Mercury) does not fall off with the
+ * cosine of the light angle — it throws light back at the source, which is why
+ * a full Moon is a flat disc rather than a shaded ball. Building that in is
+ * what stops a textured sphere still reading as a ball with a photo on it.
+ */
+const LUNAR = { chandra: 1, budha: 1, mangala: 0.5, guru: 0.25, shani: 0.2, shukra: 0.15 };
+
+/** Shared: world-space normal and position, which every surface shader needs. */
+const SURFACE_VERTEX = /* glsl */`
+  varying vec2 vUv;
+  varying vec3 vWorldNormal;
+  varying vec3 vWorldPos;
+  void main() {
+    vUv = uv;
+    vWorldNormal = normalize(mat3(modelMatrix) * normal);
+    vec4 world = modelMatrix * vec4(position, 1.0);
+    vWorldPos = world.xyz;
+    gl_Position = projectionMatrix * viewMatrix * world;
+  }
+`;
+
+/**
+ * A planet: its map, lit by one real direction — where the Sun actually is.
+ *
+ * No scene lights are used and no phase is painted on. The Moon's phase, the
+ * bright limb of Venus, the dark side of Jupiter all fall out of the geometry,
+ * which is the whole reason to do it this way rather than with a standard
+ * material.
+ */
+const PLANET_FRAGMENT = /* glsl */`
+  uniform sampler2D map;
+  uniform vec3 lightDir;
+  uniform vec4 atmosphere;
+  uniform float lunar;
+  varying vec2 vUv;
+  varying vec3 vWorldNormal;
+  varying vec3 vWorldPos;
+  void main() {
+    vec3 n = normalize(vWorldNormal);
+    vec3 v = normalize(cameraPosition - vWorldPos);
+    float ndl = dot(n, lightDir);
+    float ndv = max(dot(n, v), 0.0);
+    float lambert = max(ndl, 0.0);
+    // Lommel-Seeliger: dust scattering back toward the light.
+    float lommel = 2.0 * lambert / (lambert + ndv + 1e-3);
+    float diffuse = mix(lambert, lommel * 0.62, lunar);
+    vec3 color = texture2D(map, vUv).rgb * (diffuse * 1.2 + 0.02);
+    // Only the lit limb gets air, so the terminator stays sharp on the dark side.
+    float rim = pow(1.0 - ndv, 3.0) * smoothstep(-0.25, 0.4, ndl);
+    color += atmosphere.rgb * rim * atmosphere.a;
+    gl_FragColor = vec4(color, 1.0);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+  }
+`;
+
+/** The Sun: limb darkening, and a surface that drifts. */
+const SUN_FRAGMENT = /* glsl */`
+  uniform sampler2D map;
+  uniform float uTime;
+  varying vec2 vUv;
+  varying vec3 vWorldNormal;
+  varying vec3 vWorldPos;
+  void main() {
+    vec3 n = normalize(vWorldNormal);
+    float mu = max(dot(n, normalize(cameraPosition - vWorldPos)), 0.0);
+    vec3 surface = texture2D(map, vUv + vec2(uTime * 0.002, 0.0)).rgb;
+    // The edge of a star is cooler and dimmer than its face.
+    float limb = 0.42 + 0.58 * pow(mu, 0.55);
+    gl_FragColor = vec4(surface * vec3(2.4, 1.75, 1.1) * limb + vec3(0.35, 0.18, 0.04), 1.0);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+  }
+`;
+
+const RING_VERTEX = /* glsl */`
+  varying vec2 vUv;
+  varying vec3 vWorldNormal;
+  void main() {
+    vUv = uv;
+    vWorldNormal = normalize(mat3(modelMatrix) * normal);
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);
+  }
+`;
+
+const RING_FRAGMENT = /* glsl */`
+  uniform sampler2D map;
+  uniform vec3 lightDir;
+  varying vec2 vUv;
+  varying vec3 vWorldNormal;
+  void main() {
+    vec4 band = texture2D(map, vec2(vUv.x, 0.5));
+    float lit = abs(dot(normalize(vWorldNormal), lightDir)) * 0.85 + 0.12;
+    gl_FragColor = vec4(band.rgb * lit * 1.1, band.a * 0.9);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+  }
+`;
+
+const textureLoader = new THREE.TextureLoader();
+const textureCache = new Map();
+
+/** A 1×1 patch of the graha's own colour, so a map still in flight is a dim
+ *  planet rather than a black hole in the sky. */
+function flatTexture(hex) {
+  const data = new Uint8Array([(hex >> 16) & 255, (hex >> 8) & 255, hex & 255, 255]);
+  const tex = new THREE.DataTexture(data, 1, 1);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.needsUpdate = true;
+  return tex;
+}
+
+/**
+ * Load (once) and hand the texture to a uniform.
+ *
+ * If the same map is asked for twice the cached texture is reused; a material
+ * that gets a still-loading texture shows it as soon as it arrives.
+ */
+function loadMap(url, uniforms) {
+  const cached = textureCache.get(url);
+  if (cached) { uniforms.map.value = cached; return; }
+  const tex = textureLoader.load(url, (t) => {
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 8;
+    uniforms.map.value = t;
+  });
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  textureCache.set(url, tex);
+}
+
+/** A graha's sphere: textured and lit by the Sun, ringed for Śani, smoky for the nodes. */
 function grahaBody(g) {
   const group = new THREE.Group();
   let mat;
+
   if (g.shadow) {
-    // Rāhu and Ketu are points, not bodies: a dark sphere with a burning rim.
+    // Rāhu and Ketu are not bodies: a dark sphere with a burning rim.
     mat = new THREE.ShaderMaterial({
       uniforms: { uRim: { value: col(g.colour) }, uTime: { value: 0 } },
       transparent: true,
@@ -255,22 +419,68 @@ function grahaBody(g) {
           gl_FragColor = vec4(uRim * rim * 2.2 * flicker, 0.9);
         }`,
     });
+  } else if (g.id === 'surya') {
+    mat = new THREE.ShaderMaterial({
+      uniforms: {
+        map: { value: flatTexture(g.colour) },
+        uTime: { value: 0 },
+      },
+      vertexShader: SURFACE_VERTEX,
+      fragmentShader: SUN_FRAGMENT,
+    });
+    loadMap(GRAHA_MAPS.surya, mat.uniforms);
   } else {
-    mat = new THREE.MeshStandardMaterial({ color: col(g.colour).multiplyScalar(0.35), emissive: col(g.colour), emissiveIntensity: g.id === 'surya' ? GLOW.focal : GLOW.life, roughness: 0.5 });
+    const air = ATMOSPHERE[g.id] || [0, 0, 0, 0];
+    mat = new THREE.ShaderMaterial({
+      uniforms: {
+        map: { value: flatTexture(g.colour) },
+        lightDir: { value: new THREE.Vector3(1, 0, 0) },
+        atmosphere: { value: new THREE.Vector4(air[0], air[1], air[2], air[3]) },
+        lunar: { value: LUNAR[g.id] ?? 0 },
+      },
+      vertexShader: SURFACE_VERTEX,
+      fragmentShader: PLANET_FRAGMENT,
+    });
+    loadMap(GRAHA_MAPS[g.id], mat.uniforms);
   }
-  const sphere = new THREE.Mesh(new THREE.SphereGeometry(g.size, 32, 20), mat);
+
+  const sphere = new THREE.Mesh(new THREE.SphereGeometry(g.size, 48, 32), mat);
   group.add(sphere);
+
   const glow = halo(g.colour, g.size * (g.id === 'surya' ? 9 : 5));
   glow.material.opacity = g.shadow ? 0.45 : 0.8;
   group.add(glow);
+
   if (g.ring) {
+    // Saturn's rings, from the real alpha map: the bands are the ring itself,
+    // and the gaps between them are where the sky shows through.
+    const ringUniforms = { map: { value: flatTexture(0xc9b98a) }, lightDir: { value: new THREE.Vector3(1, 0, 0) } };
     const ring = new THREE.Mesh(
-      new THREE.RingGeometry(g.size * 1.4, g.size * 2.3, 48),
-      new THREE.MeshBasicMaterial({ color: 0xc9b98a, transparent: true, opacity: 0.6, side: THREE.DoubleSide, fog: false }),
+      new THREE.RingGeometry(g.size * 1.35, g.size * 2.4, 96, 1),
+      new THREE.ShaderMaterial({
+        uniforms: ringUniforms,
+        vertexShader: RING_VERTEX,
+        fragmentShader: RING_FRAGMENT,
+        transparent: true,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+      }),
     );
-    ring.rotation.x = Math.PI / 2.6;
+    // RingGeometry's uv is a disc, so squash it into the 1-D texture's x axis.
+    const pos = ring.geometry.attributes.position;
+    const uv = ring.geometry.attributes.uv;
+    for (let i = 0; i < pos.count; i++) {
+      const r = Math.hypot(pos.getX(i), pos.getY(i));
+      uv.setXY(i, (r - g.size * 1.35) / (g.size * 2.4 - g.size * 1.35), 0.5);
+    }
+    uv.needsUpdate = true;
+    ring.rotation.x = Math.PI / 2.32;
+    ring.userData.ringUniforms = ringUniforms;
+    loadMap(SATURN_RING_MAP, ringUniforms);
     group.add(ring);
+    group.userData.ring = ring;
   }
+
   if (g.id === 'ketu') {
     // Ketu is the dragon's tail: a fading plume behind it.
     const tail = new THREE.Mesh(
@@ -288,7 +498,7 @@ function grahaBody(g) {
  * The nine grahas, each on its own orbit around the island. `setPositions(list)`
  * takes sky.js `grahaPositions()` and eases each graha to its place.
  */
-export function createGrahas({ quality = 'high' } = {}) {
+export function createGrahas({ quality = 'high', camera = null } = {}) {
   const group = new THREE.Group();
   const orbitMat = (hex) => new THREE.MeshBasicMaterial({ color: col(hex), transparent: true, opacity: 0.22, fog: false, depthWrite: false });
   const items = GRAHAS.map((g) => {
@@ -302,6 +512,8 @@ export function createGrahas({ quality = 'high' } = {}) {
     const body = grahaBody(g);
     const label = textSprite([`${g.glyph} ${g.name}`, g.english], { width: 512, height: 192, colour: '#ffffff', scale: 22 + g.size * 1.5 });
     label.sprite.position.y = g.size + 7;
+    // Kept so the label can be resized as the camera closes in — see update().
+    label.baseScale = label.sprite.scale.clone();
     body.group.add(label.sprite);
     group.add(body.group);
     return { g, o, body, label, lon: null, shown: null };
@@ -337,6 +549,41 @@ export function createGrahas({ quality = 'high' } = {}) {
         if (it.body.mat.uniforms?.uTime) it.body.mat.uniforms.uTime.value = t;
         if (it.g.id === 'surya') sunLight.position.copy(at);
         if (it.g.id === 'ketu') it.body.group.rotation.y = rad(it.shown) + Math.PI;
+      }
+
+      /**
+       * Light comes from where the Sun actually is.
+       *
+       * This is the whole reason the bodies are shaded by hand rather than lit
+       * by the scene: with one real direction per body, the Moon's phase, the
+       * terminator on Mars and the bright limb of Venus are consequences of
+       * the transit rather than something an artist painted on.
+       */
+      const sun = items.find((it) => it.g.id === 'surya');
+      if (!sun) return;
+      const sunPos = sun.body.group.position;
+      for (const it of items) {
+        const u = it.body.mat.uniforms;
+        if (!u?.lightDir) continue;
+        u.lightDir.value.copy(sunPos).sub(it.body.group.position);
+        if (u.lightDir.value.lengthSq() < 1e-6) u.lightDir.value.set(1, 0, 0);
+        else u.lightDir.value.normalize();
+        const ring = it.body.group.userData.ring;
+        if (ring) ring.userData.ringUniforms.lightDir.value.copy(u.lightDir.value);
+      }
+
+      /**
+       * Labels are world-sized, so a close-up turns them into billboards the
+       * size of the planet they name. Shrink them as the camera closes in, and
+       * drop them once you are close enough that the planet is its own label.
+       */
+      if (camera) {
+        for (const it of items) {
+          const d = camera.position.distanceTo(it.body.group.position);
+          const k = Math.min(1, Math.max(0, (d - 40) / 200));
+          it.label.sprite.visible = k > 0.02;
+          if (k > 0.02) it.label.sprite.scale.copy(it.label.baseScale).multiplyScalar(k * 0.85 + 0.15);
+        }
       }
     },
   };

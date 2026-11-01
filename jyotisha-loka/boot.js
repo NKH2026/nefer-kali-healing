@@ -255,7 +255,7 @@ export function bootJyotishaLoka({
   });
   added.push(panel.root);
 
-  const jyotish = createJyotishWorld({ scene, recipe, heightAt, panel, toast, touchMode, quality: quality.name, sky, hud: hudColumn, island: !touring });
+  const jyotish = createJyotishWorld({ scene, recipe, heightAt, panel, toast, touchMode, quality: quality.name, sky, hud: hudColumn, island: !touring, camera });
 
   // ---- the sky districts
   //
