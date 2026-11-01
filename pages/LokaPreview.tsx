@@ -14,8 +14,24 @@ import { supabase } from '../lib/supabase';
  * exists to prevent. Inside a room the URL never changes, and the world keeps
  * rendering behind the page.
  */
-const ShopRoom = React.lazy(() => import('./Shop'));
 const ProductRoom = React.lazy(() => import('./ProductDetail'));
+
+/**
+ * Every page that can be opened without leaving the world.
+ *
+ * Adding a page to the Loka is now one line here — the overlay, the router and
+ * the "back to the world" button all read from this map, so nothing else has to
+ * know the page exists. That is the difference between a trick and a system.
+ */
+const ROOMS: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
+  '/about': React.lazy(() => import('./About')),
+  '/support': React.lazy(() => import('./Support')),
+  '/community': React.lazy(() => import('./Community')),
+  '/offerings': React.lazy(() => import('./Shop')),
+  '/wisdom': React.lazy(() => import('./Wisdom')),
+  '/healing-guides': React.lazy(() => import('./HealingGuides')),
+  '/sky-watch': React.lazy(() => import('./CosmicReadings')),
+};
 
 /**
  * /loka-preview â€” the full-page tour, with the world behind the document.
@@ -117,6 +133,14 @@ const LokaPreview: React.FC = () => {
   const [tab, setTab] = useState(0);
   /** Which room is open, and where it starts. Null = standing in the world. */
   const [room, setRoom] = useState<string | null>(null);
+
+  /** Open a link in-world when it points at a page we have a room for. */
+  const openInWorld = (e: React.MouseEvent, path: string) => {
+    if (ROOMS[path]) {
+      e.preventDefault();
+      setRoom(path);
+    }
+  };
 
   // ---- the world
   useEffect(() => {
@@ -424,7 +448,7 @@ const LokaPreview: React.FC = () => {
                 <ul className="mt-6 grid gap-2 sm:grid-cols-2">
                   {CONTENT[stop.id].map((it) => (
                     <li key={it.path + it.label}>
-                      <Link to={it.path} className="block rounded-lg border border-white/10 px-3 py-2 transition-colors hover:border-[#D4AF37]/40 hover:bg-[#D4AF37]/5">
+                      <Link to={it.path} onClick={(e) => openInWorld(e, it.path)} className="block rounded-lg border border-white/10 px-3 py-2 transition-colors hover:border-[#D4AF37]/40 hover:bg-[#D4AF37]/5">
                         <span className="block text-[11px] uppercase tracking-[0.14em] text-[#D4AF37]">{it.label}</span>
                         <span className="block text-[11px] text-white/50">{it.note}</span>
                       </Link>
@@ -475,6 +499,7 @@ const LokaPreview: React.FC = () => {
               <div className="mt-7 flex flex-wrap items-center gap-3">
                 <Link
                   to={stop.path}
+                  onClick={(e) => openInWorld(e, stop.path)}
                   className="rounded-full border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-5 py-2 text-[11px] uppercase tracking-[0.18em] text-[#D4AF37] transition-colors hover:bg-[#D4AF37]/20"
                 >
                   Visit {stop.label}
@@ -506,7 +531,9 @@ const LokaPreview: React.FC = () => {
           <React.Suspense fallback={<p className="p-10 text-sm text-white/50">Opening…</p>}>
             <MemoryRouter key={room} initialEntries={[room]}>
               <Routes>
-                <Route path="/offerings" element={<ShopRoom />} />
+                {Object.entries(ROOMS).map(([path, Room]) => (
+                  <Route key={path} path={path} element={React.createElement(Room)} />
+                ))}
                 <Route path="/offerings/:slug" element={<ProductRoom />} />
               </Routes>
             </MemoryRouter>
