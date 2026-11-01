@@ -47,6 +47,24 @@ const reducedMotion = () =>
   && typeof window.matchMedia === 'function'
   && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/**
+ * Can this device draw the world at all?
+ *
+ * Asked before boot, not after it fails. The difference matters: without this,
+ * a device with no WebGL (an old browser, a locked-down work laptop, a GPU
+ * driver that has crashed) got a black screen and a console error. With it,
+ * that visitor gets the page — the copy, the headings, every link — over a
+ * still backdrop. The world is the flourish, not the content.
+ */
+function hasWebGL() {
+  try {
+    const probe = document.createElement('canvas');
+    return Boolean(probe.getContext('webgl2') || probe.getContext('webgl'));
+  } catch {
+    return false;
+  }
+}
+
 const LokaPreview: React.FC = () => {
   const mount = useRef<HTMLDivElement>(null);
   const world = useRef<{ goTo: (id: string, opts?: { immediate?: boolean }) => void } | null>(null);
@@ -71,10 +89,12 @@ const LokaPreview: React.FC = () => {
   const [active, setActive] = useState(opening);
   const [ready, setReady] = useState(false);
   const firstShot = useRef(true);
+  /** Probed once on mount; a GPU cannot appear mid-session. */
+  const [supported] = useState(hasWebGL);
 
   // ---- the world
   useEffect(() => {
-    if (!mount.current) return undefined;
+    if (!mount.current || !supported) return undefined;
     let dispose: (() => void) | null = null;
     try {
       dispose = bootJyotishaLoka({
@@ -198,7 +218,14 @@ const LokaPreview: React.FC = () => {
         sits behind everything below without needing its own layout box; this
         element stays empty and takes no space.
       */}
-      <div ref={mount} aria-hidden="true" />
+      {supported ? (
+        <div ref={mount} aria-hidden="true" />
+      ) : (
+        <div
+          aria-hidden="true"
+          className="fixed inset-0 z-0 bg-[radial-gradient(ellipse_at_50%_18%,#2a0b3e_0%,#140828_55%,#05021a_100%)]"
+        />
+      )}
 
       {/* Prototype label, so nobody mistakes this for a shipped page. */}
       <div className="fixed left-4 bottom-4 z-30 hidden md:block">
