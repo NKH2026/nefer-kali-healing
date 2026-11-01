@@ -26,6 +26,7 @@ import { createTour } from './engine/tour.js';
 import { buildShots, grahaFrame, TOUR_STOPS } from './engine/shots.js';
 import { createOfferings } from './engine/scenes/offerings.js';
 import { createJourney } from './engine/scenes/journey.js';
+import { createChart } from './engine/scenes/chart.js';
 import { TouchControls } from './engine/ui/touch.js';
 import { createGround, createPortal, createSite } from './engine/worlds/builders.js';
 import { createWorldCarpet } from './engine/worlds/world-carpet.js';
@@ -290,6 +291,13 @@ export function bootJyotishaLoka({
 
   const offerings = touring ? placeDistrict(() => createOfferings(), 'wellness') : null;
   const journey = touring ? placeDistrict(() => createJourney(), 'journey') : null;
+
+  // The chart stands at the centre of the ecliptic, facing wherever the camera is.
+  const chart = touring ? createChart() : null;
+  if (chart) {
+    chart.group.position.set(0, 46, 0);
+    scene.add(chart.group);
+  }
 
   // ---- the tour: a rig, and the buttons that drive it
   //
@@ -605,6 +613,8 @@ export function bootJyotishaLoka({
 
     sky.update(t);
     portal?.update(t);
+    // A flat diagram has to face the viewer from wherever they stand.
+    chart?.group.lookAt(camera.position);
     offerings?.update(t, dt);
     journey?.update(t);
     for (const s of sites) s.built.update(t);
