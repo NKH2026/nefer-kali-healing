@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, MemoryRouter, Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
+import { Link, Route, Routes, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 // @ts-ignore â€” untyped JS modules
 import { bootJyotishaLoka } from '../jyotisha-loka/boot.js';
@@ -10,7 +10,7 @@ import { supabase } from '../lib/supabase';
  * The pages that open INSIDE the world.
  *
  * A MemoryRouter, not the app router. A real navigation would unmount the
- * canvas and drop the visitor back on the 2D site — the one thing this design
+ * canvas and drop the visitor back on the 2D site ï¿½ the one thing this design
  * exists to prevent. Inside a room the URL never changes, and the world keeps
  * rendering behind the page.
  */
@@ -19,7 +19,7 @@ const ProductRoom = React.lazy(() => import('./ProductDetail'));
 /**
  * Every page that can be opened without leaving the world.
  *
- * Adding a page to the Loka is now one line here — the overlay, the router and
+ * Adding a page to the Loka is now one line here ï¿½ the overlay, the router and
  * the "back to the world" button all read from this map, so nothing else has to
  * know the page exists. That is the difference between a trick and a system.
  */
@@ -93,13 +93,13 @@ function hasWebGL() {
   }
 }
 
-/** Which door a product belongs in — the same rule the 3D windows use. */
+/** Which door a product belongs in ï¿½ the same rule the 3D windows use. */
 const slotOf = (category: string) => {
   const k = String(category || '').toLowerCase();
   return /sea\s?moss/.test(k) ? 0 : /(women|womb|yoni|fem|cycle)/.test(k) ? 1 : 2;
 };
 
-const CATEGORIES = ['Sea Moss', 'Women’s Wellness', 'Sacred Plants'];
+const CATEGORIES = ['Sea Moss', 'Womenï¿½s Wellness', 'Sacred Plants'];
 const LokaPreview: React.FC = () => {
   const mount = useRef<HTMLDivElement>(null);
   const world = useRef<{
@@ -132,16 +132,37 @@ const LokaPreview: React.FC = () => {
   const [goods, setGoods] = useState<Array<{ title: string; price: string; image: string; category: string; slug: string }>>([]);
   const [tab, setTab] = useState(0);
   /** Which room is open, and where it starts. Null = standing in the world. */
-  const [room, setRoom] = useState<string | null>(null);
+  const [room, setRoom] = useState<string | null>(params.get('room'));
+  /** The page showing inside the room; the world stays mounted regardless. */
+  const [roomPath, setRoomPath] = useState(params.get('room') || '');
+  const navigate = useNavigate();
 
   /** Open a link in-world when it points at a page we have a room for. */
   const openInWorld = (e: React.MouseEvent, path: string) => {
     if (ROOMS[path]) {
       e.preventDefault();
       setRoom(path);
+      setRoomPath(path);
     }
   };
 
+
+  /** Links inside a room move the ROOM, not the browser. */
+  const onRoomClick = (e: React.MouseEvent) => {
+    const anchor = (e.target as HTMLElement).closest('a');
+    if (!anchor) return;
+    const href = anchor.getAttribute('href');
+    if (!href || !href.startsWith('/') || anchor.target === '_blank') return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (href.startsWith('/offerings/') || ROOMS[href]) {
+      setRoom(href);
+      setRoomPath(href);
+    } else {
+      setRoom(null);
+      navigate(href);
+    }
+  };
   // ---- the world
   useEffect(() => {
     if (!mount.current || !supported) return undefined;
@@ -201,7 +222,7 @@ const LokaPreview: React.FC = () => {
   // The world is plain three.js and knows nothing about Supabase; the page is
   // React and knows nothing about textures. So the page fetches, sorts the
   // products into the three doors, and hands over image URLs. If the query
-  // fails the market still works — it just keeps its lit doorways.
+  // fails the market still works ï¿½ it just keeps its lit doorways.
   useEffect(() => {
     if (!ready) return undefined;
     let cancelled = false;
@@ -275,7 +296,7 @@ const LokaPreview: React.FC = () => {
   // The world is plain three.js and knows nothing about Supabase; the page is
   // React and knows nothing about textures. So the page fetches, sorts the
   // products into the three doors, and hands over image URLs. If the query
-  // fails the market still works — it just keeps its lit doorways.
+  // fails the market still works ï¿½ it just keeps its lit doorways.
   useEffect(() => {
     if (!ready) return undefined;
     let cancelled = false;
@@ -517,7 +538,7 @@ const LokaPreview: React.FC = () => {
         ))}
       </div>
       {room && (
-        <div className="fixed inset-0 z-[80] overflow-y-auto bg-[#05021a]">
+        <div className="fixed inset-0 z-[150] overflow-y-auto bg-[#05021a]" onClickCapture={onRoomClick}>
           <div className="sticky top-0 z-20 flex items-center justify-between border-b border-white/10 bg-[#05021a]/95 px-4 py-3 backdrop-blur">
             <p className="text-[10px] uppercase tracking-[0.2em] text-[#D4AF37]">Inside the Loka</p>
             <button
@@ -528,15 +549,14 @@ const LokaPreview: React.FC = () => {
               Back to the world
             </button>
           </div>
-          <React.Suspense fallback={<p className="p-10 text-sm text-white/50">Opening…</p>}>
-            <MemoryRouter key={room} initialEntries={[room]}>
-              <Routes>
+          <React.Suspense fallback={<p className="p-10 text-sm text-white/50">Openingï¿½</p>}>
+              <Routes location={roomPath}>
                 {Object.entries(ROOMS).map(([path, Room]) => (
                   <Route key={path} path={path} element={React.createElement(Room)} />
                 ))}
                 <Route path="/offerings/:slug" element={<ProductRoom />} />
               </Routes>
-            </MemoryRouter>
+
           </React.Suspense>
         </div>
       )}
