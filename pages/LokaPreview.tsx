@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 // @ts-ignore — untyped JS modules
 import { bootJyotishaLoka } from '../jyotisha-loka/boot.js';
 // @ts-ignore
-import { TOUR_STOPS } from '../jyotisha-loka/engine/shots.js';
+import { TOUR_STOPS, STOP_CONTENT } from '../jyotisha-loka/engine/shots.js';
 
 /**
  * /loka-preview — the full-page tour, with the world behind the document.
@@ -40,6 +40,7 @@ type Stop = {
 };
 
 const STOPS = TOUR_STOPS as Stop[];
+const CONTENT: Record<string, Array<{ label: string; note: string; path: string }>> = STOP_CONTENT;
 
 /** Respect the OS setting: a cross-worlding camera move is a vestibular trigger. */
 const reducedMotion = () =>
@@ -310,6 +311,18 @@ const LokaPreview: React.FC = () => {
               <p className="mt-4 max-w-prose text-sm leading-relaxed text-white/70 sm:text-base">
                 {stop.blurb}
               </p>
+              {CONTENT[stop.id] && (
+                <ul className="mt-6 grid gap-2 sm:grid-cols-2">
+                  {CONTENT[stop.id].map((it) => (
+                    <li key={it.path + it.label}>
+                      <Link to={it.path} className="block rounded-lg border border-white/10 px-3 py-2 transition-colors hover:border-[#D4AF37]/40 hover:bg-[#D4AF37]/5">
+                        <span className="block text-[11px] uppercase tracking-[0.14em] text-[#D4AF37]">{it.label}</span>
+                        <span className="block text-[11px] text-white/50">{it.note}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
               <div className="mt-7 flex flex-wrap items-center gap-3">
                 <Link
                   to={stop.path}

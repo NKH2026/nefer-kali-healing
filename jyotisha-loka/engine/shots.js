@@ -206,3 +206,47 @@ export function buildShots({ positions } = {}) {
     };
   });
 }
+
+
+/**
+ * What stands behind each door.
+ *
+ * The tour is a way INTO the site, not a replacement for it: every stop has to
+ * hand you somewhere real to go. These are the actual destinations that exist
+ * today, with the plain-language label a visitor needs to choose one. Replace
+ * the labels as the content grows; the paths are the contract.
+ */
+export const STOP_CONTENT = {
+  journey: [
+    { label: 'The mission', note: 'Why the foundation exists', path: '/about' },
+    { label: 'Three streams', note: 'Kemetic, Orisha and Vedic teaching', path: '/about' },
+  ],
+  support: [
+    { label: 'Give monthly', note: 'Sustain the workshops', path: '/support' },
+    { label: 'One-time gift', note: 'Fund an herbal distribution', path: '/support' },
+  ],
+  community: [
+    { label: 'The Unity Circle', note: 'Monthly gathering', path: '/community' },
+    { label: 'Events', note: 'What is coming up next', path: '/community' },
+  ],
+  wellness: [
+    { label: 'Sea Moss', note: 'Gels, capsules, powders', path: '/offerings' },
+    { label: 'Women’s Wellness', note: 'Womb teas, tinctures, care', path: '/offerings' },
+    { label: 'Sacred Plants', note: 'Single-herb tinctures and teas', path: '/offerings' },
+    { label: 'Everything else', note: 'The full catalogue', path: '/offerings' },
+  ],
+  wisdom: [
+    { label: 'The journal', note: 'Essays and teaching', path: '/wisdom' },
+    { label: 'Cosmic deep dive', note: 'Long-form study', path: '/cosmic-deep-dive' },
+  ],
+  guides: [
+    { label: 'Sea Moss', note: 'How to prepare and take it', path: '/guides/sea-moss' },
+    { label: 'St John’s Bush', note: 'Tea and tincture', path: '/guides/st-johns-bush-tea' },
+    { label: 'Rohini Tincture', note: 'With the cycle chart', path: '/guides/rohini-tincture' },
+    { label: 'All guides', note: 'Twelve plants, one page each', path: '/healing-guides' },
+  ],
+  planetary: [
+    { label: 'Tonight’s sky', note: 'The nine grahas, now', path: '/sky-watch' },
+    { label: 'The deep dive', note: 'Read a chart properly', path: '/cosmic-deep-dive' },
+  ],
+};
