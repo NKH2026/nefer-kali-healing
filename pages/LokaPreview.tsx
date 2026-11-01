@@ -5,6 +5,7 @@ import { Helmet } from 'react-helmet-async';
 import { bootJyotishaLoka } from '../jyotisha-loka/boot.js';
 // @ts-ignore
 import { TOUR_STOPS, STOP_CONTENT } from '../jyotisha-loka/engine/shots.js';
+import { supabase } from '../lib/supabase';
 
 /**
  * /loka-preview â€” the full-page tour, with the world behind the document.
@@ -68,7 +69,10 @@ function hasWebGL() {
 
 const LokaPreview: React.FC = () => {
   const mount = useRef<HTMLDivElement>(null);
-  const world = useRef<{ goTo: (id: string, opts?: { immediate?: boolean }) => void } | null>(null);
+  const world = useRef<{
+    goTo: (id: string, opts?: { immediate?: boolean }) => void;
+    setProducts?: (slot: number, urls: string[]) => void;
+  } | null>(null);
   const [params] = useSearchParams();
   const { pathname } = useLocation();
   /**
@@ -147,6 +151,37 @@ const LokaPreview: React.FC = () => {
     return () => observer.disconnect();
   }, []);
 
+  // ---- the market's goods, from the real catalogue
+  //
+  // The world is plain three.js and knows nothing about Supabase; the page is
+  // React and knows nothing about textures. So the page fetches, sorts the
+  // products into the three doors, and hands over image URLs. If the query
+  // fails the market still works — it just keeps its lit doorways.
+  useEffect(() => {
+    if (!ready) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('products')
+          .select('title, type, image_url')
+          .not('image_url', 'is', null)
+          .limit(80);
+        if (cancelled || !data) return;
+        const slots: string[][] = [[], [], []];
+        for (const p of data as Array<{ type?: string | null; image_url?: string | null }>) {
+          if (!p.image_url) continue;
+          const kind = String(p.type || '').toLowerCase();
+          const slot = /sea\s?moss/.test(kind) ? 0 : /(women|womb|yoni|fem|cycle)/.test(kind) ? 1 : 2;
+          slots[slot].push(p.image_url);
+        }
+        slots.forEach((urls, i) => world.current?.setProducts?.(i, urls));
+      } catch (err) {
+        console.error('[Loka] could not load the market goods:', err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [ready]);
   // ---- land on the requested stop, if one was asked for.
   //
   // Deliberately INSTANT, and deliberately by offset rather than scrollIntoView:
@@ -179,6 +214,37 @@ const LokaPreview: React.FC = () => {
     });
   }, []);
 
+  // ---- the market's goods, from the real catalogue
+  //
+  // The world is plain three.js and knows nothing about Supabase; the page is
+  // React and knows nothing about textures. So the page fetches, sorts the
+  // products into the three doors, and hands over image URLs. If the query
+  // fails the market still works — it just keeps its lit doorways.
+  useEffect(() => {
+    if (!ready) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('products')
+          .select('title, type, image_url')
+          .not('image_url', 'is', null)
+          .limit(80);
+        if (cancelled || !data) return;
+        const slots: string[][] = [[], [], []];
+        for (const p of data as Array<{ type?: string | null; image_url?: string | null }>) {
+          if (!p.image_url) continue;
+          const kind = String(p.type || '').toLowerCase();
+          const slot = /sea\s?moss/.test(kind) ? 0 : /(women|womb|yoni|fem|cycle)/.test(kind) ? 1 : 2;
+          slots[slot].push(p.image_url);
+        }
+        slots.forEach((urls, i) => world.current?.setProducts?.(i, urls));
+      } catch (err) {
+        console.error('[Loka] could not load the market goods:', err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [ready]);
   // ---- land on the requested stop, if one was asked for.
   //
   // Deferred a frame: the router scrolls to top on mount, and whatever runs

@@ -68,6 +68,8 @@ function honeyWater() {
  * the same reasoning as the engine's other particle pools: one draw call, and
  * the per-frame cost is a loop over 240 floats.
  */
+const imageLoader = new THREE.TextureLoader();
+
 function createBees({ count = 240 } = {}) {
   const positions = new Float32Array(count * 3);
   const seed = new Float32Array(count * 4);
@@ -93,7 +95,31 @@ function createBees({ count = 240 } = {}) {
 
   return {
     points,
-    update(t) {
+    /**
+     * Put a category's products in its window.
+     *
+     * The world cannot fetch: it has no idea what a product is. The page hands
+     * it a list of image URLs and it does the only thing a market should do
+     * with them — shows them, and turns the page every few seconds.
+     */
+    setProducts(slot, urls) {
+      const panel = panels[slot];
+      if (!panel || !urls || !urls.length) return;
+      const tex = urls.slice(0, 10).map((url) => {
+        const t2 = imageLoader.load(url);
+        t2.colorSpace = THREE.SRGBColorSpace;
+        return t2;
+      });
+      panel.tex = tex;
+      panel.index = 0;
+      panel.t = 0;
+      panel.mat.map = tex[0];
+      panel.mat.color.set(0xffffff);
+      panel.mat.opacity = 1;
+      panel.mat.blending = THREE.NormalBlending;
+      panel.mat.needsUpdate = true;
+    },
+    update(t, dt = 0) {
       const p = geometry.attributes.position.array;
       for (let i = 0; i < count; i++) {
         const phase = seed[i * 4];
@@ -181,6 +207,9 @@ export function createOfferings({ scale = 1 } = {}) {
    * categories; these three are the narrowing, and a door is where a category
    * becomes somewhere to go.
    */
+  /** One shop window per door: the products of that category, turning over. */
+  const panels = [];
+
   const stalls = [
     { x: -10.5, rot: 0.10, tint: 0x2f6b5a, name: 'Sea Moss' },
     { x: 0, rot: -0.04, tint: 0x8e1f4a, name: 'Womenâ€™s Wellness' },
@@ -240,6 +269,7 @@ export function createOfferings({ scale = 1 } = {}) {
     );
     glowPanel.position.set(0, 3.5, -0.1);
     door.add(glowPanel);
+    panels.push({ mat: glowPanel.material, tex: [], index: 0, t: 0 });
 
     const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.32, 10, 8), lanternMat);
     lamp.position.set(0, 5.35, 0.55);
@@ -321,11 +351,46 @@ export function createOfferings({ scale = 1 } = {}) {
     group,
     /** The planks of the deck; the shot aims just above them. */
     target: new THREE.Vector3(0, 3.2, 0),
-    update(t) {
+    /**
+     * Put a category's products in its window.
+     *
+     * The world cannot fetch: it has no idea what a product is. The page hands
+     * it a list of image URLs and it does the only thing a market should do
+     * with them — shows them, and turns the page every few seconds.
+     */
+    setProducts(slot, urls) {
+      const panel = panels[slot];
+      if (!panel || !urls || !urls.length) return;
+      const tex = urls.slice(0, 10).map((url) => {
+        const t2 = imageLoader.load(url);
+        t2.colorSpace = THREE.SRGBColorSpace;
+        return t2;
+      });
+      panel.tex = tex;
+      panel.index = 0;
+      panel.t = 0;
+      panel.mat.map = tex[0];
+      panel.mat.color.set(0xffffff);
+      panel.mat.opacity = 1;
+      panel.mat.blending = THREE.NormalBlending;
+      panel.mat.needsUpdate = true;
+    },
+    update(t, dt = 0) {
       // The river is a scroll of texture rather than a moving mesh: cheap, and
       // it is what "flowing" looks like at this distance.
       water.offset.x = (t * 0.014) % 1;
       water.offset.y = (t * 0.004) % 1;
+      // Each window turns over on its own clock, so the three never blink together.
+      for (const panel of panels) {
+        if (panel.tex.length < 2) continue;
+        panel.t += dt;
+        if (panel.t > 4.5) {
+          panel.t = 0;
+          panel.index = (panel.index + 1) % panel.tex.length;
+          panel.mat.map = panel.tex[panel.index];
+          panel.mat.needsUpdate = true;
+        }
+      }
       bees.update(t);
       // Lanterns breathe, all together, as a lit barge actually does.
       lanternMat.emissiveIntensity = 1.05 + Math.sin(t * 2.1) * 0.14 + Math.sin(t * 5.7) * 0.05;

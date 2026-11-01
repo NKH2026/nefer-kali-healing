@@ -313,6 +313,8 @@ export function bootJyotishaLoka({
       next: () => tour.next(),
       prev: () => tour.prev(),
       stops: tour.STOPS,
+      /** Hand the market its products: (0 = Sea Moss, 1 = Women's Wellness, 2 = Sacred Plants). */
+      setProducts: (slot, urls) => offerings?.setProducts(slot, urls),
     });
   }
   if (touring && chrome) {
@@ -558,7 +560,7 @@ export function bootJyotishaLoka({
 
     sky.update(t);
     portal?.update(t);
-    offerings?.update(t);
+    offerings?.update(t, dt);
     journey?.update(t);
     for (const s of sites) s.built.update(t);
     jyotish.update(dt, t, { started: started && !leaving, paused: panel.isOpen });
