@@ -109,7 +109,7 @@ export function createJyotishWorld({ scene, recipe, heightAt, panel, toast, touc
     cardBody.replaceChildren(
       line('Date', fmtDate(date)),
       line('Tithi', `${t.paksha === 'śukla' ? 'Śukla' : 'Kṛṣṇa'} ${t.name} (${t.index} of 30) · Moon ${Math.round(today.illumination * 100)}% lit`),
-      line('Nakshatra', `${today.nakshatra.icon} ${today.nakshatra.name}, pada ${today.nakshatra.pada}`),
+      line('Nakshatra', `${today.nakshatra.name}, pada ${today.nakshatra.pada}: ${today.nakshatra.symbol}`),
       line('Vāra', `${today.vara.name} — the day of ${today.vara.graha?.name ?? ''}`),
       line('Yoga', today.yoga.name),
       line('Karaṇa', today.karana.name),
@@ -184,7 +184,7 @@ export function createJyotishWorld({ scene, recipe, heightAt, panel, toast, touc
     return el('div', { class: 'pa-jyotish-mansions' }, NAKSHATRAS.map((n, i) => el('div', {
       class: `pa-jyotish-mansion${collected.has(n.id) ? ' got' : ''}${today?.nakshatra.index === i ? ' now' : ''}`,
       title: n.name,
-    }, el('span', { text: collected.has(n.id) ? n.icon : '·' }), el('small', { text: n.name }))));
+    }, el('span', { text: collected.has(n.id) ? '✦' : '·' }), el('small', { text: n.name }))));
   }
 
   function openMoonAltar() {
@@ -202,7 +202,7 @@ export function createJyotishWorld({ scene, recipe, heightAt, panel, toast, touc
     });
     panel.openCustom([
       kicker(`The Moon's mansion · ${collected.size} of 27 collected`),
-      title(`${n.icon} ${n.name}`),
+      title(`${n.name} — ${n.symbol}`),
       el('p', {}, `The Moon is in ${n.name}, pada ${n.pada}. Its deity is ${n.deity}; its symbol, ${n.symbol}; its lord, ${grahaName(n.lord)}.`),
       change ? note(`It moves on to ${change.nakshatra.name} at about ${fmtTime(change.at)}${change.at.getDate() !== new Date().getDate() ? ' tomorrow' : ''}.`) : null,
       collect,
@@ -260,7 +260,7 @@ export function createJyotishWorld({ scene, recipe, heightAt, panel, toast, touc
     const n = birth;
     const home = today && isBirthStarDay(birth, today.nakshatra.index);
     out.replaceChildren(
-      el('h3', { class: 'pa-jyotish-birth', text: `${n.icon} ${n.name}` }),
+      el('h3', { class: 'pa-jyotish-birth', text: n.name }),
       el('p', {}, `Deity: ${n.deity}. Symbol: ${n.symbol}. Lord: ${grahaName(n.lord)}.`),
       nearBoundary ? note('The Moon was within half a degree of the next mansion, so an exact birth time matters here.') : null,
       note(home ? 'The Moon is in your birth star right now.' : 'Each lunar month the Moon returns to your birth star, and this altar glows to welcome you.'),
