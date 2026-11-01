@@ -53,6 +53,8 @@ export function bootJyotishaLoka({
   mode = 'explore',
   /** Whether this mode draws its own stop bar. A page with its own navigation passes false. */
   chrome = true,
+  /** Called with 0 | 1 | 2 when a market door is clicked. */
+  onDoorPick = null,
   /** Called once with a handle the page can drive: { goTo, next, prev, stops }. */
   onReady = null,
 }) {
@@ -350,6 +352,47 @@ export function bootJyotishaLoka({
     showStop(tour.STOPS[0]);
   }
 
+
+  // ---- clicking the market's doors
+  //
+  // The page's sections sit ABOVE the canvas, so a click never reaches the
+  // canvas itself. Listening on the window and raycasting from the pointer's
+  // position works through the overlay, and the guards keep it from stealing
+  // clicks meant for links, buttons or an open room.
+  const doorRay = new THREE.Raycaster();
+  const doorPointer = new THREE.Vector2();
+  const doorTargets = offerings?.doors ?? [];
+  const overInteractive = (target) => Boolean(
+    target && target.closest && target.closest('a,button,input,select,textarea,label,[data-loka-room]'),
+  );
+  const hitDoor = (clientX, clientY) => {
+    if (!doorTargets.length) return null;
+    const rect = canvas.getBoundingClientRect();
+    doorPointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    doorPointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+    doorRay.setFromCamera(doorPointer, camera);
+    const hits = doorRay.intersectObjects(doorTargets.map((d) => d.group), true);
+    if (!hits.length) return null;
+    let node = hits[0].object;
+    while (node) {
+      const found = doorTargets.find((d) => d.group === node);
+      if (found) return found;
+      node = node.parent;
+    }
+    return null;
+  };
+  if (touring && onDoorPick && doorTargets.length) {
+    listen(window, 'pointerup', (e) => {
+      if (overInteractive(e.target)) return;
+      const door = hitDoor(e.clientX, e.clientY);
+      if (door) onDoorPick(door.slot);
+    });
+    // A door you cannot tell is clickable is not clickable.
+    listen(window, 'pointermove', (e) => {
+      if (overInteractive(e.target)) { canvas.style.cursor = ''; return; }
+      canvas.style.cursor = hitDoor(e.clientX, e.clientY) ? 'pointer' : '';
+    });
+  }
   // ---- what is in reach
   function inReach() {
     if (touring) return null;

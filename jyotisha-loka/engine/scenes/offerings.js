@@ -100,7 +100,7 @@ function createBees({ count = 240 } = {}) {
      *
      * The world cannot fetch: it has no idea what a product is. The page hands
      * it a list of image URLs and it does the only thing a market should do
-     * with them — shows them, and turns the page every few seconds.
+     * with them ï¿½ shows them, and turns the page every few seconds.
      */
     setProducts(slot, urls) {
       const panel = panels[slot];
@@ -209,6 +209,8 @@ export function createOfferings({ scale = 1 } = {}) {
    */
   /** One shop window per door: the products of that category, turning over. */
   const panels = [];
+  /** The three doorways, so the boot can raycast against them. */
+  const doors = [];
 
   const stalls = [
     { x: -10.5, rot: 0.10, tint: 0x2f6b5a, name: 'Sea Moss' },
@@ -280,6 +282,7 @@ export function createOfferings({ scale = 1 } = {}) {
     door.add(name);
 
     group.add(door);
+    doors.push({ slot: panels.length - 1, group: door });
   }
 
   // ---- the goods: jars of honey, bottles of tincture, folded cloth
@@ -349,6 +352,7 @@ export function createOfferings({ scale = 1 } = {}) {
 
   return {
     group,
+    doors,
     /** The planks of the deck; the shot aims just above them. */
     target: new THREE.Vector3(0, 3.2, 0),
     /**
@@ -356,7 +360,7 @@ export function createOfferings({ scale = 1 } = {}) {
      *
      * The world cannot fetch: it has no idea what a product is. The page hands
      * it a list of image URLs and it does the only thing a market should do
-     * with them — shows them, and turns the page every few seconds.
+     * with them ï¿½ shows them, and turns the page every few seconds.
      */
     setProducts(slot, urls) {
       const panel = panels[slot];

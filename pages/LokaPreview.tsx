@@ -177,6 +177,12 @@ const LokaPreview: React.FC = () => {
         mode: 'tour',
         // This page draws its own navigation; the world draws no chrome.
         chrome: false,
+        // A door in the market opens the shop, already on that category.
+        onDoorPick: (slot: number) => {
+          setTab(slot);
+          setRoom('/offerings');
+          setRoomPath('/offerings');
+        },
         onReady: (handle: any) => {
           world.current = handle;
           setReady(true);
@@ -542,7 +548,7 @@ const LokaPreview: React.FC = () => {
         ))}
       </div>
       {room && (
-        <div className="fixed inset-0 z-[150] overflow-y-auto bg-[#05021a]" onClickCapture={onRoomClick}>
+        <div className="data-loka-room fixed inset-0 z-[150] overflow-y-auto bg-[#05021a]" onClickCapture={onRoomClick}>
           <div className="sticky top-0 z-20 flex items-center justify-between border-b border-white/10 bg-[#05021a]/95 px-4 py-3 backdrop-blur">
             <p className="text-[10px] uppercase tracking-[0.2em] text-[#D4AF37]">Inside the Loka</p>
             <button
