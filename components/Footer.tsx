@@ -154,6 +154,23 @@ const Footer: React.FC = () => {
         <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-[9px] uppercase tracking-[0.3em] text-white/30">
             © 2024 Nefer Kali Healing & Spiritual Education. All Rights Reserved.
+            {/*
+              Licence condition, not decoration: the graha surface maps in
+              public/textures/planets are Solar System Scope's, used under
+              CC BY 4.0, which requires attribution wherever they are shown.
+            */}
+            <p className="mt-2 text-[9px] text-white/25">
+              Planet textures:{' '}
+              <a
+                href="https://www.solarsystemscope.com/textures/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline decoration-white/20 hover:text-[#D4AF37]"
+              >
+                Solar System Scope
+              </a>
+              , CC BY 4.0.
+            </p>
           </p>
           <div className="flex gap-8">
             <Link to="/privacy-policy" className="text-[9px] uppercase tracking-widest text-white/40 hover:text-[#D4AF37] transition-colors">

@@ -15,6 +15,7 @@ import { supabase } from '../lib/supabase';
  * rendering behind the page.
  */
 const ProductRoom = React.lazy(() => import('./ProductDetail'));
+const PostRoom = React.lazy(() => import('./BlogPost'));
 
 /**
  * Every page that can be opened without leaving the world.
@@ -155,7 +156,10 @@ const LokaPreview: React.FC = () => {
     if (!href || !href.startsWith('/') || anchor.target === '_blank') return;
     e.preventDefault();
     e.stopPropagation();
-    if (href.startsWith('/offerings/') || ROOMS[href]) {
+    // A single product or a single post is still a room: reading or buying
+    // should not eject you from the world.
+    const isDetail = href.startsWith('/offerings/') || /^\/wisdom\/[^/]+$/.test(href);
+    if (isDetail || ROOMS[href]) {
       setRoom(href);
       setRoomPath(href);
     } else {
@@ -555,6 +559,7 @@ const LokaPreview: React.FC = () => {
                   <Route key={path} path={path} element={React.createElement(Room)} />
                 ))}
                 <Route path="/offerings/:slug" element={<ProductRoom />} />
+                <Route path="/wisdom/:slug" element={<PostRoom />} />
               </Routes>
 
           </React.Suspense>
