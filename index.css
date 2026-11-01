@@ -1,3 +1,9 @@
+/* Tailwind. Compiled at build time by postcss.config.cjs + tailwind.config.cjs,
+   not loaded from the CDN in index.html. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Custom Animations */
 @keyframes spin-slow {
     from {
