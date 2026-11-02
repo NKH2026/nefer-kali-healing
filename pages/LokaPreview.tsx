@@ -202,6 +202,12 @@ const LokaPreview: React.FC = () => {
    * on would quietly de-index the site.
    */
   const isPreview = pathname !== '/';
+  /**
+   * ?solo=1 holds one stop still: no scroll, no observer. Without it a scrolled
+   * section cannot be captured or inspected, which is exactly how three scenes
+   * got shipped sight-unseen.
+   */
+  const solo = params.get('solo') === '1';
 
   /**
    * `?stop=wellness` opens the tour already at a district. Useful for sending
@@ -363,7 +369,8 @@ const LokaPreview: React.FC = () => {
         for (const [id, ratio] of ratios) {
           if (ratio > bestRatio) { bestRatio = ratio; bestId = id; }
         }
-        if (bestId) setActive(bestId);
+        // In solo mode the camera stays where it was sent.
+        if (bestId && !solo) setActive(bestId);
       },
       { threshold: [0, 0.2, 0.4, 0.6, 0.8, 1], rootMargin: '-12% 0px -12% 0px' },
     );
@@ -429,7 +436,7 @@ const LokaPreview: React.FC = () => {
   // it, and a smooth scroll that is still travelling when the observer runs just
   // gets overruled back to the first section.
   useEffect(() => {
-    if (opening === STOPS[0]?.id) return;
+    if (solo || opening === STOPS[0]?.id) return;
     const el = document.getElementById(opening);
     if (!el) return;
     window.scrollTo(0, el.offsetTop);

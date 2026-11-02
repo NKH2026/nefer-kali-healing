@@ -231,7 +231,7 @@ export const STOP_CONTENT = {
   ],
   wellness: [
     { label: 'Sea Moss', note: 'Gels, capsules, powders', path: '/offerings' },
-    { label: 'Women’s Wellness', note: 'Womb teas, tinctures, care', path: '/offerings' },
+    { label: 'Womenï¿½s Wellness', note: 'Womb teas, tinctures, care', path: '/offerings' },
     { label: 'Sacred Plants', note: 'Single-herb tinctures and teas', path: '/offerings' },
     { label: 'Everything else', note: 'The full catalogue', path: '/offerings' },
   ],
@@ -241,12 +241,12 @@ export const STOP_CONTENT = {
   ],
   guides: [
     { label: 'Sea Moss', note: 'How to prepare and take it', path: '/guides/sea-moss' },
-    { label: 'St John’s Bush', note: 'Tea and tincture', path: '/guides/st-johns-bush-tea' },
+    { label: 'St Johnï¿½s Bush', note: 'Tea and tincture', path: '/guides/st-johns-bush-tea' },
     { label: 'Rohini Tincture', note: 'With the cycle chart', path: '/guides/rohini-tincture' },
     { label: 'All guides', note: 'Twelve plants, one page each', path: '/healing-guides' },
   ],
   planetary: [
-    { label: 'Tonight’s sky', note: 'The nine grahas, now', path: '/sky-watch' },
+    { label: 'Tonightï¿½s sky', note: 'The nine grahas, now', path: '/sky-watch' },
     { label: 'The deep dive', note: 'Read a chart properly', path: '/cosmic-deep-dive' },
   ],
 };
