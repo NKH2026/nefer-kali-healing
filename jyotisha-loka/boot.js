@@ -595,6 +595,16 @@ export function bootJyotishaLoka({
   const SEAT_FLIP = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
 
   // ---- the loop
+  /**
+   * Adaptive detail.
+   *
+   * A phone that cannot hold the frame rate should lose the expensive pass,
+   * not the whole experience. Bloom is five successive blur mips and the most
+   * fill-hungry thing in the frame, so it goes first — after ninety slow frames,
+   * not one, so a single hitch does not change the picture.
+   */
+  let slowFrames = 0;
+  let degraded = false;
   let last = performance.now();
   let t = 0;
   let shownLabel = null;
@@ -615,6 +625,15 @@ export function bootJyotishaLoka({
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     t += dt;
+
+    if (!degraded) {
+      slowFrames = dt > 1 / 40 ? slowFrames + 1 : Math.max(0, slowFrames - 1);
+      if (slowFrames > 90) {
+        degraded = true;
+        bloom.enabled = false;
+        toast("Lowering detail to keep the world smooth", 3);
+      }
+    }
     const live = started && !leaving && !panel.isOpen;
     if (touring) {
       // One writer to the camera: the rig.
