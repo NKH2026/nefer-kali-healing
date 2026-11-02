@@ -15,6 +15,29 @@ import { supabase } from '../lib/supabase';
  * rendering behind the page.
  */
 const ProductRoom = React.lazy(() => import('./ProductDetail'));
+/**
+ * Everything else the 2D site can do, opened as a room.
+ *
+ * The twelve plant guides are separate components rather than one template, so
+ * they are mapped by slug; the rest are single pages. With this the world only
+ * ejects a visitor for checkout itself, which has to leave for Stripe anyway.
+ */
+const GUIDES: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
+  'sea-moss': React.lazy(() => import('./guides/SeaMossGuide')),
+  'het-her-womb-plus-tea': React.lazy(() => import('./guides/HetHerWombPlusTeaGuide')),
+  'st-johns-bush-tea': React.lazy(() => import('./guides/StJohnsBushTeaGuide')),
+  'het-her-womb-plus-extract': React.lazy(() => import('./guides/HetHerWombPlusExtractGuide')),
+  'balance-tincture': React.lazy(() => import('./guides/BalanceTinctureGuide')),
+  'rohini-tincture': React.lazy(() => import('./guides/RohiniTinctureGuide')),
+  'het-her-womb-tincture': React.lazy(() => import('./guides/HetHerWombTinctureGuide')),
+  'creosote-bush': React.lazy(() => import('./guides/CreosoteBushGuide')),
+  'dream-elixir': React.lazy(() => import('./guides/DreamElixirGuide')),
+  uatchet: React.lazy(() => import('./guides/UatchetGuide')),
+  'gully-root': React.lazy(() => import('./guides/GullyRootGuide')),
+  'cashew-bark': React.lazy(() => import('./guides/CashewBarkGuide')),
+};
+
+const EventRoom = React.lazy(() => import('./EventDetail'));
 const PostRoom = React.lazy(() => import('./BlogPost'));
 
 /**
@@ -33,6 +56,18 @@ const ROOMS: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
   '/healing-guides': React.lazy(() => import('./HealingGuides')),
   '/sky-watch': React.lazy(() => import('./CosmicReadings')),
 };
+
+Object.assign(ROOMS, {
+  '/cosmic-deep-dive': React.lazy(() => import('./CosmicDeepDive')),
+  '/order-confirmation': React.lazy(() => import('./OrderConfirmation')),
+  '/privacy-policy': React.lazy(() => import('./PrivacyPolicy')),
+  '/terms': React.lazy(() => import('./TermsAndConditions')),
+});
+
+for (const [slug, Room] of Object.entries(GUIDES)) {
+  ROOMS[`/guides/${slug}`] = Room;
+}
+
 
 /**
  * /loka-preview — the full-page tour, with the world behind the document.
@@ -820,6 +855,7 @@ const LokaPreview: React.FC = () => {
                 ))}
                 <Route path="/offerings/:slug" element={<ProductRoom />} />
                 <Route path="/wisdom/:slug" element={<PostRoom />} />
+                <Route path="/community/events/:eventId" element={<EventRoom />} />
               </Routes>
 
           </React.Suspense>
