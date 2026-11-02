@@ -92,7 +92,20 @@ export function ascendant({ date, lat, lon }) {
  * @returns {number} 1 … 12
  */
 export function houseOf(ascendantLon, longitude) {
-  return Math.floor(norm(longitude - ascendantLon) / 30) + 1;
+  /**
+   * WHOLE SIGNS, not 30° bands from the ascendant's degree.
+   *
+   * This was wrong on the first pass, and only a real chart caught it. Cutting
+   * bands of 30° from 10°44′ Aries makes 0–10°44′ Aries house 1 and the rest of
+   * Aries house 2 — so every graha whose longitude was less than the ascendant's
+   * degree landed one house early. On the 25 Sep 1993 chart that put the Sun,
+   * Mars and Saturn in the 5th, 6th and 10th instead of the 6th, 7th and 11th.
+   *
+   * Jyotish counts signs: house 1 IS the ascendant's sign in its entirety, and
+   * each house is the next whole sign. So the count is sign to sign.
+   */
+  const sign = (lon) => Math.floor(norm(lon) / 30);
+  return (((sign(longitude) - sign(ascendantLon)) % 12) + 12) % 12 + 1;
 }
 
 /**
