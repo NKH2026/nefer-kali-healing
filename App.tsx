@@ -36,19 +36,19 @@ import TermsAndConditions from './pages/TermsAndConditions';
 import { CartProvider, CartDrawer } from './components/cart';
 
 // Admin Imports
-import Login from './pages/admin/Login';
-import Dashboard from './pages/admin/Dashboard';
-import Blog from './pages/admin/Blog';
-import Products from './pages/admin/Products';
-import Events from './pages/admin/Events';
-import Coupons from './pages/admin/Coupons';
-import Reviews from './pages/admin/Reviews';
-import Orders from './pages/admin/Orders';
-import AdminSubscriptions from './pages/admin/Subscriptions';
-import AdminSettings from './pages/admin/Settings';
-import AdminAssistant from './pages/admin/Assistant';
-import AdminDrafts from './pages/admin/Drafts';
-import AdminLayout from './components/admin/AdminLayout';
+const Login = React.lazy(() => import('./pages/admin/Login'));
+const Dashboard = React.lazy(() => import('./pages/admin/Dashboard'));
+const Blog = React.lazy(() => import('./pages/admin/Blog'));
+const Products = React.lazy(() => import('./pages/admin/Products'));
+const Events = React.lazy(() => import('./pages/admin/Events'));
+const Coupons = React.lazy(() => import('./pages/admin/Coupons'));
+const Reviews = React.lazy(() => import('./pages/admin/Reviews'));
+const Orders = React.lazy(() => import('./pages/admin/Orders'));
+const AdminSubscriptions = React.lazy(() => import('./pages/admin/Subscriptions'));
+const AdminSettings = React.lazy(() => import('./pages/admin/Settings'));
+const AdminAssistant = React.lazy(() => import('./pages/admin/Assistant'));
+const AdminDrafts = React.lazy(() => import('./pages/admin/Drafts'));
+const AdminLayout = React.lazy(() => import('./components/admin/AdminLayout'));
 // Loaded only when an administrator opens it: the 3D world stays out of everyone else's download.
 const JyotishaLoka = React.lazy(() => import('./pages/JyotishaLoka'));
 // The full-page tour preview: unlisted, and lazy for the same reason as the world above.
@@ -100,6 +100,12 @@ const HomeRoute: React.FC = () => {
   );
 };
 
+/** One fallback for every lazy admin page. */
+const withAdminSuspense = (node: React.ReactNode) => (
+  <React.Suspense fallback={<div className="min-h-screen grid place-items-center text-white/50">Loading…</div>}>
+    {node}
+  </React.Suspense>
+);
 const App: React.FC = () => {
   console.log('--- App component rendering ---');
   React.useEffect(() => {
@@ -166,7 +172,7 @@ const App: React.FC = () => {
               } />
 
               {/* Admin Routes */}
-              <Route path="/admin/login" element={<Login />} />
+              <Route path="/admin/login" element={withAdminSuspense(<Login />)} />
               {/* Jyotisha Loka: a full-screen 3D world, administrators only for now.
                   Under /admin so the site's navbar and footer stay out of it. */}
               <Route path="/admin/jyotisha-loka" element={
@@ -178,7 +184,7 @@ const App: React.FC = () => {
               } />
               <Route path="/admin" element={
                 <ProtectedRoute>
-                  <AdminLayout />
+                  {withAdminSuspense(<AdminLayout />)}
                 </ProtectedRoute>
               }>
                 <Route index element={<Dashboard />} />
