@@ -9,6 +9,7 @@
  * longitudes run anticlockwise seen from above, the way the grahas move.
  */
 import * as THREE from 'three';
+import { hasSymbol, drawSymbol } from './nakshatra-symbols.js';
 import { PALETTE, GLOW } from '../style.js';
 import { GRAHAS, NAKSHATRAS, RASHIS, NAKSHATRA_SPAN } from './sky.js';
 
@@ -62,7 +63,7 @@ function textSprite(lines, { width = 512, height = 192, colour = '#f1d38a', sub 
     texture.needsUpdate = true;
   };
   draw(...lines);
-  return { sprite, draw };
+  return { sprite, draw, canvas, ctx: canvas.getContext('2d'), texture };
 }
 
 /** A soft additive halo, for the grahas' glow. */
@@ -202,6 +203,18 @@ export function createZodiacWheel({ quality = 'high' } = {}) {
     glow.position.copy(lamp.position);
     glow.material.opacity = 0.35;
     const label = textSprite([n.name, n.symbol], { width: 512, height: 192, colour: '#bff6ff', scale: quality === 'low' ? 26 : 30 });
+    /**
+     * The tradition's mark, when there is a drawing for it.
+     *
+     * Nothing changes here when the art arrives: `hasSymbol` starts false, the
+     * label shows the symbol in words, and filling in `SYMBOL_PATHS` turns these
+     * into the marks themselves.
+     */
+    if (hasSymbol(n.id)) {
+      label.ctx.strokeStyle = '#bff6ff';
+      drawSymbol(label.ctx, n.id, 12, 44, 0.62);
+      label.texture.needsUpdate = true;
+    }
     label.sprite.position.copy(wheelPoint(mid, WHEEL.r + 12, WHEEL.y + 14));
     group.add(lamp, glow, label.sprite);
     return { lamp, lampMat, glow, label, base: label.sprite.scale.clone() };
