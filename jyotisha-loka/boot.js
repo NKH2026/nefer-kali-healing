@@ -601,6 +601,16 @@ export function bootJyotishaLoka({
   let raf = 0;
   function frame() {
     raf = requestAnimationFrame(frame);
+
+    /**
+     * A hidden tab renders nothing a phone can use — it just heats the hand.
+     * Skip the whole frame while the document is hidden; the clock is reset
+     * on the first visible frame so nothing jumps when it returns.
+     */
+    if (typeof document !== 'undefined' && document.hidden) {
+      last = performance.now();
+      return;
+    }
     const now = performance.now();
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;

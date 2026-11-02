@@ -733,12 +733,12 @@ const LokaPreview: React.FC = () => {
             key={stop.id}
             id={stop.id}
             aria-labelledby={`${stop.id}-title`}
-            className={`relative flex min-h-screen items-center px-5 pb-24 pt-32 sm:px-8 md:pl-60 ${
+            className={`relative flex min-h-screen min-w-0 items-center px-5 pb-24 pt-32 sm:px-8 md:pl-60 ${
               i % 2 === 1 ? 'justify-end' : 'justify-start'
             }`}
           >
             <div
-              className={`w-full max-w-xl rounded-2xl border p-6 backdrop-blur-md sm:p-9 ${
+              className={`w-full max-w-[calc(100vw-2.5rem)] min-w-0 rounded-2xl border p-6 backdrop-blur-md sm:max-w-xl sm:p-9 ${
                 ready
                   ? 'border-[#D4AF37]/25 bg-[#07030f]/55'
                   : 'border-white/10 bg-[#07030f]/80'
