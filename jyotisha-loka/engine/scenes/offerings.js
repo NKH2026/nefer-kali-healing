@@ -285,46 +285,8 @@ export function createOfferings({ scale = 1 } = {}) {
     doors.push({ slot: panels.length - 1, group: door });
   }
 
-  // ---- the goods: jars of honey, bottles of tincture, folded cloth
-  const jarMat = new THREE.MeshStandardMaterial({
-    color: 0xd9a441,
-    emissive: 0x6b3d08,
-    emissiveIntensity: 0.8,
-    roughness: 0.18,
-    metalness: 0.35,
-  });
-  const glassMat = new THREE.MeshStandardMaterial({
-    color: 0x5cff9a,
-    emissive: 0x1c6b3a,
-    emissiveIntensity: 0.7,
-    roughness: 0.12,
-    metalness: 0.2,
-    transparent: true,
-    opacity: 0.85,
-  });
-
-  for (const stall of stalls) {
-    for (let i = 0; i < 7; i++) {
-      const isJar = i % 2 === 0;
-      const body = new THREE.Mesh(
-        isJar
-          ? new THREE.CylinderGeometry(0.24, 0.3, 0.7, 10)
-          : new THREE.CylinderGeometry(0.14, 0.16, 0.95, 8),
-        isJar ? jarMat : glassMat,
-      );
-      body.position.set(
-        stall.x + (i - 3) * 0.72 + (Math.random() - 0.5) * 0.2,
-        2.36,
-        (Math.random() - 0.5) * 1.9,
-      );
-      group.add(body);
-      if (isJar) {
-        const lid = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.09, 10), trimMat);
-        lid.position.copy(body.position).setY(2.75);
-        group.add(lid);
-      }
-    }
-  }
+  // The loose jars are gone: the doors carry the products on their own panels,
+  // and a jar standing in a doorway is clutter in the one place you walk.
 
   // ---- lanterns strung across the barge, the whole way down
   const lanterns = [];
