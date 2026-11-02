@@ -20,6 +20,7 @@
  */
 import * as THREE from 'three';
 import { GRAHAS } from '../jyotish/sky.js';
+import { planetMaterial } from '../jyotish/scene.js';
 
 /** Where each house's label sits, in units of half the square's side. */
 const HOUSE_AT = [
@@ -127,9 +128,11 @@ export function createChart({ size = 170, opacity = 0.9 } = {}) {
       let marker = markers.get(p.id);
       if (!marker) {
         const graha = GRAHAS.find((g) => g.id === p.id);
+        // The same textured, sun-lit body that orbits the world — a chart cell
+        // should hold the planet, not a coloured dot standing in for it.
         marker = new THREE.Mesh(
-          new THREE.SphereGeometry(3.6, 16, 12),
-          new THREE.MeshBasicMaterial({ color: graha?.colour ?? 0xffffff, fog: false }),
+          new THREE.SphereGeometry(graha ? Math.max(3.2, graha.size * 0.9) : 3.6, 32, 20),
+          graha ? planetMaterial(graha) : new THREE.MeshBasicMaterial({ color: 0xffffff }),
         );
         group.add(marker);
         markers.set(p.id, marker);
@@ -138,5 +141,25 @@ export function createChart({ size = 170, opacity = 0.9 } = {}) {
       marker.position.set(hx * (size / 2) * 0.84, -(hy * (size / 2) * 0.84), 2);
     }
   }
-  return { group, size, material, setChart };
+
+  /**
+   * Light the chart's planets from where the Sun is.
+   *
+   * The markers live on a billboard, so their world positions change as it turns
+   * to face the camera. This runs each frame and is the reason a planet in a
+   * cell shows the same phase it would show in the sky.
+   */
+  const worldAt = new THREE.Vector3();
+  function setLight(sunPos) {
+    if (!sunPos) return;
+    for (const marker of markers.values()) {
+      const uniforms = marker.material.uniforms;
+      if (!uniforms?.lightDir) continue;
+      marker.getWorldPosition(worldAt);
+      uniforms.lightDir.value.copy(sunPos).sub(worldAt);
+      if (uniforms.lightDir.value.lengthSq() < 1e-6) uniforms.lightDir.value.set(1, 0, 0);
+      else uniforms.lightDir.value.normalize();
+    }
+  }
+  return { group, size, material, setChart, setLight };
 }

@@ -628,6 +628,7 @@ export function bootJyotishaLoka({
     portal?.update(t);
     // A flat diagram has to face the viewer from wherever they stand.
     chart?.group.lookAt(camera.position);
+    chart?.setLight(jyotish.grahaPosition('surya'));
     offerings?.update(t, dt);
     journey?.update(t);
     for (const s of sites) s.built.update(t);

@@ -395,6 +395,26 @@ function loadMap(url, uniforms) {
 }
 
 /** A graha's sphere: textured and lit by the Sun, ringed for Śani, smoky for the nodes. */
+/**
+ * A graha's surface material: map, one real light direction, air at the limb,
+ * and the dust-scattering blend. The sky and the chart both use this, so a
+ * planet looks the same whether it is orbiting or sitting in a house.
+ */
+export function planetMaterial(g) {
+  const air = ATMOSPHERE[g.id] || [0, 0, 0, 0];
+  const mat = new THREE.ShaderMaterial({
+    uniforms: {
+      map: { value: flatTexture(g.colour) },
+      lightDir: { value: new THREE.Vector3(1, 0, 0) },
+      atmosphere: { value: new THREE.Vector4(air[0], air[1], air[2], air[3]) },
+      lunar: { value: LUNAR[g.id] ?? 0 },
+    },
+    vertexShader: SURFACE_VERTEX,
+    fragmentShader: PLANET_FRAGMENT,
+  });
+  loadMap(GRAHA_MAPS[g.id], mat.uniforms);
+  return mat;
+}
 function grahaBody(g) {
   const group = new THREE.Group();
   let mat;
