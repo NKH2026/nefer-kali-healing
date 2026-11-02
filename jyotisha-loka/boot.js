@@ -27,6 +27,7 @@ import { buildShots, grahaFrame, TOUR_STOPS } from './engine/shots.js';
 import { createOfferings } from './engine/scenes/offerings.js';
 import { createJourney } from './engine/scenes/journey.js';
 import { createChart } from './engine/scenes/chart.js';
+import { createCommunity } from './engine/scenes/community.js';
 import { ascendant } from './engine/jyotish/lagna.js';
 import { TouchControls } from './engine/ui/touch.js';
 import { createGround, createPortal, createSite } from './engine/worlds/builders.js';
@@ -272,7 +273,7 @@ export function bootJyotishaLoka({
   // `drop` is how far a district's own origin sits below the point the camera
   // aims at — a barge deck is a few metres down, a road that climbs 26 metres
   // starts that far below its midpoint.
-  const DROP = { wellness: -3.2, journey: -13 };
+  const DROP = { wellness: -3.2, journey: -13, community: -3 };
 
   function placeDistrict(build, stopId) {
     const stop = TOUR_STOPS.find((s) => s.id === stopId);
@@ -292,6 +293,7 @@ export function bootJyotishaLoka({
 
   const offerings = touring ? placeDistrict(() => createOfferings(), 'wellness') : null;
   const journey = touring ? placeDistrict(() => createJourney(), 'journey') : null;
+  const community = touring ? placeDistrict(() => createCommunity(), 'community') : null;
 
   // The chart stands at the centre of the ecliptic, facing wherever the camera is.
   const chart = touring ? createChart() : null;
@@ -641,6 +643,7 @@ export function bootJyotishaLoka({
     chart?.setLight(jyotish.grahaPosition('surya'));
     offerings?.update(t, dt);
     journey?.update(t);
+    community?.update(t);
     for (const s of sites) s.built.update(t);
     jyotish.update(dt, t, { started: started && !leaving, paused: panel.isOpen });
 
