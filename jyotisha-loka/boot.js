@@ -334,6 +334,12 @@ export function bootJyotishaLoka({
       setProducts: (slot, urls) => offerings?.setProducts(slot, urls),
       /** Send the sky to a moment — a birth date, in milliseconds. */
       setChart: (ms) => jyotish.setDate(ms),
+      /** Show or hide parts of the sky: 'chart' | 'labels' | 'orbits'. */
+      setOption: (name, on) => {
+        if (name === 'chart') { if (chart) chart.group.visible = on; }
+        else if (name === 'labels') jyotish.setLabels(on);
+        else if (name === 'orbits') jyotish.setOrbits(on);
+      },
     });
   }
   if (touring && chrome) {

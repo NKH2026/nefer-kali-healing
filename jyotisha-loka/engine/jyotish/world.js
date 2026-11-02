@@ -312,6 +312,8 @@ export function createJyotishWorld({ scene, recipe, heightAt, panel, toast, touc
     openGrahaGuide,
     openGraha,
     /** Where a graha is drawn right now (for tests and tinkering). */
+    setLabels: (on) => grahas.setLabels(on),
+    setOrbits: (on) => grahas.setOrbits(on),
     grahaPosition: (id) => grahas.items.find((it) => it.g.id === id)?.body.group.position.clone() ?? null,
     openMoonAltar,
     openBirthAltar,

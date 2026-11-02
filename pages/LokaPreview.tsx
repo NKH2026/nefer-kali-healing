@@ -107,6 +107,7 @@ const LokaPreview: React.FC = () => {
     goTo: (id: string, opts?: { immediate?: boolean }) => void;
     setProducts?: (slot: number, urls: string[]) => void;
     setChart?: (ms: number) => void;
+    setOption?: (name: string, on: boolean) => void;
   } | null>(null);
   const [params] = useSearchParams();
   const { pathname } = useLocation();
@@ -137,6 +138,16 @@ const LokaPreview: React.FC = () => {
   const [room, setRoom] = useState<string | null>(params.get('room'));
   const [birthDate, setBirthDate] = useState('');
   const [birthTime, setBirthTime] = useState('');
+  const [opts, setOpts] = useState<Record<string, boolean>>({ chart: true, labels: true, orbits: true });
+
+  /** Flip a switch on both sides: the menu, and the sky. */
+  const toggleOption = (key: string) => {
+    setOpts((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      world.current?.setOption?.(key, next[key]);
+      return next;
+    });
+  };
   /** The page showing inside the room; the world stays mounted regardless. */
   const [roomPath, setRoomPath] = useState(params.get('room') || '');
   const navigate = useNavigate();
@@ -395,6 +406,40 @@ const LokaPreview: React.FC = () => {
         />
       )}
 
+      {/* The settings rail: what the sky should show. */}
+      <div className="fixed left-4 bottom-14 z-30 hidden w-52 md:block">
+        <div className="rounded-2xl border border-[#D4AF37]/30 bg-[#07030f]/75 p-3 shadow-[0_0_30px_rgba(212,175,55,0.20)] backdrop-blur-md">
+          <p className="mb-2 border-b border-white/10 pb-2 text-[10px] uppercase tracking-[0.22em] text-[#D4AF37]">
+            The Loka
+          </p>
+          {[
+            { key: 'chart', label: 'Chart' },
+            { key: 'labels', label: 'Graha names' },
+            { key: 'orbits', label: 'Orbits' },
+          ].map((t) => {
+            const on = Boolean(opts[t.key]);
+            return (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => toggleOption(t.key)}
+                aria-pressed={on}
+                className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left transition-colors hover:bg-white/5"
+              >
+                <span className="text-[11px] uppercase tracking-[0.12em] text-white/70">{t.label}</span>
+                <span
+                  className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${
+                    on ? 'bg-[#D4AF37] shadow-[0_0_12px_#D4AF37]' : 'bg-white/15'
+                  }`}
+                />
+              </button>
+            );
+          })}
+          <p className="mt-2 border-t border-white/10 pt-2 text-[9px] uppercase tracking-[0.16em] text-white/25">
+            Preview
+          </p>
+        </div>
+      </div>
       {/* Prototype label, so nobody mistakes this for a shipped page. */}
       <div className="fixed left-4 bottom-4 z-30 hidden md:block">
         <p className="text-[10px] uppercase tracking-[0.2em] text-white/40">

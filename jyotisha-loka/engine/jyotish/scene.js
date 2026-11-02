@@ -501,6 +501,8 @@ function grahaBody(g) {
 export function createGrahas({ quality = 'high', camera = null } = {}) {
   const group = new THREE.Group();
   const orbitMat = (hex) => new THREE.MeshBasicMaterial({ color: col(hex), transparent: true, opacity: 0.22, fog: false, depthWrite: false });
+  /** Every orbit ring, so they can all be switched off together. */
+  const orbitMeshes = [];
   const items = GRAHAS.map((g) => {
     const o = ORBITS[g.id];
     if (g.id !== 'ketu') {
@@ -508,6 +510,7 @@ export function createGrahas({ quality = 'high', camera = null } = {}) {
       orbit.rotation.x = Math.PI / 2;
       orbit.position.y = o.y;
       group.add(orbit);
+      orbitMeshes.push(orbit);
     }
     const body = grahaBody(g);
     const label = textSprite([`${g.glyph} ${g.name}`, g.english], { width: 512, height: 192, colour: '#ffffff', scale: 22 + g.size * 1.5 });
