@@ -142,6 +142,45 @@ const LokaPreview: React.FC = () => {
   const [birthLat, setBirthLat] = useState('34.6868');
   const [birthLon, setBirthLon] = useState('-118.1541');
 
+  /**
+   * Saved charts. Seeded with the one chart validated against real software —
+   * the founder's own — because inventing birth data for "case studies" would
+   * be inventing people. Everything else is added by the visitor and kept on
+   * their own machine.
+   */
+  const [cases, setCases] = useState<Array<{ label: string; date: string; time: string; lat: string; lon: string }>>(() => {
+    try {
+      const raw = localStorage.getItem('loka.charts');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length) return parsed;
+      }
+    } catch { /* no storage, no saved charts */ }
+    return [{ label: 'The founder', date: '1993-09-25', time: '20:05', lat: '34.6868', lon: '-118.1541' }];
+  });
+
+  /** Show a saved chart: the sky and the frame both go to it. */
+  const applyCase = (c: { date: string; time: string; lat: string; lon: string }) => {
+    setBirthDate(c.date);
+    setBirthTime(c.time);
+    setBirthLat(c.lat);
+    setBirthLon(c.lon);
+    const at = new Date(`${c.date}T${c.time || '12:00'}`);
+    if (!Number.isNaN(at.getTime())) {
+      world.current?.setBirth?.({ dateMs: at.getTime(), lat: Number(c.lat) || 0, lon: Number(c.lon) || 0 });
+    }
+  };
+
+  /** Keep the chart currently in the form, on this machine only. */
+  const saveChart = () => {
+    const label = `${birthDate || 'undated'}${birthTime ? ` ${birthTime}` : ''}`;
+    const next = [
+      ...cases.filter((c) => c.label !== label),
+      { label, date: birthDate, time: birthTime, lat: birthLat, lon: birthLon },
+    ];
+    setCases(next);
+    try { localStorage.setItem('loka.charts', JSON.stringify(next)); } catch { /* private mode */ }
+  };
   /** Apply a birth: the sky and the chart frame both go to that moment. */
   const applyBirth = (dateMs: number) => {
     world.current?.setBirth?.({ dateMs, lat: Number(birthLat) || 0, lon: Number(birthLon) || 0 });
@@ -459,7 +498,50 @@ const LokaPreview: React.FC = () => {
               </button>
             );
           })}
-          <p className="mt-2 border-t border-white/10 pt-2 text-[9px] uppercase tracking-[0.16em] text-white/25">
+          <div className="mt-2 border-t border-white/10 pt-2">
+            <p className="mb-1 text-[10px] uppercase tracking-[0.18em] text-[#D4AF37]">Charts</p>
+            <div className="flex gap-2">
+              <label className="text-[9px] uppercase tracking-[0.1em] text-white/45">
+                Lat
+                <input
+                  type="number"
+                  step="0.0001"
+                  value={birthLat}
+                  onChange={(e) => setBirthLat(e.target.value)}
+                  className="mt-0.5 block w-16 rounded border border-white/15 bg-white/5 px-1 py-0.5 text-[10px] text-white"
+                />
+              </label>
+              <label className="text-[9px] uppercase tracking-[0.1em] text-white/45">
+                Lon
+                <input
+                  type="number"
+                  step="0.0001"
+                  value={birthLon}
+                  onChange={(e) => setBirthLon(e.target.value)}
+                  className="mt-0.5 block w-16 rounded border border-white/15 bg-white/5 px-1 py-0.5 text-[10px] text-white"
+                />
+              </label>
+            </div>
+            <button
+              type="button"
+              onClick={saveChart}
+              className="mt-2 w-full rounded-full border border-[#D4AF37]/40 px-2 py-1 text-[9px] uppercase tracking-[0.16em] text-[#D4AF37] hover:bg-[#D4AF37]/10"
+            >
+              Save this chart
+            </button>
+            <div className="mt-2 flex flex-col gap-0.5">
+              {cases.map((c) => (
+                <button
+                  key={c.label}
+                  type="button"
+                  onClick={() => applyCase(c)}
+                  className="truncate rounded px-1 py-1 text-left text-[10px] text-white/55 transition-colors hover:text-[#D4AF37]"
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>          <p className="mt-2 border-t border-white/10 pt-2 text-[9px] uppercase tracking-[0.16em] text-white/25">
             Preview
           </p>
         </div>
@@ -522,7 +604,7 @@ const LokaPreview: React.FC = () => {
             key={stop.id}
             id={stop.id}
             aria-labelledby={`${stop.id}-title`}
-            className={`relative flex min-h-screen items-center px-5 pb-24 pt-32 sm:px-8 ${
+            className={`relative flex min-h-screen items-center px-5 pb-24 pt-32 sm:px-8 md:pl-60 ${
               i % 2 === 1 ? 'justify-end' : 'justify-start'
             }`}
           >
