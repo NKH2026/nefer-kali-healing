@@ -334,7 +334,17 @@ export function bootJyotishaLoka({
       setProducts: (slot, urls) => offerings?.setProducts(slot, urls),
       /** Send the sky to a moment — a birth date, in milliseconds. */
       setChart: (ms) => jyotish.setDate(ms),
-      /** Show or hide parts of the sky: 'chart' | 'labels' | 'orbits'. */
+      /**
+       * Show a birth chart: the sky moves to that moment, and the frame's
+       * planets follow into their houses. One call, because a chart IS the sky
+       * and the frame agreeing with each other.
+       */
+      setBirth: ({ dateMs, lat, lon }) => {
+        jyotish.setDate(dateMs);
+        if (chart) {
+          chart.setChart(jyotish.positions, ascendant({ date: new Date(dateMs), lat, lon }).sidereal);
+        }
+      },      /** Show or hide parts of the sky: 'chart' | 'labels' | 'orbits'. */
       setOption: (name, on) => {
         if (name === 'chart') { if (chart) chart.group.visible = on; }
         else if (name === 'labels') jyotish.setLabels(on);

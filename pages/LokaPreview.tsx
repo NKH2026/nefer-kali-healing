@@ -107,6 +107,7 @@ const LokaPreview: React.FC = () => {
     goTo: (id: string, opts?: { immediate?: boolean }) => void;
     setProducts?: (slot: number, urls: string[]) => void;
     setChart?: (ms: number) => void;
+    setBirth?: (o: { dateMs: number; lat: number; lon: number }) => void;
     setOption?: (name: string, on: boolean) => void;
   } | null>(null);
   const [params] = useSearchParams();
@@ -138,6 +139,13 @@ const LokaPreview: React.FC = () => {
   const [room, setRoom] = useState<string | null>(params.get('room'));
   const [birthDate, setBirthDate] = useState('');
   const [birthTime, setBirthTime] = useState('');
+  const [birthLat, setBirthLat] = useState('34.6868');
+  const [birthLon, setBirthLon] = useState('-118.1541');
+
+  /** Apply a birth: the sky and the chart frame both go to that moment. */
+  const applyBirth = (dateMs: number) => {
+    world.current?.setBirth?.({ dateMs, lat: Number(birthLat) || 0, lon: Number(birthLon) || 0 });
+  };
   const [opts, setOpts] = useState<Record<string, boolean>>({ chart: true, labels: true, orbits: true });
 
   /** Flip a switch on both sides: the menu, and the sky. */
@@ -283,6 +291,14 @@ const LokaPreview: React.FC = () => {
     })();
     return () => { cancelled = true; };
   }, [ready]);
+  // ---- a chart can be linked: ?birth=1993-09-25
+  useEffect(() => {
+    const q = params.get('birth');
+    if (!ready || !q) return;
+    const at = new Date(`${q}T12:00`);
+    if (!Number.isNaN(at.getTime())) applyBirth(at.getTime());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
   // ---- land on the requested stop, if one was asked for.
   //
   // Deliberately INSTANT, and deliberately by offset rather than scrollIntoView:
@@ -356,6 +372,14 @@ const LokaPreview: React.FC = () => {
       }
     })();
     return () => { cancelled = true; };
+  }, [ready]);
+  // ---- a chart can be linked: ?birth=1993-09-25
+  useEffect(() => {
+    const q = params.get('birth');
+    if (!ready || !q) return;
+    const at = new Date(`${q}T12:00`);
+    if (!Number.isNaN(at.getTime())) applyBirth(at.getTime());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
   // ---- land on the requested stop, if one was asked for.
   //
@@ -562,7 +586,7 @@ const LokaPreview: React.FC = () => {
                       type="button"
                       onClick={() => {
                         const at = new Date(`${birthDate || '1970-01-01'}T${birthTime || '12:00'}`);
-                        if (!Number.isNaN(at.getTime())) world.current?.setChart?.(at.getTime());
+                        if (!Number.isNaN(at.getTime())) applyBirth(at.getTime());
                       }}
                       className="rounded-full border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-4 py-2 text-[10px] uppercase tracking-[0.18em] text-[#D4AF37] hover:bg-[#D4AF37]/20"
                     >
