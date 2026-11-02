@@ -78,9 +78,21 @@ import { ThemeProvider } from './lib/ThemeProvider';
  * on the real domain while every ordinary visitor still sees the old home page,
  * and turning it on becomes a one-line decision rather than a deploy.
  */
+/**
+ * Is the 3D world the home page?
+ *
+ * `false`  the 2D site is the home page; `?loka=1` previews the world.
+ * `true`   the world is the home page; `?loka=0` returns to the 2D site.
+ *
+ * One constant moves the whole site, and one constant moves it back. `?loka=0`
+ * remains an escape hatch either way, so the 2D site is always reachable.
+ */
+const LOKA_IS_HOME = false;
 const HomeRoute: React.FC = () => {
   const [params] = useSearchParams();
-  if (params.get('loka') !== '1') return <Home />;
+  const wants = params.get('loka');
+  const showWorld = wants === '1' || (wants === null && LOKA_IS_HOME);
+  if (!showWorld) return <Home />;
   return (
     <React.Suspense fallback={<div className="fixed inset-0 bg-[#05021a]" />}>
       <LokaPreview />

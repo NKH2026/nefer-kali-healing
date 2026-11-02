@@ -201,7 +201,7 @@ export function createZodiacWheel({ quality = 'high' } = {}) {
     const glow = halo(PALETTE.glyph.cyan, 14);
     glow.position.copy(lamp.position);
     glow.material.opacity = 0.35;
-    const label = textSprite([n.name], { width: 512, height: 128, colour: '#bff6ff', scale: quality === 'low' ? 26 : 30 });
+    const label = textSprite([n.name, n.symbol], { width: 512, height: 192, colour: '#bff6ff', scale: quality === 'low' ? 26 : 30 });
     label.sprite.position.copy(wheelPoint(mid, WHEEL.r + 12, WHEEL.y + 14));
     group.add(lamp, glow, label.sprite);
     return { lamp, lampMat, glow, label, base: label.sprite.scale.clone() };
