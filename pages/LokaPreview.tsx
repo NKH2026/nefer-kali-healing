@@ -101,6 +101,54 @@ const slotOf = (category: string) => {
 };
 
 const CATEGORIES = ['Sea Moss', 'Women�s Wellness', 'Sacred Plants'];
+/**
+ * Places to be born.
+ *
+ * A chart needs a latitude and nobody knows their own, so this lists cities
+ * rather than coordinates — and lists the ones that matter to this community
+ * (Accra, Lagos, Kingston, Port of Spain) beside the American ones. Choosing
+ * "Somewhere else" leaves the numbers editable for anywhere missing.
+ */
+const CITIES: Array<{ name: string; lat: string; lon: string }> = [
+  { name: 'Lancaster, CA', lat: '34.6868', lon: '-118.1541' },
+  { name: 'Los Angeles, CA', lat: '34.0522', lon: '-118.2437' },
+  { name: 'San Diego, CA', lat: '32.7157', lon: '-117.1611' },
+  { name: 'San Francisco, CA', lat: '37.7749', lon: '-122.4194' },
+  { name: 'Sacramento, CA', lat: '38.5816', lon: '-121.4944' },
+  { name: 'Las Vegas, NV', lat: '36.1699', lon: '-115.1398' },
+  { name: 'Phoenix, AZ', lat: '33.4484', lon: '-112.0740' },
+  { name: 'Denver, CO', lat: '39.7392', lon: '-104.9903' },
+  { name: 'Dallas, TX', lat: '32.7767', lon: '-96.7970' },
+  { name: 'Houston, TX', lat: '29.7604', lon: '-95.3698' },
+  { name: 'Atlanta, GA', lat: '33.7490', lon: '-84.3880' },
+  { name: 'Miami, FL', lat: '25.7617', lon: '-80.1918' },
+  { name: 'New Orleans, LA', lat: '29.9511', lon: '-90.0715' },
+  { name: 'Chicago, IL', lat: '41.8781', lon: '-87.6298' },
+  { name: 'Detroit, MI', lat: '42.3314', lon: '-83.0458' },
+  { name: 'New York, NY', lat: '40.7128', lon: '-74.0060' },
+  { name: 'Philadelphia, PA', lat: '39.9526', lon: '-75.1652' },
+  { name: 'Washington, DC', lat: '38.9072', lon: '-77.0369' },
+  { name: 'Boston, MA', lat: '42.3601', lon: '-71.0589' },
+  { name: 'Seattle, WA', lat: '47.6062', lon: '-122.3321' },
+  { name: 'Minneapolis, MN', lat: '44.9778', lon: '-93.2650' },
+  { name: 'Nashville, TN', lat: '36.1627', lon: '-86.7816' },
+  { name: 'Toronto, Canada', lat: '43.6532', lon: '-79.3832' },
+  { name: 'London, UK', lat: '51.5074', lon: '-0.1278' },
+  { name: 'Paris, France', lat: '48.8566', lon: '2.3522' },
+  { name: 'Accra, Ghana', lat: '5.6037', lon: '-0.1870' },
+  { name: 'Lagos, Nigeria', lat: '6.5244', lon: '3.3792' },
+  { name: 'Nairobi, Kenya', lat: '-1.2921', lon: '36.8219' },
+  { name: 'Johannesburg, SA', lat: '-26.2041', lon: '28.0473' },
+  { name: 'Kingston, Jamaica', lat: '17.9714', lon: '-76.7936' },
+  { name: 'Port of Spain, Trinidad', lat: '10.6549', lon: '-61.5019' },
+  { name: 'Sao Paulo, Brazil', lat: '-23.5505', lon: '-46.6333' },
+  { name: 'Mexico City, Mexico', lat: '19.4326', lon: '-99.1332' },
+  { name: 'Mumbai, India', lat: '19.0760', lon: '72.8777' },
+  { name: 'Delhi, India', lat: '28.6139', lon: '77.2090' },
+  { name: 'Cairo, Egypt', lat: '30.0444', lon: '31.2357' },
+  { name: 'Tokyo, Japan', lat: '35.6762', lon: '139.6503' },
+  { name: 'Sydney, Australia', lat: '-33.8688', lon: '151.2093' },
+];
 const LokaPreview: React.FC = () => {
   const mount = useRef<HTMLDivElement>(null);
   const world = useRef<{
@@ -139,6 +187,7 @@ const LokaPreview: React.FC = () => {
   const [room, setRoom] = useState<string | null>(params.get('room'));
   const [birthDate, setBirthDate] = useState('');
   const [birthTime, setBirthTime] = useState('');
+  const [birthCity, setBirthCity] = useState('Lancaster, CA');
   const [birthLat, setBirthLat] = useState('34.6868');
   const [birthLon, setBirthLon] = useState('-118.1541');
 
@@ -500,6 +549,21 @@ const LokaPreview: React.FC = () => {
           })}
           <div className="mt-2 border-t border-white/10 pt-2">
             <p className="mb-1 text-[10px] uppercase tracking-[0.18em] text-[#D4AF37]">Charts</p>
+            <select
+              value={birthCity}
+              onChange={(e) => {
+                const city = CITIES.find((c) => c.name === e.target.value);
+                setBirthCity(e.target.value);
+                if (city) { setBirthLat(city.lat); setBirthLon(city.lon); }
+              }}
+              aria-label="Birth city"
+              className="mb-2 w-full rounded border border-white/15 bg-[#0b0618] px-1 py-1 text-[10px] text-white"
+            >
+              {CITIES.map((c) => (
+                <option key={c.name} value={c.name}>{c.name}</option>
+              ))}
+              <option value="custom">Somewhere else…</option>
+            </select>
             <div className="flex gap-2">
               <label className="text-[9px] uppercase tracking-[0.1em] text-white/45">
                 Lat
