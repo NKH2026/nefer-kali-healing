@@ -224,6 +224,7 @@ const LokaPreview: React.FC = () => {
   const [supported] = useState(hasWebGL);
   const [goods, setGoods] = useState<Array<{ title: string; price: string; image: string; category: string; slug: string }>>([]);
   const [tab, setTab] = useState(0);
+  const rowRef = useRef<HTMLDivElement>(null);
   /** Which room is open, and where it starts. Null = standing in the world. */
   const [room, setRoom] = useState<string | null>(params.get('room'));
   const [birthDate, setBirthDate] = useState('');
@@ -421,6 +422,17 @@ const LokaPreview: React.FC = () => {
     })();
     return () => { cancelled = true; };
   }, [ready]);
+
+  /**
+   * Switching category has to reset the row.
+   *
+   * The scroller keeps its scrollLeft between categories, so choosing a new tab
+   * left the first card half-cut off the left edge — the row was still parked
+   * mid-scroll from the previous list. Reset it whenever the category changes.
+   */
+  useEffect(() => {
+    rowRef.current?.scrollTo({ left: 0, behavior: 'auto' });
+  }, [tab]);
   // ---- a chart can be linked: ?birth=1993-09-25
   useEffect(() => {
     const q = params.get('birth');
@@ -503,6 +515,17 @@ const LokaPreview: React.FC = () => {
     })();
     return () => { cancelled = true; };
   }, [ready]);
+
+  /**
+   * Switching category has to reset the row.
+   *
+   * The scroller keeps its scrollLeft between categories, so choosing a new tab
+   * left the first card half-cut off the left edge — the row was still parked
+   * mid-scroll from the previous list. Reset it whenever the category changes.
+   */
+  useEffect(() => {
+    rowRef.current?.scrollTo({ left: 0, behavior: 'auto' });
+  }, [tab]);
   // ---- a chart can be linked: ?birth=1993-09-25
   useEffect(() => {
     const q = params.get('birth');
@@ -802,7 +825,7 @@ const LokaPreview: React.FC = () => {
                       </button>
                     ))}
                   </div>
-                  <div className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">
+                  <div ref={rowRef} className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">
                     {goods.filter((g) => slotOf(g.category) === tab).map((g) => (
                       <Link
                         key={`${g.slug}-${g.title}`}

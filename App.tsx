@@ -87,7 +87,7 @@ import { ThemeProvider } from './lib/ThemeProvider';
  * One constant moves the whole site, and one constant moves it back. `?loka=0`
  * remains an escape hatch either way, so the 2D site is always reachable.
  */
-const LOKA_IS_HOME = false;
+const LOKA_IS_HOME = true;
 const HomeRoute: React.FC = () => {
   const [params] = useSearchParams();
   const wants = params.get('loka');
