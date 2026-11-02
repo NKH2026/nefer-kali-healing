@@ -19,6 +19,7 @@
  * computed — which needs a birthplace, not just a date.
  */
 import * as THREE from 'three';
+import { GRAHAS } from '../jyotish/sky.js';
 
 /** Where each house's label sits, in units of half the square's side. */
 const HOUSE_AT = [
@@ -104,5 +105,38 @@ export function createChart({ size = 170, opacity = 0.9 } = {}) {
   const group = new THREE.Group();
   group.add(mesh);
 
-  return { group, size, material };
+
+  /**
+   * Put the grahas in their cells.
+   *
+   * Same whole-sign rule the flight is validated on: house 1 is the ascendant's
+   * entire sign, and each house is the next sign. The frame never moves — only
+   * the planets in it do — which is what makes this feel like a chart rather
+   * than a diagram.
+   *
+   * @param {Array<{id: string, lon: number}>} positions
+   * @param {number} ascendantLon sidereal longitude of the Lagna
+   */
+  const markers = new Map();
+  function setChart(positions, ascendantLon) {
+    const sign = (lon) => Math.floor((((lon % 360) + 360) % 360) / 30);
+    const ascSign = sign(ascendantLon);
+    for (const p of positions) {
+      const house = (((sign(p.lon) - ascSign) % 12) + 12) % 12 + 1;
+      const [hx, hy] = HOUSE_AT[house - 1];
+      let marker = markers.get(p.id);
+      if (!marker) {
+        const graha = GRAHAS.find((g) => g.id === p.id);
+        marker = new THREE.Mesh(
+          new THREE.SphereGeometry(3.6, 16, 12),
+          new THREE.MeshBasicMaterial({ color: graha?.colour ?? 0xffffff, fog: false }),
+        );
+        group.add(marker);
+        markers.set(p.id, marker);
+      }
+      // Slightly smaller cells than the full half-width, so markers sit inside.
+      marker.position.set(hx * (size / 2) * 0.84, -(hy * (size / 2) * 0.84), 2);
+    }
+  }
+  return { group, size, material, setChart };
 }

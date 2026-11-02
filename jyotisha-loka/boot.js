@@ -27,6 +27,7 @@ import { buildShots, grahaFrame, TOUR_STOPS } from './engine/shots.js';
 import { createOfferings } from './engine/scenes/offerings.js';
 import { createJourney } from './engine/scenes/journey.js';
 import { createChart } from './engine/scenes/chart.js';
+import { ascendant } from './engine/jyotish/lagna.js';
 import { TouchControls } from './engine/ui/touch.js';
 import { createGround, createPortal, createSite } from './engine/worlds/builders.js';
 import { createWorldCarpet } from './engine/worlds/world-carpet.js';
@@ -297,6 +298,12 @@ export function bootJyotishaLoka({
   if (chart) {
     chart.group.position.set(0, 46, 0);
     scene.add(chart.group);
+    /**
+     * Whose sky the chart shows. Lancaster is the studio's own place, so it
+     * makes a sensible default until a visitor can enter their own.
+     */
+    const HERE = { lat: 34.6868, lon: -118.1541 };
+    chart.setChart(jyotish.positions, ascendant({ date: new Date(), ...HERE }).sidereal);
   }
 
   // ---- the tour: a rig, and the buttons that drive it
