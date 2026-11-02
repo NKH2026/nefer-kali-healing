@@ -67,10 +67,21 @@ export const TOUR_STOPS = [
     title: 'Our Journey',
     blurb: 'A nonprofit foundation rooted in ancient truth, carrying Kemetic, Orisha and Vedic teaching to communities the wider wellness industry has overlooked.',
     graha: 'shani',
-    distance: 26,
-    pitch: 0.2,
-    yawOffset: 0.5,
-    fov: 50,
+    /**
+     * Aim at the middle of the road, not at Saturn.
+     *
+     * Checked arithmetically rather than by eye: with along 12.75 and lift 13
+     * the camera sits 40 units out with the road 65 units away and 4.1° off the
+     * view axis — comfortably on screen in a 52° fov.
+     */
+    district: 'journey',
+    out: 0,
+    along: 12.75,
+    lift: 13,
+    distance: 40,
+    pitch: 0.18,
+    yawOffset: -Math.PI,
+    fov: 52,
   },
   {
     id: 'support',
