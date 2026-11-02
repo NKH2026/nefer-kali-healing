@@ -91,10 +91,19 @@ export const TOUR_STOPS = [
     title: 'Support the Mission',
     blurb: 'Your contributions fund community workshops, herbal distributions, and the preservation of sacred indigenous knowledge.',
     graha: 'surya',
-    distance: 34,
-    pitch: 0.22,
-    yawOffset: -0.4,
-    fov: 48,
+    /**
+     * Sūrya is the brightest object in the world, so the terrace is pushed out
+     * and below it and framed looking AWAY — the same fix the market needed
+     * beside Venus.
+     */
+    district: 'support',
+    out: 62,
+    along: 0,
+    lift: -22,
+    distance: 44,
+    pitch: 0.16,
+    yawOffset: Math.PI / 2,
+    fov: 54,
   },
   {
     id: 'community',
